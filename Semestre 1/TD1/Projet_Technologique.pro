@@ -35,5 +35,4 @@ DISTFILES += \
     9306e7531d18d355992639855234198f.png \
     ../espaces/travail/Année/L3/Projet Technologique/Projet-Technologique-L3/Semestre 1/STEREO/STEREO/____stereoscopic_3d_by_osipenkov-d40zsws.jpg
 
-RESOURCES += \
-    image1.qrc
+RESOURCES += image1.qrc
