@@ -15,7 +15,6 @@ using namespace std;
 
 cv::Mat QImage2Mat(QImage const& src);
 QImage Mat2QImage(cv::Mat const& src);
-QImage QImage2Mat(cv::Mat &mat, bool swap);
 
 /*  *********   */
 
