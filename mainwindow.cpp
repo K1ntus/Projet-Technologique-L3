@@ -20,8 +20,7 @@ QImage Mat2QImage(cv::Mat const& src);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+    ui(new Ui::MainWindow) {
     ui->setupUi(this);
 }
 
@@ -37,7 +36,7 @@ void MainWindow::on_actionA_propos_triggered() {
                 "Meryl Eugenie\n"));
 }
 
-void MainWindow::on_actionQuitter_triggered()   {
+void MainWindow::on_actionQuitter_triggered() {
     exit(EXIT_SUCCESS);
 }
 
@@ -64,7 +63,7 @@ void MainWindow::loadFile(const QString &fileName) {
 
     qDebug(" *** Image file correctly loaded *** ");
 
-    cv::Mat img_mat = QImage2Mat(myImage);          //Convert QImage to cv::mat
+    cv::Mat img_mat = QImage2Mat(myImage);         //Convert QImage to cv::mat
     QImage img_qimg = Mat2QImage(img_mat);         //Convert the new cv::mat to QImage
 
     qDebug(" *** Image has been converted *** ");
@@ -87,16 +86,29 @@ void MainWindow::loadFile(const QString &fileName) {
 
 
 //https://stackoverflow.com/questions/17127762/cvmat-to-qimage-and-back
-QImage Mat2QImage(cv::Mat const& src){
-     cv::Mat temp; // make the same cv::Mat
+/**
+ * @brief Mat2QImage convert a cv::Mat image to a QImage using the RGB888 format
+ * @param src the cv::Mat image to convert
+ * @return QImage image
+ */
+QImage Mat2QImage(cv::Mat const& src) {
+     cv::Mat temp;  // make the same cv::Mat than src
      cvtColor(src, temp,CV_BGR2RGB); //Convert the mat file to get a layout that qt understand (bgr is default)
+
      QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
-     dest.bits(); // enforce deep copy, see documentation
+     dest.bits();   // enforce deep copy, see documentation
+     dest.convertToFormat(QImage::Format_RGB888);
      // of QImage::QImage ( const uchar * data, int width, int height, Format format )
+
      return dest;
 }
 
-cv::Mat QImage2Mat(const QImage& src){
+/**
+ * @brief QImage2Mat convert a QImage to a cv::Mat image
+ * @param src the QImage to convert
+ * @return cv::Mat image
+ */
+cv::Mat QImage2Mat(const QImage& src) {
     QImage copy;
     if(src.format() != QImage::Format_RGB888){
         qDebug("[INFO] Wrong qimage format. Conversion to RGB888...");
