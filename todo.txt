@@ -1,7 +1,0 @@
-1-    Application QT (fenêtre)
-2-a.  Menu (fichier -> ouvrir -> quitter)
-b.    Menu (option-> a propos (boite de dialogue (about box)))
-3 -   Afficher une image disque
-
-
-exemples: http://dept-info.labri.fr/~desbarat/ProjTech/STEREO.zip
