@@ -37,9 +37,6 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-DISTFILES += \
-    ../espaces/travail/Année/L3/Projet Technologique/Projet-Technologique-L3/Semestre 1/STEREO/STEREO/____stereoscopic_3d_by_osipenkov-d40zsws.jpg
+RESOURCES += \
+    image.qrc
 
-RESOURCES += image1.qrc
-
-LIBS += -lopencv_core -lopencv_imgproc

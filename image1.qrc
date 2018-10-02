@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>resources/background.jpg</file>
-        <file>resources/testfile.jpg</file>
-        <file>resources/delabombe.mp3</file>
-        <file>resources/testGif.gif</file>
-    </qresource>
-</RCC>
