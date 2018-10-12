@@ -31,11 +31,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += opencv
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    mainwindow_Virginie.cpp
+        mainwindow.cpp
 
-HEADERS  += mainwindow.h \
-    mainwindow_Virginie.h
+HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
