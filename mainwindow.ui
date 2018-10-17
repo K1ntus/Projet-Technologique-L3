@@ -49,7 +49,7 @@
      <x>0</x>
      <y>0</y>
      <width>402</width>
-     <height>20</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -75,6 +75,8 @@
     <addaction name="actionLaplace"/>
     <addaction name="separator"/>
     <addaction name="actionCv_Mat"/>
+    <addaction name="separator"/>
+    <addaction name="actionCarte_de_Disparit"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAbout"/>
@@ -97,17 +99,22 @@
   </action>
   <action name="actionSobel">
    <property name="text">
-    <string>Sobel</string>
+    <string>&amp;Sobel</string>
    </property>
   </action>
   <action name="actionLaplace">
    <property name="text">
-    <string>Laplace</string>
+    <string>&amp;Laplace</string>
    </property>
   </action>
   <action name="actionCv_Mat">
    <property name="text">
-    <string>cv::Mat</string>
+    <string>&amp;cv::Mat</string>
+   </property>
+  </action>
+  <action name="actionCarte_de_Disparit">
+   <property name="text">
+    <string>Carte de Disparité</string>
    </property>
   </action>
  </widget>

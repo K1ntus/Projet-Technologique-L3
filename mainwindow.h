@@ -28,15 +28,23 @@ private:
     QPlainTextEdit *textEdit;
     cv::Mat *img_mat;
 
+    cv::Mat *img_left;
+    cv::Mat *img_right;
+
 private slots:
     void on_actionA_propos_triggered();
     void on_actionQuitter_triggered();
     void on_actionOuvrir_triggered();
-    void loadFile(const QString &fileName);
-
-
     void on_actionSobel_triggered();
     void on_actionLaplace_triggered();
+    void on_actionCarte_de_Disparit_triggered();
+
+    void loadFile(const QString &fileName);
+    void loadStereoImg(const QString &fileName1, const QString &fileName2);
+
+    cv::Mat depthMap();
+    cv::Mat depthMap_postFiltering(cv::Mat dept_map);
+
 };
 
 #endif // MAINWINDOW_H
