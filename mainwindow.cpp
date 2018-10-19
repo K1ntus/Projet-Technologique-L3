@@ -42,7 +42,7 @@ void MainWindow::on_actionQuitter_triggered() {
 }
 
 void MainWindow::on_actionOuvrir_triggered() {
-        QString fileName = QFileDialog::getOpenFileName(this);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
         if (!fileName.isEmpty())
             loadFile(fileName);
 }
@@ -64,21 +64,21 @@ void MainWindow::on_actionLaplace_triggered() {
 
 void MainWindow::on_actionCarte_de_Disparit_triggered() {
 
-    QString fileName1 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de gauche"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
-    QString fileName2 = QFileDialog::getOpenFileName(this,tr("Ouvrez l'image de droite"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+    QString fileName1 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de gauche"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+    QString fileName2 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de droite"), "", tr("Image Files (*.png *.jpg *.bmp)"));
     if (fileName1.isEmpty() || fileName2.isEmpty() ){
         qDebug(" *** One of the loaded file is invalid *** ");
         return;
     }
 
     loadStereoImg(fileName1,fileName2);
-    cv::Mat img_depth = depthMap();
+    cv::Mat img_disp = disparityMap();
 }
 
 
 /**         Others Functions           **/
 
-void MainWindow::loadFile(const QString &fileName) {
+bool MainWindow::loadFile(const QString &fileName) {
     QFile file(fileName);
 
     qDebug(" *** Loading file *** ");
@@ -87,7 +87,7 @@ void MainWindow::loadFile(const QString &fileName) {
         QMessageBox::warning(this, tr("Application"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName), file.errorString()));
-        return;
+        return false;
     }
 
     QImage myImage(fileName, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
@@ -114,10 +114,11 @@ void MainWindow::loadFile(const QString &fileName) {
     qDebug(" *** Images has been displayed *** ");
 
     statusBar()->showMessage(tr("file loaded"), 2500);
+
+    return true;
 }
 
 
-//https://stackoverflow.com/questions/17127762/cvmat-to-qimage-and-back
 /**
  * @brief Mat2QImage convert a cv::Mat image to a QImage using the RGB888 format
  * @param src the cv::Mat image to convert
@@ -143,9 +144,9 @@ QImage MainWindow::Mat2QImage(Mat const& src) {
 Mat MainWindow::QImage2Mat(const QImage& src) {
     QImage copy;
     if(src.format() != QImage::Format_RGB888) {
-        qDebug("[INFO] Wrong qimage format. Conversion to RGB888...");
+        //qDebug("[INFO] Wrong qimage format. Conversion to RGB888...");
         copy = src.convertToFormat(QImage::Format_RGB888);
-        qDebug("[INFO] Conversion Done");
+        //qDebug("[INFO] Conversion Done");
     } else {
         copy = src;
     }
@@ -198,7 +199,7 @@ Mat MainWindow::contourSobel(Mat img){
  * @param fileName2
  */
 //TO DO (Factorize code)
-void MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName2){
+bool MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName2){
     QFile file1(fileName1);
     QFile file2(fileName2);
 
@@ -206,22 +207,18 @@ void MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName
 
     qDebug(" ** Left Image ** ");
     qDebug(" *** Loading file *** ");
-
     if (!file1.open(QFile::ReadOnly | QFile::Text)) {    //Check file validity/readable/...
         QMessageBox::warning(this, tr("Application"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName1), file1.errorString()));
-        return;
+        return false;
     }
 
     QImage qimg1(fileName1, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
     qDebug(" *** Image file correctly loaded *** ");
 
     *img_left = QImage2Mat(qimg1);         //Convert QImage to cv::mat
-
     qDebug(" *** Image has been converted *** ");
-
-    statusBar()->showMessage(tr("left img loaded"), 2500);
 
     //RIGHT IMAGE
 
@@ -232,45 +229,44 @@ void MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName
         QMessageBox::warning(this, tr("Application"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName2), file2.errorString()));
-        return;
+        return false;
     }
-
     QImage qimg2(fileName2, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
     qDebug(" *** Image file correctly loaded *** ");
 
     *img_right = QImage2Mat(qimg2);         //Convert QImage to cv::mat
-
     qDebug(" *** Image has been converted *** ");
 
-    statusBar()->showMessage(tr("right img loaded"), 2500);
+
+    return true;
+}
+
+void MainWindow::StereoRectification(Mat *img1, Mat *img2){
 
 }
 
-/**
- * @brief MainWindow::depthMap
- * @return
- */
-Mat MainWindow::depthMap() {
+
+Mat MainWindow::disparityMap() {
     Mat imgR, imgL;
     Mat disp, disp8;
 
-    imgL=contourSobel(*img_left);
-    imgR=contourSobel(*img_right);
-    //cvtColor(*img_left, imgL, CV_BGR2GRAY);
-    //cvtColor(*img_right, imgR, CV_BGR2GRAY);
+    cvtColor(*img_left, imgL, CV_BGR2GRAY);
+    cvtColor(*img_right, imgR, CV_BGR2GRAY);
 
     StereoSGBM sbm;
-    sbm.SADWindowSize = 3;
-    sbm.numberOfDisparities = 144;
-    sbm.preFilterCap = 63;
-    sbm.minDisparity = -39;
-    sbm.uniquenessRatio = 10;
-    sbm.speckleWindowSize = 100;
-    sbm.speckleRange = 32;
-    sbm.disp12MaxDiff = 1;
-    sbm.fullDP = false;
-    sbm.P1 = 216;
-    sbm.P2 = 864;
+    //parameters: http://answers.opencv.org/question/182049/pythonstereo-disparity-quality-problems/
+    //or better : https://docs.opencv.org/3.4/d2/d85/classcv_1_1StereoSGBM.html
+    sbm.SADWindowSize = 9;          //Matched block size (>= 1)
+    sbm.numberOfDisparities = 144;  //multiple de 16
+    sbm.preFilterCap = 50;          //Truncation value for prefiltered pixels
+    sbm.minDisparity = 0;           //minimum disparity value
+    sbm.uniquenessRatio = 10;       //usually between 5 & 15
+    sbm.speckleWindowSize = 0;      //0-> disable | usually between 50 & 200
+    sbm.speckleRange = 8;           //Maximum disparity variation
+    sbm.disp12MaxDiff = -1;         //Maximum allowed difference
+    sbm.fullDP = false;             //full-scale two-pass-dynamic (use a lot of bytes)
+    sbm.P1 = 156;                   //Disparity smoothness
+    sbm.P2 = 864;                   //same, larger => bigger smoothness
     sbm(imgL, imgR, disp);
 
     normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
@@ -282,8 +278,9 @@ Mat MainWindow::depthMap() {
     return disp8;
 }
 
-Mat MainWindow::depthMap_postFiltering(Mat dept_map){
+Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
     //tmp for warn
-    Mat res = dept_map.clone();
-    return res;
+    Mat filtered_disp_vis = disparityMap.clone();
+
+    return filtered_disp_vis;
 }

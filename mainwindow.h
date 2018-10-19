@@ -39,11 +39,13 @@ private slots:
     void on_actionLaplace_triggered();
     void on_actionCarte_de_Disparit_triggered();
 
-    void loadFile(const QString &fileName);
-    void loadStereoImg(const QString &fileName1, const QString &fileName2);
+    bool loadFile(const QString &fileName);
+    bool loadStereoImg(const QString &fileName1, const QString &fileName2);
 
-    cv::Mat depthMap();
-    cv::Mat depthMap_postFiltering(cv::Mat dept_map);
+    void StereoRectification(cv::Mat *img1, cv::Mat *img2);
+
+    cv::Mat disparityMap();
+    cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
 };
 
