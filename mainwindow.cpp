@@ -48,19 +48,20 @@ void MainWindow::on_actionOuvrir_triggered() {
 }
 
 void MainWindow::on_actionSobel_triggered() {
-
-    //Display Sobel image in a new window
-    namedWindow( "Sobel", WINDOW_AUTOSIZE );
-    imshow( "Sobel", contourSobel(*img_mat) );
+    //Display Sobel Image
+    cv::Mat img = contourSobel(*img_mat);
+    QImage image = Mat2QImage(img);
+    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 }
 
 
 void MainWindow::on_actionLaplace_triggered() {
-    //Display Laplace image in a new window
-    namedWindow( "Laplace", WINDOW_AUTOSIZE );
-    *img_mat = contourLaplace(*img_mat);
-    imshow( "Laplace", *img_mat );
-}
+    //Display Laplace image
+    cv::Mat img = contourLaplace(*img_mat);
+    QImage image = Mat2QImage(img);
+    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
+
+   }
 
 void MainWindow::on_actionCarte_de_Disparit_triggered() {
 
@@ -125,12 +126,16 @@ bool MainWindow::loadFile(const QString &fileName) {
  * @return QImage image
  */
 QImage MainWindow::Mat2QImage(Mat const& src) {
-     Mat temp;  // make the same cv::Mat than src
-     cvtColor(src, temp,CV_BGR2RGB); //Convert the mat file to get a layout that qt understand (bgr is default)
-
-     QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
-     dest.bits();   // enforce deep copy, see documentation
-     dest.convertToFormat(QImage::Format_RGB888);
+    Mat temp;  // make the same cv::Mat than src
+    if(src.channels()==1)
+        cvtColor(src,temp,CV_GRAY2BGR);
+    else if(src.channels()==3)
+        cvtColor(src,temp,CV_BGR2RGB);
+    else
+        cvtColor(src,temp,CV_BGRA2RGB);
+    QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+    dest.bits();   // enforce deep copy, see documentation
+    dest.convertToFormat(QImage::Format_RGB888);
      // of QImage::QImage ( const uchar * data, int width, int height, Format format )
 
      return dest;
@@ -153,7 +158,7 @@ Mat MainWindow::QImage2Mat(const QImage& src) {
 
     Mat mat(copy.height(),copy.width(),CV_8UC3,(uchar*)copy.bits(),copy.bytesPerLine());
     Mat result = Mat(mat.rows, mat.cols, CV_8UC3);
-    cvtColor(mat, result, CV_BGR2RGB);  //Convert the mat file to get a layout that qt understand (bgr is default)
+    cvtColor(mat, result, CV_RGB2BGR);  //Convert the mat file to get a layout that qt understand (bgr is default)
 
     return result;
 }
@@ -174,8 +179,6 @@ Mat MainWindow::contourLaplace(Mat img){
 
 Mat MainWindow::contourSobel(Mat img){
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
-
-    // ENCODE & DECODE THE MAT INTO/FROM THE BUFFER (=IMWRITE)
     Mat img_read=img.clone();
 
     // APPLY THE GAUSSIAN BLUR TO AVOID BLUR
@@ -283,4 +286,23 @@ Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
     Mat filtered_disp_vis = disparityMap.clone();
 
     return filtered_disp_vis;
+}
+
+void MainWindow::orbFeatures(Mat img){
+    int nfeatures = 500;
+    float scaleFactor =1.2f;
+    int nlevels = 8;
+    int edgeTreshold=31;
+    int firstLevel =0;
+    int WTA_K =2;
+    int scoreType = ORB::HARRIS_SCORE;
+    int patchSize = 31;
+    Mat grayImage;
+    cvtColor(img, grayImage,CV_BGR2GRAY);
+    ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
+    vector<KeyPoint> keypoint;
+    detector.detect(grayImage, keypoint);
+    Mat dst;
+    cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
+    imshow("OrbDetector",dst);
 }

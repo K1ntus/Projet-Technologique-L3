@@ -22,6 +22,7 @@ public:
     QImage Mat2QImage(cv::Mat const& src);
     cv::Mat contourSobel(cv::Mat img);
     cv::Mat contourLaplace(cv::Mat img);
+    void orbFeatures(cv::Mat img);
 
 private:
     Ui::MainWindow *ui;
