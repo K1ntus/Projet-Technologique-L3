@@ -23,6 +23,8 @@ public:
     cv::Mat contourSobel(cv::Mat img);
     cv::Mat contourLaplace(cv::Mat img);
     void orbFeatures(cv::Mat img);
+    void split(cv::Mat img);
+
 
 private:
     Ui::MainWindow *ui;
@@ -45,9 +47,11 @@ private slots:
 
     void StereoRectification(cv::Mat *img1, cv::Mat *img2);
 
+
     cv::Mat disparityMap();
     cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
 };
 
 #endif // MAINWINDOW_H
+

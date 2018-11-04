@@ -65,14 +65,15 @@ void MainWindow::on_actionLaplace_triggered() {
 
 void MainWindow::on_actionCarte_de_Disparit_triggered() {
 
-    QString fileName1 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de gauche"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+    /*QString fileName1 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de gauche"), "", tr("Image Files (*.png *.jpg *.bmp)"));
     QString fileName2 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de droite"), "", tr("Image Files (*.png *.jpg *.bmp)"));
     if (fileName1.isEmpty() || fileName2.isEmpty() ){
         qDebug(" *** One of the loaded file is invalid *** ");
         return;
     }
 
-    loadStereoImg(fileName1,fileName2);
+    loadStereoImg(fileName1,fileName2);*/
+    split(*img_mat);
     cv::Mat img_disp = disparityMap();
 }
 
@@ -305,4 +306,14 @@ void MainWindow::orbFeatures(Mat img){
     Mat dst;
     cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
     imshow("OrbDetector",dst);
+}
+
+void MainWindow::split(Mat img){
+    int x =0;
+    int y = 0;
+    int height =(int)img.cols/2;
+    int width = (int) img.rows;
+    int xR = height;
+    *img_left = Mat(img, Rect(x,y,height, width));
+    *img_right = Mat(img,Rect(xR,y,height,width));
 }
