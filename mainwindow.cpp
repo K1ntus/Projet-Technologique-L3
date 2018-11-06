@@ -70,6 +70,10 @@ void MainWindow::on_actionSGBM_triggered(){
             if (!fileName.isEmpty())
                 loadFile(fileName);
     }
+    if(img_mat->empty()){
+        qDebug("[ERROR] No image has been loaded");
+        return;
+    }
 
     split(*img_mat);
     cv::Mat img_disp = disparityMapSGBM();
@@ -77,10 +81,14 @@ void MainWindow::on_actionSGBM_triggered(){
 
 void MainWindow::on_actionOrbs_triggered(){
     if(img_mat->empty()){
-        qDebug("[ERROR] Load a stereo file before");
+        qDebug("[INFO] Load a stereo file before");
         QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
             if (!fileName.isEmpty())
                 loadFile(fileName);
+    }
+    if(img_mat->empty()){
+        qDebug("[ERROR] No image has been loaded");
+        return;
     }
 
     split(*img_mat);
@@ -112,19 +120,6 @@ bool MainWindow::loadFile(const QString &fileName) {
     QImage img_qimg = Mat2QImage(*img_mat);         //Convert the new cv::mat to QImage
 
     qDebug(" *** Image has been converted *** ");
-
-    //Display QImage in a new window
-    /*QLabel * label_qimg1 = new QLabel(this);
-    label_qimg1 -> setWindowFlags(Qt::Window);
-    label_qimg1 ->setWindowTitle("cv::Mat -> QImage");
-    label_qimg1->setPixmap(QPixmap::fromImage(img_qimg));
-    label_qimg1->show();
-
-    //Display cv::Mat image in a new window
-    namedWindow( "QImage -> cv::Mat", WINDOW_AUTOSIZE );
-    imshow( "QImage -> cv::Mat", *img_mat );
-    */
-    qDebug(" *** Images has been displayed *** ");
 
     statusBar()->showMessage(tr("file loaded"), 2500);
 
@@ -215,9 +210,9 @@ Mat MainWindow::disparityMapSGBM() {
     cvtColor(*img_left, imgL, CV_BGR2GRAY);
     cvtColor(*img_right, imgR, CV_BGR2GRAY);
 
-    StereoSGBM sbm;
     //parameters: http://answers.opencv.org/question/182049/pythonstereo-disparity-quality-problems/
     //or better : https://docs.opencv.org/3.4/d2/d85/classcv_1_1StereoSGBM.html
+    StereoSGBM sbm;
     sbm.SADWindowSize = 9;          //Matched block size (>= 1)
     sbm.numberOfDisparities = 144;  //multiple de 16
     sbm.preFilterCap = 50;          //Truncation value for prefiltered pixels
@@ -233,10 +228,7 @@ Mat MainWindow::disparityMapSGBM() {
 
     normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
 
-    imshow("left", imgL);
-    imshow("right", imgR);
     imshow("disparity map", disp8);
-
     return disp8;
 }
 

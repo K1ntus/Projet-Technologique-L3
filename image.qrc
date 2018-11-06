@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>resources/background.jpg</file>
-        <file>resources/test_gif.gif</file>
         <file>resources/test_file.jpg</file>
     </qresource>
 </RCC>
