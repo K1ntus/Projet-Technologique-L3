@@ -73,6 +73,10 @@ void MainWindow::on_actionCarte_de_Disparit_triggered() {
     }
 
     loadStereoImg(fileName1,fileName2);*/
+    if(img_mat->empty()){
+        qDebug("[ERROR] Load file before");
+        return;
+    }
     split(*img_mat);
     cv::Mat img_disp = disparityMap();
 }
@@ -246,7 +250,8 @@ bool MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName
 }
 
 void MainWindow::StereoRectification(Mat *img1, Mat *img2){
-
+    //TODO ?
+    return;
 }
 
 
