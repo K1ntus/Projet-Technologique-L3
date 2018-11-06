@@ -22,9 +22,6 @@ public:
     QImage Mat2QImage(cv::Mat const& src);
     cv::Mat contourSobel(cv::Mat img);
     cv::Mat contourLaplace(cv::Mat img);
-    void orbFeatures(cv::Mat img);
-    void split(cv::Mat img);
-
 
 private:
     Ui::MainWindow *ui;
@@ -40,14 +37,16 @@ private slots:
     void on_actionOuvrir_triggered();
     void on_actionSobel_triggered();
     void on_actionLaplace_triggered();
-    void on_actionCarte_de_Disparit_triggered();
+    void on_actionSGBM_triggered();
+    void on_actionOrbs_triggered();
 
     bool loadFile(const QString &fileName);
-    bool loadStereoImg(const QString &fileName1, const QString &fileName2);
 
-    cv::Mat disparityMap();
+    cv::Mat disparityMapSGBM();
     cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
+    void orbFeatures(cv::Mat img);
+    void split(cv::Mat img);
 };
 
 #endif // MAINWINDOW_H

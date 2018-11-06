@@ -60,25 +60,32 @@ void MainWindow::on_actionLaplace_triggered() {
     cv::Mat img = contourLaplace(*img_mat);
     QImage image = Mat2QImage(img);
     ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
+}
 
-   }
 
-void MainWindow::on_actionCarte_de_Disparit_triggered() {
-
-    /*QString fileName1 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de gauche"), "", tr("Image Files (*.png *.jpg *.bmp)"));
-    QString fileName2 = QFileDialog::getOpenFileName(this, tr("Ouvrez l'image de droite"), "", tr("Image Files (*.png *.jpg *.bmp)"));
-    if (fileName1.isEmpty() || fileName2.isEmpty() ){
-        qDebug(" *** One of the loaded file is invalid *** ");
-        return;
-    }
-
-    loadStereoImg(fileName1,fileName2);*/
+void MainWindow::on_actionSGBM_triggered(){
     if(img_mat->empty()){
-        qDebug("[ERROR] Load file before");
-        return;
+        qDebug("[ERROR] Load stereo file before");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+            if (!fileName.isEmpty())
+                loadFile(fileName);
     }
+
     split(*img_mat);
-    cv::Mat img_disp = disparityMap();
+    cv::Mat img_disp = disparityMapSGBM();
+}
+
+void MainWindow::on_actionOrbs_triggered(){
+    if(img_mat->empty()){
+        qDebug("[ERROR] Load a stereo file before");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+            if (!fileName.isEmpty())
+                loadFile(fileName);
+    }
+
+    split(*img_mat);
+    orbFeatures(*img_mat);
+
 }
 
 
@@ -201,57 +208,7 @@ Mat MainWindow::contourSobel(Mat img){
 
 }
 
-/**
- * @brief MainWindow::loadStereoImg
- * @param fileName1
- * @param fileName2
- */
-//TO DO (Factorize code)
-bool MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName2){
-    QFile file1(fileName1);
-    QFile file2(fileName2);
-
-    qDebug("\n * Stereo Img loading * ");
-
-    qDebug(" ** Left Image ** ");
-    qDebug(" *** Loading file *** ");
-    if (!file1.open(QFile::ReadOnly | QFile::Text)) {    //Check file validity/readable/...
-        QMessageBox::warning(this, tr("Application"),
-                             tr("Cannot read file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName1), file1.errorString()));
-        return false;
-    }
-
-    QImage qimg1(fileName1, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
-    qDebug(" *** Image file correctly loaded *** ");
-
-    *img_left = QImage2Mat(qimg1);         //Convert QImage to cv::mat
-    qDebug(" *** Image has been converted *** ");
-
-    //RIGHT IMAGE
-
-    qDebug(" ** Right Image ** ");
-    qDebug(" *** Loading file *** ");
-
-    if (!file2.open(QFile::ReadOnly | QFile::Text)) {    //Check file validity/readable/...
-        QMessageBox::warning(this, tr("Application"),
-                             tr("Cannot read file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName2), file2.errorString()));
-        return false;
-    }
-    QImage qimg2(fileName2, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
-    qDebug(" *** Image file correctly loaded *** ");
-
-    *img_right = QImage2Mat(qimg2);         //Convert QImage to cv::mat
-    qDebug(" *** Image has been converted *** ");
-
-
-    return true;
-}
-
-
-
-Mat MainWindow::disparityMap() {
+Mat MainWindow::disparityMapSGBM() {
     Mat imgR, imgL;
     Mat disp, disp8;
 

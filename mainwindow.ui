@@ -71,12 +71,19 @@
     <property name="title">
      <string>Con&amp;version</string>
     </property>
+    <widget class="QMenu" name="menuCarte_de_Disparit">
+     <property name="title">
+      <string>Carte &amp;de Disparité</string>
+     </property>
+     <addaction name="actionSGBM"/>
+    </widget>
     <addaction name="actionSobel"/>
     <addaction name="actionLaplace"/>
     <addaction name="separator"/>
     <addaction name="actionCv_Mat"/>
     <addaction name="separator"/>
-    <addaction name="actionCarte_de_Disparit"/>
+    <addaction name="actionOrbs"/>
+    <addaction name="menuCarte_de_Disparit"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAbout"/>
@@ -112,9 +119,14 @@
     <string>&amp;cv::Mat</string>
    </property>
   </action>
-  <action name="actionCarte_de_Disparit">
+  <action name="actionOrbs">
    <property name="text">
-    <string>Carte de Disparité</string>
+    <string>Orbs</string>
+   </property>
+  </action>
+  <action name="actionSGBM">
+   <property name="text">
+    <string>SGBM</string>
    </property>
   </action>
  </widget>
