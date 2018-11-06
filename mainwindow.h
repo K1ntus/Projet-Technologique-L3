@@ -45,9 +45,6 @@ private slots:
     bool loadFile(const QString &fileName);
     bool loadStereoImg(const QString &fileName1, const QString &fileName2);
 
-    void StereoRectification(cv::Mat *img1, cv::Mat *img2);
-
-
     cv::Mat disparityMap();
     cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 

@@ -249,10 +249,6 @@ bool MainWindow::loadStereoImg(const QString &fileName1, const QString &fileName
     return true;
 }
 
-void MainWindow::StereoRectification(Mat *img1, Mat *img2){
-    //TODO ?
-    return;
-}
 
 
 Mat MainWindow::disparityMap() {
