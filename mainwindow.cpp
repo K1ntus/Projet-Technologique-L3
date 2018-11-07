@@ -42,7 +42,7 @@ void MainWindow::on_actionQuitter_triggered() {
 }
 
 void MainWindow::on_actionOuvrir_triggered() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp *.gif)"));
         if (!fileName.isEmpty())
             loadFile(fileName);
 }
@@ -66,7 +66,7 @@ void MainWindow::on_actionLaplace_triggered() {
 void MainWindow::on_actionSGBM_triggered(){
     if(img_mat->empty()){
         qDebug("[ERROR] Load stereo file before");
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", "Images(*.png *.jpg *.bmp *.gif *.jpeg)");
             if (!fileName.isEmpty())
                 loadFile(fileName);
     }
@@ -82,7 +82,7 @@ void MainWindow::on_actionSGBM_triggered(){
 void MainWindow::on_actionOrbs_triggered(){
     if(img_mat->empty()){
         qDebug("[INFO] Load a stereo file before");
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", "Images(*.png *.jpg *.bmp *.gif *.jpeg)");
             if (!fileName.isEmpty())
                 loadFile(fileName);
     }
@@ -92,7 +92,8 @@ void MainWindow::on_actionOrbs_triggered(){
     }
 
     split(*img_mat);
-    orbFeatures(*img_mat);
+    Mat disparity_Map = orbFeatures();
+
 
 }
 
@@ -239,23 +240,43 @@ Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
     return filtered_disp_vis;
 }
 
-void MainWindow::orbFeatures(Mat img){
-    int nfeatures = 500;
-    float scaleFactor =1.2f;
-    int nlevels = 8;
-    int edgeTreshold=31;
-    int firstLevel =0;
-    int WTA_K =2;
-    int scoreType = ORB::HARRIS_SCORE;
-    int patchSize = 31;
-    Mat grayImage;
-    cvtColor(img, grayImage,CV_BGR2GRAY);
-    ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
-    vector<KeyPoint> keypoint;
-    detector.detect(grayImage, keypoint);
-    Mat dst;
-    cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
-    imshow("OrbDetector",dst);
+Mat MainWindow::orbFeatures(){
+    Mat descriptorL, descriptorR, dst;
+    ORB detector = ORB();
+    vector<KeyPoint> keypointL, keypointR;
+    vector<DMatch> matches, best_matches;
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+
+    GaussianBlur(*img_left,*img_left,Size(3,3),0,0,BORDER_DEFAULT);
+    GaussianBlur(*img_right,*img_right,Size(3,3),0,0,BORDER_DEFAULT);
+    detector.detect(*img_left, keypointL);
+    detector.detect(*img_right, keypointR);
+    detector.compute(*img_left, keypointL, descriptorL);
+    detector.compute(*img_right,keypointR, descriptorR);
+    matcher->match(descriptorL, descriptorR, matches);
+    float d_max = 0, d_min = 50;
+    for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
+        if(matches[i].distance<d_min)
+            d_min = matches[i].distance;
+        if(matches[i].distance > d_max)
+            d_max= matches[i].distance;
+    }
+    for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
+        if(matches[i].distance <= max(4.0*d_min,0.05))
+            best_matches.push_back(matches[i]);
+
+    }
+    cv::drawMatches(*img_left, keypointL, *img_right, keypointR,best_matches,dst, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+    /*Mat disparity_map = Mat(img_left->rows, img_right->cols, CV_8UC1, Scalar(255));
+    for(int i = 0; i<(int)best_matches.size();i++){
+        int xL= keypointL[best_matches[i].queryIdx].pt.x; //Idx is the index of the descriptor
+        int xR = keypointR[best_matches[i].trainIdx].pt.x;
+        int y = keypointL[best_matches[i].queryIdx].pt.y;
+        disparity_map.at<uchar>(y,xL)= abs(xL-xR);      //Disparity = distance between xL && xR
+    }
+    bitwise_not(disparity_map,disparity_map);*/
+    imshow("MATCHES", dst);
+    return dst;
 }
 
 void MainWindow::split(Mat img){

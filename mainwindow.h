@@ -45,7 +45,7 @@ private slots:
     cv::Mat disparityMapSGBM();
     cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
-    void orbFeatures(cv::Mat img);
+    cv::Mat orbFeatures();
     void split(cv::Mat img);
 };
 
