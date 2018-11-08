@@ -76,6 +76,7 @@
       <string>Carte &amp;de Disparité</string>
      </property>
      <addaction name="actionSGBM"/>
+     <addaction name="actionParam_tres"/>
     </widget>
     <addaction name="actionSobel"/>
     <addaction name="actionLaplace"/>
@@ -121,12 +122,17 @@
   </action>
   <action name="actionOrbs">
    <property name="text">
-    <string>Orbs</string>
+    <string>&amp;Orbs</string>
    </property>
   </action>
   <action name="actionSGBM">
    <property name="text">
-    <string>SGBM</string>
+    <string>&amp;SGBM</string>
+   </property>
+  </action>
+  <action name="actionParam_tres">
+   <property name="text">
+    <string>Paramètres</string>
    </property>
   </action>
  </widget>

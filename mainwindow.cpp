@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "disparity.h"
 
 using namespace cv;
 using namespace std;
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     img_left = new Mat;
     img_right = new Mat;
+    parametersWindow = new Disparity();
 }
 
 MainWindow::~MainWindow() {
@@ -42,7 +44,7 @@ void MainWindow::on_actionQuitter_triggered() {
 }
 
 void MainWindow::on_actionOuvrir_triggered() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp *.gif)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
         if (!fileName.isEmpty())
             loadFile(fileName);
 }
@@ -66,14 +68,15 @@ void MainWindow::on_actionLaplace_triggered() {
 void MainWindow::on_actionSGBM_triggered(){
     if(img_mat->empty()){
         qDebug("[ERROR] Load stereo file before");
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", "Images(*.png *.jpg *.bmp *.gif *.jpeg)");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
             if (!fileName.isEmpty())
                 loadFile(fileName);
     }
     if(img_mat->empty()){
-        qDebug("[ERROR] No image has been loaded");
+        qDebug("[ERROR] No images loaded");
         return;
     }
+
 
     split(*img_mat);
     cv::Mat img_disp = disparityMapSGBM();
@@ -82,19 +85,18 @@ void MainWindow::on_actionSGBM_triggered(){
 void MainWindow::on_actionOrbs_triggered(){
     if(img_mat->empty()){
         qDebug("[INFO] Load a stereo file before");
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", "Images(*.png *.jpg *.bmp *.gif *.jpeg)");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
             if (!fileName.isEmpty())
                 loadFile(fileName);
     }
+
     if(img_mat->empty()){
-        qDebug("[ERROR] No image has been loaded");
+        qDebug("[ERROR] No images loaded");
         return;
     }
-
     split(*img_mat);
-    Mat disparity_Map = orbFeatures();
-
-
+    orbFeatures(*img_mat);
+    disparityMapOrbs(*img_mat);
 }
 
 
@@ -121,6 +123,19 @@ bool MainWindow::loadFile(const QString &fileName) {
     QImage img_qimg = Mat2QImage(*img_mat);         //Convert the new cv::mat to QImage
 
     qDebug(" *** Image has been converted *** ");
+
+    //Display QImage in a new window
+    /*QLabel * label_qimg1 = new QLabel(this);
+    label_qimg1 -> setWindowFlags(Qt::Window);
+    label_qimg1 ->setWindowTitle("cv::Mat -> QImage");
+    label_qimg1->setPixmap(QPixmap::fromImage(img_qimg));
+    label_qimg1->show();
+
+    //Display cv::Mat image in a new window
+    namedWindow( "QImage -> cv::Mat", WINDOW_AUTOSIZE );
+    imshow( "QImage -> cv::Mat", *img_mat );
+    */
+    qDebug(" *** Images has been displayed *** ");
 
     statusBar()->showMessage(tr("file loaded"), 2500);
 
@@ -214,22 +229,23 @@ Mat MainWindow::disparityMapSGBM() {
     //parameters: http://answers.opencv.org/question/182049/pythonstereo-disparity-quality-problems/
     //or better : https://docs.opencv.org/3.4/d2/d85/classcv_1_1StereoSGBM.html
     StereoSGBM sbm;
-    sbm.SADWindowSize = 9;          //Matched block size (>= 1)
-    sbm.numberOfDisparities = 144;  //multiple de 16
-    sbm.preFilterCap = 50;          //Truncation value for prefiltered pixels
-    sbm.minDisparity = 0;           //minimum disparity value
-    sbm.uniquenessRatio = 10;       //usually between 5 & 15
-    sbm.speckleWindowSize = 0;      //0-> disable | usually between 50 & 200
-    sbm.speckleRange = 8;           //Maximum disparity variation
-    sbm.disp12MaxDiff = -1;         //Maximum allowed difference
-    sbm.fullDP = false;             //full-scale two-pass-dynamic (use a lot of bytes)
-    sbm.P1 = 156;                   //Disparity smoothness
-    sbm.P2 = 864;                   //same, larger => bigger smoothness
+    sbm.SADWindowSize = parametersWindow->IO_SADWindowSize;          //Matched block size (>= 1)
+    sbm.numberOfDisparities = parametersWindow->IO_numberOfDisparities;  //multiple de 16
+    sbm.preFilterCap = parametersWindow->IO_preFilterCap;          //Truncation value for prefiltered pixels
+    sbm.minDisparity = parametersWindow->IO_minDisparity;           //minimum disparity value
+    sbm.uniquenessRatio = parametersWindow->IO_uniquenessRatio;       //usually between 5 & 15
+    sbm.speckleWindowSize = parametersWindow->IO_speckleWindowSize;      //0-> disable | usually between 50 & 200
+    sbm.speckleRange = parametersWindow->IO_speckleRange;           //Maximum disparity variation
+    sbm.disp12MaxDiff = parametersWindow->IO_disp12MaxDif;         //Maximum allowed difference
+    sbm.fullDP = parametersWindow->IO_fullDP;             //full-scale two-pass-dynamic (use a lot of bytes)
+    sbm.P1 = parametersWindow->IO_P1;                   //Disparity smoothness
+    sbm.P2 = parametersWindow->IO_P2;                   //same, larger => bigger smoothness
     sbm(imgL, imgR, disp);
 
     normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
 
     imshow("disparity map", disp8);
+
     return disp8;
 }
 
@@ -240,45 +256,6 @@ Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
     return filtered_disp_vis;
 }
 
-Mat MainWindow::orbFeatures(){
-    Mat descriptorL, descriptorR, dst;
-    ORB detector = ORB();
-    vector<KeyPoint> keypointL, keypointR;
-    vector<DMatch> matches, best_matches;
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-
-    GaussianBlur(*img_left,*img_left,Size(3,3),0,0,BORDER_DEFAULT);
-    GaussianBlur(*img_right,*img_right,Size(3,3),0,0,BORDER_DEFAULT);
-    detector.detect(*img_left, keypointL);
-    detector.detect(*img_right, keypointR);
-    detector.compute(*img_left, keypointL, descriptorL);
-    detector.compute(*img_right,keypointR, descriptorR);
-    matcher->match(descriptorL, descriptorR, matches);
-    float d_max = 0, d_min = 50;
-    for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
-        if(matches[i].distance<d_min)
-            d_min = matches[i].distance;
-        if(matches[i].distance > d_max)
-            d_max= matches[i].distance;
-    }
-    for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
-        if(matches[i].distance <= max(4.0*d_min,0.05))
-            best_matches.push_back(matches[i]);
-
-    }
-    cv::drawMatches(*img_left, keypointL, *img_right, keypointR,best_matches,dst, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-    /*Mat disparity_map = Mat(img_left->rows, img_right->cols, CV_8UC1, Scalar(255));
-    for(int i = 0; i<(int)best_matches.size();i++){
-        int xL= keypointL[best_matches[i].queryIdx].pt.x; //Idx is the index of the descriptor
-        int xR = keypointR[best_matches[i].trainIdx].pt.x;
-        int y = keypointL[best_matches[i].queryIdx].pt.y;
-        disparity_map.at<uchar>(y,xL)= abs(xL-xR);      //Disparity = distance between xL && xR
-    }
-    bitwise_not(disparity_map,disparity_map);*/
-    imshow("MATCHES", dst);
-    return dst;
-}
-
 void MainWindow::split(Mat img){
     int x =0;
     int y = 0;
@@ -287,4 +264,34 @@ void MainWindow::split(Mat img){
     int xR = height;
     *img_left = Mat(img, Rect(x,y,height, width));
     *img_right = Mat(img,Rect(xR,y,height,width));
+}
+
+
+void MainWindow::orbFeatures(Mat img){
+    int nfeatures = 500;
+    float scaleFactor =1.2f;
+    int nlevels = 8;
+    int edgeTreshold=31;
+    int firstLevel =0;
+    int WTA_K =2;
+    int scoreType = ORB::HARRIS_SCORE;
+    int patchSize = 31;
+    Mat grayImage;
+    cvtColor(img, grayImage,CV_BGR2GRAY);
+    ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
+    vector<KeyPoint> keypoint;
+    detector.detect(grayImage, keypoint);
+    Mat dst;
+    cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
+    imshow("OrbDetector",dst);
+}
+void MainWindow::disparityMapOrbs(Mat img){
+    //TODO
+    //cv::Mat res = new cv::Mat;
+    //return res;
+    return;
+}
+
+void MainWindow::on_actionParam_tres_triggered(){
+    parametersWindow->show();
 }

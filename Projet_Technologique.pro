@@ -31,11 +31,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += opencv
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    disparity.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    disparity.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    disparity.ui
 
 RESOURCES += \
     image.qrc

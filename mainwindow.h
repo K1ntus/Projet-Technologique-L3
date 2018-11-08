@@ -5,6 +5,7 @@
 #include <QPlainTextEdit>
 #include <QImage>
 #include <opencv2/opencv.hpp>
+#include "disparity.h"
 
 
 
@@ -30,6 +31,7 @@ private:
 
     cv::Mat *img_left;
     cv::Mat *img_right;
+    Disparity * parametersWindow;
 
 private slots:
     void on_actionA_propos_triggered();
@@ -41,12 +43,15 @@ private slots:
     void on_actionOrbs_triggered();
 
     bool loadFile(const QString &fileName);
+    void split(cv::Mat img);
 
     cv::Mat disparityMapSGBM();
     cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
-    cv::Mat orbFeatures();
-    void split(cv::Mat img);
+    void orbFeatures(cv::Mat img);
+    //cv::Mat disparityMapOrbs(cv::Mat img);
+    void disparityMapOrbs(cv::Mat img);
+    void on_actionParam_tres_triggered();
 };
 
 #endif // MAINWINDOW_H
