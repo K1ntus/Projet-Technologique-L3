@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>625</width>
+    <width>1214</width>
     <height>527</height>
    </rect>
   </property>
@@ -616,7 +616,7 @@
     <number>6</number>
    </property>
    <property name="value">
-    <number>20</number>
+    <number>9</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -777,29 +777,10 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="parameters_background">
+  <widget class="QPushButton" name="apply">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>631</width>
-     <height>531</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="image.qrc">:/resources/background_parameters.png</pixmap>
-   </property>
-   <property name="scaledContents">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>520</x>
+     <x>460</x>
      <y>490</y>
      <width>83</width>
      <height>28</height>
@@ -1237,33 +1218,46 @@
     <string>Activer</string>
    </property>
   </widget>
-  <zorder>parameters_background</zorder>
-  <zorder>plainTextEdit</zorder>
-  <zorder>plainTextEdit_2</zorder>
-  <zorder>plainTextEdit_3</zorder>
-  <zorder>plainTextEdit_4</zorder>
-  <zorder>plainTextEdit_5</zorder>
-  <zorder>plainTextEdit_6</zorder>
-  <zorder>plainTextEdit_7</zorder>
-  <zorder>plainTextEdit_8</zorder>
-  <zorder>plainTextEdit_9</zorder>
-  <zorder>plainTextEdit_10</zorder>
-  <zorder>plainTextEdit_11</zorder>
-  <zorder>slider_windowSize</zorder>
-  <zorder>slider_numberOfDisparities</zorder>
-  <zorder>slider_preFilterCap</zorder>
-  <zorder>slider_minDisparity</zorder>
-  <zorder>slider_uniquenessRatio</zorder>
-  <zorder>slider_speckleWindowSize</zorder>
-  <zorder>slider_speckleRange</zorder>
-  <zorder>slider_disp12MaxDiff</zorder>
-  <zorder>slider_P1</zorder>
-  <zorder>slider_P2</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>checkbox_fullScale</zorder>
+  <widget class="QLabel" name="disparityRes">
+   <property name="geometry">
+    <rect>
+     <x>660</x>
+     <y>30</y>
+     <width>511</width>
+     <height>461</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="loadImage">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>490</y>
+     <width>151</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Charger une image</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="image_loaded">
+   <property name="geometry">
+    <rect>
+     <x>630</x>
+     <y>29</y>
+     <width>541</width>
+     <height>421</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
  </widget>
- <resources>
-  <include location="image.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

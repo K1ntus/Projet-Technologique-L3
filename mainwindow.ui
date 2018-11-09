@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
-    <height>274</height>
+    <width>661</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,10 +23,10 @@
    <widget class="QLabel" name="backgroundLabel">
     <property name="geometry">
      <rect>
-      <x>-9</x>
+      <x>0</x>
       <y>0</y>
-      <width>411</width>
-      <height>251</height>
+      <width>661</width>
+      <height>411</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -48,7 +48,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>402</width>
+     <width>661</width>
      <height>25</height>
     </rect>
    </property>
@@ -132,7 +132,7 @@
   </action>
   <action name="actionParam_tres">
    <property name="text">
-    <string>Paramètres</string>
+    <string>&amp;Paramètres</string>
    </property>
   </action>
  </widget>

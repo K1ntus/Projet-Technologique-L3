@@ -22,10 +22,13 @@ MainWindow::MainWindow(QWidget *parent) :
     img_left = new Mat;
     img_right = new Mat;
     parametersWindow = new Disparity();
+
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+
+
 }
 
 
@@ -78,8 +81,8 @@ void MainWindow::on_actionSGBM_triggered(){
     }
 
 
-    split(*img_mat);
-    cv::Mat img_disp = disparityMapSGBM();
+    //split(*img_mat);
+    //cv::Mat img_disp = disparityMapSGBM();
 }
 
 void MainWindow::on_actionOrbs_triggered(){
@@ -98,7 +101,6 @@ void MainWindow::on_actionOrbs_triggered(){
     orbFeatures(*img_mat);
     disparityMapOrbs(*img_mat);
 }
-
 
 /**         Others Functions           **/
 
@@ -121,21 +123,6 @@ bool MainWindow::loadFile(const QString &fileName) {
 
     *img_mat = QImage2Mat(myImage);         //Convert QImage to cv::mat
     QImage img_qimg = Mat2QImage(*img_mat);         //Convert the new cv::mat to QImage
-
-    qDebug(" *** Image has been converted *** ");
-
-    //Display QImage in a new window
-    /*QLabel * label_qimg1 = new QLabel(this);
-    label_qimg1 -> setWindowFlags(Qt::Window);
-    label_qimg1 ->setWindowTitle("cv::Mat -> QImage");
-    label_qimg1->setPixmap(QPixmap::fromImage(img_qimg));
-    label_qimg1->show();
-
-    //Display cv::Mat image in a new window
-    namedWindow( "QImage -> cv::Mat", WINDOW_AUTOSIZE );
-    imshow( "QImage -> cv::Mat", *img_mat );
-    */
-    qDebug(" *** Images has been displayed *** ");
 
     statusBar()->showMessage(tr("file loaded"), 2500);
 
@@ -218,7 +205,7 @@ Mat MainWindow::contourSobel(Mat img){
     return final;
 
 }
-
+/*
 Mat MainWindow::disparityMapSGBM() {
     Mat imgR, imgL;
     Mat disp, disp8;
@@ -244,7 +231,13 @@ Mat MainWindow::disparityMapSGBM() {
 
     normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
 
-    imshow("disparity map", disp8);
+    imshow("disparity_map", disp8);
+    if(parametersWindow->IO_changed){
+        qDebug("Parameters changed ! New window opening !\n");
+        parametersWindow->IO_changed = false;
+        destroyWindow("disparity_map");
+        imshow("disparity_map", disp8);
+    }
 
     return disp8;
 }
@@ -255,6 +248,7 @@ Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
 
     return filtered_disp_vis;
 }
+*/
 
 void MainWindow::split(Mat img){
     int x =0;

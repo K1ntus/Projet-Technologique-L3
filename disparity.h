@@ -2,6 +2,9 @@
 #define DISPARITY_H
 
 #include <QWidget>
+#include <QPlainTextEdit>
+#include <QImage>
+#include <opencv2/opencv.hpp>
 
 namespace Ui {
 class Disparity;
@@ -16,7 +19,6 @@ public:
     ~Disparity();
 
 
-    bool on_pushButton_clicked();
 
     unsigned int IO_SADWindowSize;
     unsigned int IO_numberOfDisparities;
@@ -33,8 +35,22 @@ public:
 
 
 private slots:
+    void split(cv::Mat img);
+    cv::Mat disparityMapSGBM();
+
+    bool loadFile(const QString &fileName);
+
+    cv::Mat QImage2Mat(QImage const& src);
+    QImage Mat2QImage(cv::Mat const& src);
+
+    void on_loadImage_clicked();
+    void on_apply_clicked();
 
 private:
+    cv::Mat *img_mat;
+
+    cv::Mat *img_left;
+    cv::Mat *img_right;
     Ui::Disparity *ui;
 };
 

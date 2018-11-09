@@ -33,6 +33,8 @@ private:
     cv::Mat *img_right;
     Disparity * parametersWindow;
 
+
+
 private slots:
     void on_actionA_propos_triggered();
     void on_actionQuitter_triggered();
@@ -44,9 +46,6 @@ private slots:
 
     bool loadFile(const QString &fileName);
     void split(cv::Mat img);
-
-    cv::Mat disparityMapSGBM();
-    cv::Mat disparityMap_postFiltering(cv::Mat disparityMap);
 
     void orbFeatures(cv::Mat img);
     //cv::Mat disparityMapOrbs(cv::Mat img);
