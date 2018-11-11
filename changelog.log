@@ -1,0 +1,20 @@
+Vendredi 9 Novembre:
+  * Jordane: 
+      * Réorganisation du code avec la création d'une nouvelle classe pour la carte de disparitée
+        -> Fonctions de conversion (MAt2QImage et QImage2mat)
+        -> Séparation d'une image en deux nouvelles(split)
+        -> Génération de la carte de disparité (disparityMapSGBM)
+        -> Charger un fichier (loadFile)
+        Difficultées rencontrées:
+          + Dépendance lors de la création de la nouvelle classe
+          + Modification du code de la classe principale pour hériter de la nouvelle
+          
+      * Création d'une fenêtre graphique pour la classe Disparity
+        ** Modification des paramètres de SGBM en temps réel + chargement d'une double image stereo
+          -> Création d'un slider ou d'une checkbox pour chaques paramètres
+          -> Visualisation de la carte de disparitée dans la même fenêtre
+          -> Charger une nouvelle image non split
+        Difficultées rencontrées:
+          + Récupération des données via le slider (bug graphique sur ma version de Debian, les barres horizontales de mes sliders sont invisibles)
+          + Interaction MainWindow <-> Disparity
+          
