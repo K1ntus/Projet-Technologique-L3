@@ -19,10 +19,10 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    cv::Mat QImage2Mat(QImage const& src);
-    QImage Mat2QImage(cv::Mat const& src);
-    cv::Mat contourSobel(cv::Mat img);
-    cv::Mat contourLaplace(cv::Mat img);
+    cv::Mat qimage_2_mat(QImage const& src);
+    QImage mat_2_qimage(cv::Mat const& src);
+    cv::Mat contour_sobel(cv::Mat img);
+    cv::Mat contour_laplace(cv::Mat img);
 
 private:
     Ui::MainWindow *ui;
@@ -40,11 +40,10 @@ private slots:
     void on_actionQuitter_triggered();
     void on_actionOuvrir_triggered();
 
-    bool loadFile(const QString &fileName);
+    bool load_file(const QString &fileName);
     void split(cv::Mat img);
 
-    cv::Mat orbFeatures(cv::Mat img);
-    void disparityMapOrbs(cv::Mat img);
+    cv::Mat orb_features(cv::Mat img);
 
     void on_button_orbs_clicked();
     void on_button_disparity_clicked();
