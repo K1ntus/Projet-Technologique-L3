@@ -573,7 +573,7 @@
      <x>10</x>
      <y>420</y>
      <width>281</width>
-     <height>81</height>
+     <height>51</height>
     </rect>
    </property>
    <property name="plainText">
@@ -792,7 +792,7 @@
   <widget class="QPushButton" name="apply">
    <property name="geometry">
     <rect>
-     <x>460</x>
+     <x>520</x>
      <y>490</y>
      <width>83</width>
      <height>28</height>
@@ -1246,7 +1246,7 @@
   <widget class="QPushButton" name="loadImage">
    <property name="geometry">
     <rect>
-     <x>570</x>
+     <x>170</x>
      <y>490</y>
      <width>151</width>
      <height>28</height>
@@ -1278,7 +1278,7 @@
   <widget class="QPushButton" name="reset_image">
    <property name="geometry">
     <rect>
-     <x>340</x>
+     <x>60</x>
      <y>490</y>
      <width>91</width>
      <height>28</height>
@@ -1286,6 +1286,19 @@
    </property>
    <property name="text">
     <string>Reset</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="post_filtering">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>490</y>
+     <width>111</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Post-Filtering</string>
    </property>
   </widget>
  </widget>

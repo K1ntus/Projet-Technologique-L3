@@ -4,7 +4,10 @@
 #include "disparity.h"
 #include "ui_disparity.h"
 
+
+
 using namespace cv;
+using namespace cv::ximgproc;
 using namespace std;
 
 Disparity::Disparity(QWidget *parent) :
@@ -67,7 +70,6 @@ void Disparity::on_apply_clicked(){
     QImage img1 = mat_to_qImage(disparity_map_SGBM());  //Generate the disparity map
     QImage img2 = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);   //Create a new image which will fit the window
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
-
 }
 
 /**
@@ -86,6 +88,21 @@ void Disparity::on_loadImage_clicked(){
 
 void Disparity::on_reset_image_clicked() {
     ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qImage(*img_mat)));
+
+    ui->slider_windowSize->setSliderPosition(9);
+    ui->slider_numberOfDisparities->setSliderPosition(9);
+    ui->slider_preFilterCap->setSliderPosition(50);
+    ui->slider_minDisparity->setSliderPosition(0);
+    ui->slider_uniquenessRatio->setSliderPosition(10);
+    ui->slider_speckleWindowSize->setSliderPosition(0);
+    ui->slider_speckleRange->setSliderPosition(8);
+    ui->slider_disp12MaxDiff->setSliderPosition(-1);
+}
+
+void Disparity::on_post_filtering_clicked()
+{
+    disparity_post_filtering();
+
 }
 
 /**
@@ -93,7 +110,6 @@ void Disparity::on_reset_image_clicked() {
  * @return disparity map
  */
 Mat Disparity::disparity_map_SGBM() {
-
 
     Mat img_right_gray, img_left_gray;
     Mat disp;
@@ -119,6 +135,21 @@ Mat Disparity::disparity_map_SGBM() {
     disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
 
     return disp;
+}
+
+Mat Disparity::disparity_post_filtering(){
+    Mat left_disp = disparity_map_SGBM();
+    int lambda = 80000;
+    double sigma = 1.2;
+    double visual_multiplier = 1.0;
+    int window_size = 3;
+
+
+    Rect Roi;
+    Mat filtered;
+    //wls_filter = DisparityFilter::filter(left_disp, *img_left, filtered, *img_left);
+
+    imshow("confiance map Features", filtered);
 }
 
 /**
