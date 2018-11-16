@@ -3,18 +3,7 @@
 
 #include <QWidget>
 #include <QPlainTextEdit>
-#include <QImage>
-#include <QSlider>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/features2d.hpp>
-#include "opencv2/calib3d.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/core/utility.hpp"
-#include "opencv2/ximgproc.hpp"
-#include "opencv2/ximgproc/disparity_filter.hpp"
-
+#include "imagecv.h"
 
 
 namespace Ui {
@@ -28,7 +17,7 @@ class Disparity : public QWidget
 public:
     explicit Disparity(QWidget *parent = 0);
     ~Disparity();
-
+    void set_img_mat(cv::Mat *img);
 
 
     unsigned int IO_SADWindowSize;
@@ -46,22 +35,19 @@ public:
 
 
 private slots:
+
     void on_loadImage_clicked();
     void on_apply_clicked();
     void on_reset_image_clicked();
 
-
-    void split(cv::Mat img);
     cv::Mat disparity_map_SGBM();
     cv::Mat disparity_post_filtering();
 
     bool load_stereo_image(const QString &fileName);
 
-    cv::Mat qImage_to_mat(QImage const& src);
-    QImage mat_to_qImage(cv::Mat const& src);
-
-
     void on_post_filtering_clicked();
+
+
 
 private:
     cv::Mat *img_mat;

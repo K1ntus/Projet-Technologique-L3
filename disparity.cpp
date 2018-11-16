@@ -4,11 +4,10 @@
 #include "disparity.h"
 #include "ui_disparity.h"
 
-
-
 using namespace cv;
 using namespace cv::ximgproc;
 using namespace std;
+using namespace imagecv;
 
 Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
@@ -40,6 +39,14 @@ Disparity::~Disparity(){
     delete ui;
 }
 
+void Disparity::set_img_mat(cv::Mat *img){
+    img_mat = img;
+    QImage img1 = imagecv::mat_to_qimage(*img_mat);
+    QImage img2 =img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);//resize the qimage
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));//Display the original image
+    imagecv::split(*img_mat, img_left, img_right);
+}
+
 /**
  * @brief Apply the disparity map parameters when the button got pressed and display it to the left
  */
@@ -67,7 +74,8 @@ void Disparity::on_apply_clicked(){
         return;
     }
 
-    QImage img1 = mat_to_qImage(disparity_map_SGBM());  //Generate the disparity map
+
+    QImage img1 = mat_to_qimage(disparity_map_SGBM());  //Generate the disparity map
     QImage img2 = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);   //Create a new image which will fit the window
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
 }
@@ -87,7 +95,7 @@ void Disparity::on_loadImage_clicked(){
 }
 
 void Disparity::on_reset_image_clicked() {
-    ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qImage(*img_mat)));
+    ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(*img_mat)));
 
     ui->slider_windowSize->setSliderPosition(9);
     ui->slider_numberOfDisparities->setSliderPosition(9);
@@ -176,70 +184,10 @@ bool Disparity::load_stereo_image(const QString &file_name) {
 
     qDebug(" *** Image file correctly loaded *** ");
 
-    *img_mat = qImage_to_mat(img1);
+    *img_mat = qimage_to_mat(img1);
 
-    split(*img_mat);    //cut the img_mat in two and save the result in two public variables (resp. img_left & img_right)
+    split(*img_mat, img_left, img_right);    //cut the img_mat in two and save the result in two public variables (resp. img_left & img_right)
     return true;
-}
-
-/**
- * @brief 'Cut' an image in two new image of width/2
- * @param cv::Mat Image that will be splitted in two
- * @return nothing but store the result in two pointers
- */
-void Disparity::split(Mat img){
-    int x = 0;
-    int y = 0;
-    int width=(int)img.cols/2 ;
-    int height= (int) img.rows;
-    int x_right=width +img.cols%2; //First width position for the right image
-
-    //Store the result in two pointer of this class
-    *img_left = Mat(img, Rect(x,y,width, height));
-    *img_right = Mat(img,Rect(x_right,y,width,height));
-}
-
-
-/**
- * @brief Convert a cv::Mat image to a QImage using the RGB888 format
- * @param src the cv::Mat image to convert
- * @return QImage image
- */
-QImage Disparity::mat_to_qImage(Mat const& src) {
-    Mat temp;  // make the same cv::Mat than src
-    if(src.channels()==1)
-        cvtColor(src,temp,CV_GRAY2BGR);
-    else if(src.channels()==3)
-        cvtColor(src,temp,CV_BGR2RGB);
-    else
-        cvtColor(src,temp,CV_BGRA2RGB);
-    QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
-    dest.bits();   // enforce deep copy, see documentation
-    dest.convertToFormat(QImage::Format_RGB888);
-
-    return dest;
-}
-
-/**
- * @brief Convert a QImage to a cv::Mat image
- * @param src the QImage to convert
- * @return cv::Mat image
- */
-Mat Disparity::qImage_to_mat(const QImage& src) {
-    QImage copy;
-    if(src.format() != QImage::Format_RGB888) {
-        //qDebug("[INFO] Wrong qimage format. Conversion to RGB888...");
-        copy = src.convertToFormat(QImage::Format_RGB888);
-        //qDebug("[INFO] Conversion Done");
-    } else {
-        copy = src;
-    }
-
-    Mat mat(copy.height(),copy.width(),CV_8UC3,(uchar*)copy.bits(),copy.bytesPerLine());
-    Mat result = Mat(mat.rows, mat.cols, CV_8UC3);
-    cvtColor(mat, result, CV_RGB2BGR);  //Convert the mat file to get a layout that qt understand (bgr is default)
-
-    return result;
 }
 
 
