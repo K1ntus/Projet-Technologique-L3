@@ -2,7 +2,6 @@
 
 #include <QtGui>
 #include <QPixmap>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "disparity.h"
@@ -52,40 +51,7 @@ void MainWindow::on_actionOuvrir_triggered() {
             loadFile(fileName);
 }
 
-void MainWindow::on_actionSobel_triggered() {
-    //Display Sobel Image
-    cv::Mat img = contourSobel(*img_mat);
-    QImage image = Mat2QImage(img);
-    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
-}
-
-
-void MainWindow::on_actionLaplace_triggered() {
-    //Display Laplace image
-    cv::Mat img = contourLaplace(*img_mat);
-    QImage image = Mat2QImage(img);
-    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
-}
-
-
-void MainWindow::on_actionSGBM_triggered(){
-    if(img_mat->empty()){
-        qDebug("[ERROR] Load stereo file before");
-        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
-            if (!fileName.isEmpty())
-                loadFile(fileName);
-    }
-    if(img_mat->empty()){
-        qDebug("[ERROR] No images loaded");
-        return;
-    }
-
-
-    //split(*img_mat);
-    //cv::Mat img_disp = disparityMapSGBM();
-}
-
-void MainWindow::on_actionOrbs_triggered(){
+void MainWindow::on_button_orbs_clicked(){
     if(img_mat->empty()){
         qDebug("[INFO] Load a stereo file before");
         QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
@@ -100,7 +66,51 @@ void MainWindow::on_actionOrbs_triggered(){
     split(*img_mat);
     orbFeatures(*img_mat);
     disparityMapOrbs(*img_mat);
+
 }
+
+void MainWindow::on_button_disparity_clicked(){
+    parametersWindow->show();
+}
+
+//Display Sobel Image
+void MainWindow::on_button_sobel_clicked(){
+    if(img_mat->empty()){
+        qDebug("[INFO] Load a stereo file before");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+            if (!fileName.isEmpty())
+                loadFile(fileName);
+    }
+
+    if(img_mat->empty()){
+        qDebug("[ERROR] No images loaded");
+        return;
+    }
+    cv::Mat img = contourSobel(*img_mat);
+    QImage image = Mat2QImage(img);
+    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
+
+}
+
+//Display Laplace image
+void MainWindow::on_button_laplace_clicked(){
+    if(img_mat->empty()){
+        qDebug("[INFO] Load a stereo file before");
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+            if (!fileName.isEmpty())
+                loadFile(fileName);
+    }
+
+    if(img_mat->empty()){
+        qDebug("[ERROR] No images loaded");
+        return;
+    }
+    cv::Mat img = contourLaplace(*img_mat);
+    QImage image = Mat2QImage(img);
+    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
+
+}
+
 
 /**         Others Functions           **/
 
@@ -205,50 +215,6 @@ Mat MainWindow::contourSobel(Mat img){
     return final;
 
 }
-/*
-Mat MainWindow::disparityMapSGBM() {
-    Mat imgR, imgL;
-    Mat disp, disp8;
-
-    cvtColor(*img_left, imgL, CV_BGR2GRAY);
-    cvtColor(*img_right, imgR, CV_BGR2GRAY);
-
-    //parameters: http://answers.opencv.org/question/182049/pythonstereo-disparity-quality-problems/
-    //or better : https://docs.opencv.org/3.4/d2/d85/classcv_1_1StereoSGBM.html
-    StereoSGBM sbm;
-    sbm.SADWindowSize = parametersWindow->IO_SADWindowSize;          //Matched block size (>= 1)
-    sbm.numberOfDisparities = parametersWindow->IO_numberOfDisparities;  //multiple de 16
-    sbm.preFilterCap = parametersWindow->IO_preFilterCap;          //Truncation value for prefiltered pixels
-    sbm.minDisparity = parametersWindow->IO_minDisparity;           //minimum disparity value
-    sbm.uniquenessRatio = parametersWindow->IO_uniquenessRatio;       //usually between 5 & 15
-    sbm.speckleWindowSize = parametersWindow->IO_speckleWindowSize;      //0-> disable | usually between 50 & 200
-    sbm.speckleRange = parametersWindow->IO_speckleRange;           //Maximum disparity variation
-    sbm.disp12MaxDiff = parametersWindow->IO_disp12MaxDif;         //Maximum allowed difference
-    sbm.fullDP = parametersWindow->IO_fullDP;             //full-scale two-pass-dynamic (use a lot of bytes)
-    sbm.P1 = parametersWindow->IO_P1;                   //Disparity smoothness
-    sbm.P2 = parametersWindow->IO_P2;                   //same, larger => bigger smoothness
-    sbm(imgL, imgR, disp);
-
-    normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
-
-    imshow("disparity_map", disp8);
-    if(parametersWindow->IO_changed){
-        qDebug("Parameters changed ! New window opening !\n");
-        parametersWindow->IO_changed = false;
-        destroyWindow("disparity_map");
-        imshow("disparity_map", disp8);
-    }
-
-    return disp8;
-}
-
-Mat MainWindow::disparityMap_postFiltering(Mat disparityMap){
-    //tmp for warn
-    Mat filtered_disp_vis = disparityMap.clone();
-
-    return filtered_disp_vis;
-}
-*/
 
 void MainWindow::split(Mat img){
     int x =0;
@@ -272,9 +238,9 @@ void MainWindow::orbFeatures(Mat img){
     int patchSize = 31;
     Mat grayImage;
     cvtColor(img, grayImage,CV_BGR2GRAY);
-    ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
+   // ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
     vector<KeyPoint> keypoint;
-    detector.detect(grayImage, keypoint);
+    //detector.detect(grayImage, keypoint);
     Mat dst;
     cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
     imshow("OrbDetector",dst);
@@ -284,8 +250,4 @@ void MainWindow::disparityMapOrbs(Mat img){
     //cv::Mat res = new cv::Mat;
     //return res;
     return;
-}
-
-void MainWindow::on_actionParam_tres_triggered(){
-    parametersWindow->show();
 }

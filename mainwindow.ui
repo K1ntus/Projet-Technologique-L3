@@ -23,10 +23,10 @@
    <widget class="QLabel" name="backgroundLabel">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>661</width>
-      <height>411</height>
+      <x>160</x>
+      <y>10</y>
+      <width>491</width>
+      <height>391</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -42,6 +42,58 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="button_disparity">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>121</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Carte de disparité</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_sobel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>121</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sobel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_laplace">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>121</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Laplace</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_orbs">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>121</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Orbs</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -49,7 +101,7 @@
      <x>0</x>
      <y>0</y>
      <width>661</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -71,20 +123,9 @@
     <property name="title">
      <string>Con&amp;version</string>
     </property>
-    <widget class="QMenu" name="menuCarte_de_Disparit">
-     <property name="title">
-      <string>Carte &amp;de Disparité</string>
-     </property>
-     <addaction name="actionSGBM"/>
-     <addaction name="actionParam_tres"/>
-    </widget>
-    <addaction name="actionSobel"/>
-    <addaction name="actionLaplace"/>
     <addaction name="separator"/>
     <addaction name="actionCv_Mat"/>
     <addaction name="separator"/>
-    <addaction name="actionOrbs"/>
-    <addaction name="menuCarte_de_Disparit"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAbout"/>
@@ -123,16 +164,6 @@
   <action name="actionOrbs">
    <property name="text">
     <string>&amp;Orbs</string>
-   </property>
-  </action>
-  <action name="actionSGBM">
-   <property name="text">
-    <string>&amp;SGBM</string>
-   </property>
-  </action>
-  <action name="actionParam_tres">
-   <property name="text">
-    <string>&amp;Paramètres</string>
    </property>
   </action>
  </widget>

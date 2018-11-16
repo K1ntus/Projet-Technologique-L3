@@ -39,6 +39,7 @@ Disparity::~Disparity(){
 
 
 void Disparity::on_apply_clicked(){
+
     this->IO_SADWindowSize = ui->slider_windowSize->value();
     this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16;
     this->IO_preFilterCap = ui->slider_preFilterCap->value();
@@ -48,18 +49,22 @@ void Disparity::on_apply_clicked(){
     this->IO_speckleRange = ui->slider_speckleRange->value();
     this->IO_disp12MaxDif = ui->slider_disp12MaxDiff->value();
 
-    this->IO_P1 = ui->slider_P1->value();
-    this->IO_P2 = ui->slider_P2->value();
+    //this->IO_P1 = ui->slider_P1->value();
+    //this->IO_P2 = ui->slider_P2->value();
+    //P1 and P2 values are shown (like 8*number_of_image_channels*SADWindowSize*SADWindowSize and 32*number_of_image_channels*SADWindowSize*SADWindowSize , respectively).
+    this->IO_P1 = 8* img_right->channels() * IO_SADWindowSize * IO_SADWindowSize;
+    this->IO_P2 = 32* img_right->channels() * IO_SADWindowSize * IO_SADWindowSize;
 
     if(ui->checkbox_fullScale->isChecked())
         this->IO_fullDP = true;
     else
         this->IO_fullDP = false;
 
+
+
     QImage img1 = Mat2QImage(disparityMapSGBM());
     QImage img2 = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
-
 
 }
 
@@ -82,26 +87,27 @@ Mat Disparity::disparityMapSGBM() {
 
     cvtColor(imgL_0, imgL, CV_BGR2GRAY);
     cvtColor(imgR_0, imgR, CV_BGR2GRAY);
-
+//autre mode de disparity: StereoBinarySGBM
     //parameters: http://answers.opencv.org/question/182049/pythonstereo-disparity-quality-problems/
     //or better : https://docs.opencv.org/3.4/d2/d85/classcv_1_1StereoSGBM.html
-    StereoSGBM sbm;
-    sbm.SADWindowSize = IO_SADWindowSize;          //Matched block size (>= 1)
-    sbm.numberOfDisparities = IO_numberOfDisparities;  //multiple de 16
-    sbm.preFilterCap = IO_preFilterCap;          //Truncation value for prefiltered pixels
-    sbm.minDisparity = IO_minDisparity;           //minimum disparity value
-    sbm.uniquenessRatio = IO_uniquenessRatio;       //usually between 5 & 15
-    sbm.speckleWindowSize = IO_speckleWindowSize;      //0-> disable | usually between 50 & 200
-    sbm.speckleRange = IO_speckleRange;           //Maximum disparity variation
-    sbm.disp12MaxDiff = IO_disp12MaxDif;         //Maximum allowed difference
-    sbm.fullDP = IO_fullDP;             //full-scale two-pass-dynamic (use a lot of bytes)
-    sbm.P1 = IO_P1;                   //Disparity smoothness
-    sbm.P2 = IO_P2;                   //same, larger => bigger smoothness
-    sbm(imgL, imgR, disp);
+    Ptr<StereoSGBM> sgbm = StereoSGBM::create(
+                    IO_minDisparity,
+                    IO_numberOfDisparities,
+                    IO_SADWindowSize,
+                    IO_P1,
+                    IO_P2,
+                    IO_disp12MaxDif,
+                    IO_preFilterCap,
+                    IO_uniquenessRatio,
+                    IO_speckleWindowSize,
+                    IO_speckleRange,
+                    StereoSGBM::MODE_SGBM
+                );
+    sgbm->compute(imgL, imgR, disp);
 
-    normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
+    //normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
 
-    return disp8;
+    return disp;
 }
 
 bool Disparity::loadFile(const QString &fileName) {

@@ -11,9 +11,6 @@ unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += opencv
 }
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
 TARGET = Projet_Technologique
 TEMPLATE = app
 

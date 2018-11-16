@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QPlainTextEdit>
 #include <QImage>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 #include "disparity.h"
 
 
@@ -39,18 +39,17 @@ private slots:
     void on_actionA_propos_triggered();
     void on_actionQuitter_triggered();
     void on_actionOuvrir_triggered();
-    void on_actionSobel_triggered();
-    void on_actionLaplace_triggered();
-    void on_actionSGBM_triggered();
-    void on_actionOrbs_triggered();
 
     bool loadFile(const QString &fileName);
     void split(cv::Mat img);
 
     void orbFeatures(cv::Mat img);
-    //cv::Mat disparityMapOrbs(cv::Mat img);
     void disparityMapOrbs(cv::Mat img);
-    void on_actionParam_tres_triggered();
+
+    void on_button_orbs_clicked();
+    void on_button_disparity_clicked();
+    void on_button_sobel_clicked();
+    void on_button_laplace_clicked();
 };
 
 #endif // MAINWINDOW_H
