@@ -83,7 +83,7 @@ void Disparity::on_loadImage_clicked(){
 
 Mat Disparity::disparityMapSGBM() {
     Mat imgR, imgL, imgR_0 = *img_right, imgL_0 = *img_left;
-    Mat disp, disp8;
+    Mat disp;
 
     cvtColor(imgL_0, imgL, CV_BGR2GRAY);
     cvtColor(imgR_0, imgR, CV_BGR2GRAY);
@@ -104,6 +104,7 @@ Mat Disparity::disparityMapSGBM() {
                     StereoSGBM::MODE_SGBM
                 );
     sgbm->compute(imgL, imgR, disp);
+    disp.convertTo(disp,CV_8U,1,0);
 
     //normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
 
@@ -136,13 +137,13 @@ bool Disparity::loadFile(const QString &fileName) {
 }
 
 void Disparity::split(Mat img){
-    int x =0;
+    int x = 0;
     int y = 0;
-    int height =(int)img.cols/2;
-    int width = (int) img.rows;
-    int xR = height;
-    * img_left =  Mat(img, Rect(x, y, height, width));
-    * img_right = Mat(img, Rect(xR, y, height, width));
+    int width=(int)img.cols/2 ;
+    int height= (int) img.rows;
+    int xR=width +img.cols%2;
+    *img_left = Mat(img, Rect(x,y,width, height));
+    *img_right = Mat(img,Rect(xR,y,width,height));
 }
 
 

@@ -43,7 +43,7 @@ private slots:
     bool loadFile(const QString &fileName);
     void split(cv::Mat img);
 
-    void orbFeatures(cv::Mat img);
+    cv::Mat orbFeatures(cv::Mat img);
     void disparityMapOrbs(cv::Mat img);
 
     void on_button_orbs_clicked();

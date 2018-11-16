@@ -201,7 +201,6 @@ Mat MainWindow::contourSobel(Mat img){
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
     Mat img_read=img.clone();
 
-    // APPLY THE GAUSSIAN BLUR TO AVOID BLUR
     GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT);
     cvtColor(img_read,gray_img,CV_BGR2GRAY); //CONVERT TO GRAY
 
@@ -217,37 +216,43 @@ Mat MainWindow::contourSobel(Mat img){
 }
 
 void MainWindow::split(Mat img){
-    int x =0;
+    int x = 0;
     int y = 0;
-    int height =(int)img.cols/2;
-    int width = (int) img.rows;
-    int xR = height;
-    *img_left = Mat(img, Rect(x,y,height, width));
-    *img_right = Mat(img,Rect(xR,y,height,width));
+    int width=(int)img.cols/2 ;
+    int height= (int) img.rows;
+    int xR=width +img.cols%2;
+    *img_left = Mat(img, Rect(x,y,width, height));
+    *img_right = Mat(img,Rect(xR,y,width,height));
 }
 
 
-void MainWindow::orbFeatures(Mat img){
-    int nfeatures = 500;
-    float scaleFactor =1.2f;
-    int nlevels = 8;
-    int edgeTreshold=31;
-    int firstLevel =0;
-    int WTA_K =2;
-    int scoreType = ORB::HARRIS_SCORE;
-    int patchSize = 31;
-    Mat grayImage;
-    cvtColor(img, grayImage,CV_BGR2GRAY);
-   // ORB detector = ORB(nfeatures,scaleFactor,nlevels,edgeTreshold,firstLevel,WTA_K,scoreType,patchSize);
-    vector<KeyPoint> keypoint;
-    //detector.detect(grayImage, keypoint);
-    Mat dst;
-    cv::drawKeypoints(img,keypoint,dst,-1,DrawMatchesFlags::DEFAULT);
-    imshow("OrbDetector",dst);
+Mat MainWindow::orbFeatures(Mat img){
+        Mat descriptorL, descriptorR, dst;
+        Ptr<ORB> detector = ORB::create();
+        vector<KeyPoint> keypointL, keypointR;
+        vector<DMatch> matches, best_matches;
+        Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+        detector->detect(*img_left,keypointL);
+        detector->detect(*img_right, keypointR);
+        detector->compute(*img_left,keypointL,descriptorL);
+        detector->compute(*img_right, keypointR,descriptorR);
+        matcher->match(descriptorL, descriptorR, matches);
+        float d_max = 0, d_min = 50;
+        for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
+            if(matches[i].distance<d_min)
+                d_min = matches[i].distance;
+            if(matches[i].distance > d_max)
+                d_max= matches[i].distance;
+        }
+        for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
+            if(matches[i].distance <= max(4.0*d_min,0.05))
+                best_matches.push_back(matches[i]);
+
+        }
+        cv::drawMatches(*img_left, keypointL, *img_right, keypointR,best_matches,dst, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+        return dst;
 }
 void MainWindow::disparityMapOrbs(Mat img){
-    //TODO
-    //cv::Mat res = new cv::Mat;
-    //return res;
-    return;
+    Mat orbImage = orbFeatures(img);
+    imshow("orb Features", orbImage);
 }
