@@ -35,20 +35,23 @@ public:
     unsigned int IO_P1;
     unsigned int IO_P2;
 
-    bool IO_fullDP;
+    int IO_full_scale;
 
 
 private slots:
-    void split(cv::Mat img);
-    cv::Mat disparityMapSGBM();
-
-    bool loadFile(const QString &fileName);
-
-    cv::Mat QImage2Mat(QImage const& src);
-    QImage Mat2QImage(cv::Mat const& src);
-
     void on_loadImage_clicked();
     void on_apply_clicked();
+    void on_reset_image_clicked();
+
+
+    void split(cv::Mat img);
+    cv::Mat disparity_map_SGBM();
+
+    bool load_stereo_image(const QString &fileName);
+
+    cv::Mat qImage_to_mat(QImage const& src);
+    QImage mat_to_qImage(cv::Mat const& src);
+
 
 private:
     cv::Mat *img_mat;

@@ -93,8 +93,6 @@ void Disparity::on_reset_image_clicked() {
  * @return disparity map
  */
 Mat Disparity::disparity_map_SGBM() {
-
-
     Mat img_right_gray, img_left_gray;
     Mat disp;
 

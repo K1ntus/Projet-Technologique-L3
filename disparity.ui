@@ -549,6 +549,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_10">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -562,6 +565,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_11">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -734,6 +740,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_P1">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -756,6 +765,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_P2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -1255,6 +1267,25 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="reset_image">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>490</y>
+     <width>91</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset</string>
    </property>
   </widget>
  </widget>
