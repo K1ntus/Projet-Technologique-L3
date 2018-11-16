@@ -3,8 +3,7 @@
 
 #include <QMainWindow>
 #include <QPlainTextEdit>
-#include <QImage>
-#include <opencv2/core.hpp>
+#include "imagecv.h"
 #include "disparity.h"
 
 
@@ -19,10 +18,6 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    cv::Mat QImage2Mat(QImage const& src);
-    QImage Mat2QImage(cv::Mat const& src);
-    cv::Mat contourSobel(cv::Mat img);
-    cv::Mat contourLaplace(cv::Mat img);
 
 private:
     Ui::MainWindow *ui;
@@ -41,10 +36,6 @@ private slots:
     void on_actionOuvrir_triggered();
 
     bool loadFile(const QString &fileName);
-    void split(cv::Mat img);
-
-    void orbFeatures(cv::Mat img);
-    void disparityMapOrbs(cv::Mat img);
 
     void on_button_orbs_clicked();
     void on_button_disparity_clicked();

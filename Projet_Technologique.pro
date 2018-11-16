@@ -29,10 +29,12 @@ CONFIG += opencv
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    disparity.cpp
+    disparity.cpp \
+    imagecv.cpp
 
 HEADERS  += mainwindow.h \
-    disparity.h
+    disparity.h \
+    imagecv.h
 
 FORMS    += mainwindow.ui \
     disparity.ui

@@ -3,12 +3,8 @@
 
 #include <QWidget>
 #include <QPlainTextEdit>
-#include <QImage>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/features2d.hpp>
+
+#include "imagecv.h"
 
 namespace Ui {
 class Disparity;
@@ -21,7 +17,7 @@ class Disparity : public QWidget
 public:
     explicit Disparity(QWidget *parent = 0);
     ~Disparity();
-
+    void setImg_mat(cv::Mat *img);
 
 
     unsigned int IO_SADWindowSize;
@@ -39,13 +35,10 @@ public:
 
 
 private slots:
-    void split(cv::Mat img);
+
     cv::Mat disparityMapSGBM();
 
     bool loadFile(const QString &fileName);
-
-    cv::Mat QImage2Mat(QImage const& src);
-    QImage Mat2QImage(cv::Mat const& src);
 
     void on_loadImage_clicked();
     void on_apply_clicked();

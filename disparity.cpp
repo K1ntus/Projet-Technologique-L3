@@ -4,6 +4,7 @@
 #include "disparity.h"
 #include "ui_disparity.h"
 
+
 using namespace cv;
 using namespace std;
 
@@ -37,6 +38,13 @@ Disparity::~Disparity(){
     delete ui;
 }
 
+void Disparity::setImg_mat(cv::Mat *img){
+    img_mat = img;
+    QImage img1 = imagecv::Mat2QImage(*img_mat);
+    QImage img2 =img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);//resize the qimage
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));//Display the original image
+    imagecv::split(*img_mat, img_left, img_right);
+}
 
 void Disparity::on_apply_clicked(){
 
@@ -61,8 +69,8 @@ void Disparity::on_apply_clicked(){
         this->IO_fullDP = false;
 
 
-
-    QImage img1 = Mat2QImage(disparityMapSGBM());
+    Mat sgbmImg = disparityMapSGBM();
+    QImage img1 = imagecv::Mat2QImage(sgbmImg);
     QImage img2 = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
 
@@ -129,62 +137,8 @@ bool Disparity::loadFile(const QString &fileName) {
 
     qDebug(" *** Image file correctly loaded *** ");
 
-    *img_mat = QImage2Mat(img1);         //Convert QImage to cv::mat
+    *img_mat = imagecv::QImage2Mat(img1);         //Convert QImage to cv::mat
 
-    split(*img_mat);
+    imagecv::split(*img_mat, img_left, img_right);
     return true;
-}
-
-void Disparity::split(Mat img){
-    int x =0;
-    int y = 0;
-    int height =(int)img.cols/2;
-    int width = (int) img.rows;
-    int xR = height;
-    * img_left =  Mat(img, Rect(x, y, height, width));
-    * img_right = Mat(img, Rect(xR, y, height, width));
-}
-
-
-/**
- * @brief Mat2QImage convert a cv::Mat image to a QImage using the RGB888 format
- * @param src the cv::Mat image to convert
- * @return QImage image
- */
-QImage Disparity::Mat2QImage(Mat const& src) {
-    Mat temp;  // make the same cv::Mat than src
-    if(src.channels()==1)
-        cvtColor(src,temp,CV_GRAY2BGR);
-    else if(src.channels()==3)
-        cvtColor(src,temp,CV_BGR2RGB);
-    else
-        cvtColor(src,temp,CV_BGRA2RGB);
-    QImage dest((const uchar *) temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
-    dest.bits();   // enforce deep copy, see documentation
-    dest.convertToFormat(QImage::Format_RGB888);
-     // of QImage::QImage ( const uchar * data, int width, int height, Format format )
-
-     return dest;
-}
-
-/**
- * @brief QImage2Mat convert a QImage to a cv::Mat image
- * @param src the QImage to convert
- * @return cv::Mat image
- */
-Mat Disparity::QImage2Mat(const QImage& src) {
-    QImage copy;
-    if(src.format() != QImage::Format_RGB888) {
-        //qDebug("[INFO] Wrong qimage format. Conversion to RGB888...");
-        copy = src.convertToFormat(QImage::Format_RGB888);
-        //qDebug("[INFO] Conversion Done");
-    } else {
-        copy = src;
-    }
-
-    Mat mat(copy.height(),copy.width(),CV_8UC3,(uchar*)copy.bits(),copy.bytesPerLine());
-    Mat result = Mat(mat.rows, mat.cols, CV_8UC3);
-    cvtColor(mat, result, CV_RGB2BGR);  //Convert the mat file to get a layout that qt understand (bgr is default)
-
-    return result;
 }
