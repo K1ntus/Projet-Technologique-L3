@@ -9,14 +9,32 @@
 using namespace std;
 using namespace cv;
 
-template<class T, class U>
-float imagecv::speedTest(T (*f),U args){
+QString imagecv::speed_test(function_call func, cv::Mat args){
     clock_t start, end;
     start = clock();
-    ((*f)(args));
+    func(args);
     end = clock();
+    QString str = "result of speed test: " + QString::number(((float)(end-start)/CLOCKS_PER_SEC));
+    return str;
+}
 
-    return ((float)(end-start)/CLOCKS_PER_SEC);
+QString imagecv::speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg2, cv::Mat* arg3){
+    clock_t start, end;
+    start = clock();
+    func(args, arg2, arg3);
+    end = clock();
+    QString str = "result of speed test: " + QString::number(((float)(end-start)/CLOCKS_PER_SEC));
+    return str;
+}
+
+bool imagecv::load_file(const QString &fileName , Mat *img_mat) {
+
+    QImage myImage(fileName, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
+    qDebug(" *** Image file correctly loaded *** ");
+
+    *img_mat = qimage_to_mat(myImage);         //Convert QImage to cv::mat
+
+    return true;
 }
 
 /**

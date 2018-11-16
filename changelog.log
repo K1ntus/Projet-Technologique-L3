@@ -17,4 +17,14 @@ Vendredi 9 Novembre:
         Difficultées rencontrées:
           + Récupération des données via le slider (bug graphique sur ma version de Debian, les barres horizontales de mes sliders sont invisibles)
           + Interaction MainWindow <-> Disparity
-          
+Vendredi 16 Novembre:
+    * Meryl:
+        * Implémentation d'une fonction testant l'efficacité d'une fonction
+    	    -> Utilisation de template et pointeur de fonction
+	Difficultées rencontrées:
+	    + Les fonctions n'étant pas static erreur => impossible de passer les fonctions en en paramètre
+	Solutions apportées:
+	    + Réorganisation du code :
+		-> Les fonctions de traitements d'image ne font plus parties des classes MainWindow et Disparity => factorisation du code
+	    
+  

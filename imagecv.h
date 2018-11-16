@@ -5,7 +5,8 @@
 #include <QImage>
 
 #include <opencv2/core.hpp>
-#include <QImage>
+#include <QtGui>
+#include <QPixmap>
 #include <QSlider>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
@@ -21,8 +22,13 @@ using namespace std;
 
 namespace imagecv {
 
-    template<class T, class U>
-    float speedTest(T (*f),U args);
+    bool load_file(const QString &fileName, cv::Mat *img_mat);
+
+    typedef cv::Mat (*function_call)(cv::Mat args);
+    QString speed_test(function_call func, cv::Mat args);
+
+    typedef cv::Mat (*function_call_3_arg)(cv::Mat args, cv::Mat* arg2, cv::Mat* arg3);
+    QString speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg2, cv::Mat* arg3);
 
     /**
      * @brief Convert a cv::Mat image to a QImage using the RGB888 format

@@ -35,7 +35,7 @@ private slots:
     void on_actionQuitter_triggered();
     void on_actionOuvrir_triggered();
 
-    bool load_file(const QString &fileName);
+    bool load_image();
 
     void on_button_orbs_clicked();
     void on_button_disparity_clicked();
