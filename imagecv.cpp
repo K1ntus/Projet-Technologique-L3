@@ -28,11 +28,10 @@ QString imagecv::speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg
 }
 
 bool imagecv::load_file(const QString &fileName , Mat *img_mat) {
-
-    QImage myImage(fileName, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
+    QImage my_image(fileName, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
     qDebug(" *** Image file correctly loaded *** ");
 
-    *img_mat = qimage_to_mat(myImage);         //Convert QImage to cv::mat
+    *img_mat = qimage_to_mat(my_image);         //Convert QImage to cv::mat
 
     return true;
 }
@@ -79,7 +78,11 @@ Mat imagecv::qimage_to_mat(const QImage& src) {
 
     return result;
 }
-
+/**
+ * @brief Convert an image following the laplace algorithm
+ * @param Image to convert
+ * @return The parameters converted with laplace algorithm
+ */
 cv::Mat imagecv::contour_laplace(Mat img){
     Mat gray_img, result, final;
     Mat img_read = img.clone();
@@ -92,7 +95,11 @@ cv::Mat imagecv::contour_laplace(Mat img){
     return final;
 }
 
-
+/**
+ * @brief Convert an image following the sobel algorithm
+ * @param Image to convert
+ * @return The parameters converted with sobel algorithm
+ */
 cv::Mat imagecv::contour_sobel(Mat img){
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
     Mat img_read=img.clone();
@@ -127,7 +134,13 @@ void imagecv::split(Mat img, Mat *img_left, Mat *img_right){
     *img_right = Mat(img,Rect(x_right,y,width,height));
 }
 
-
+/**
+ * @brief Display the 'similarities' using a matcher from 2 stereo image
+ * @param img deprecated
+ * @param img_left the left point of view of a scene
+ * @param img_right the right point of view of a scene
+ * @return The image with the similarities displayed
+ */
 Mat imagecv::orb_features(Mat img, Mat *img_left, Mat *img_right ){
         Mat descriptorL, descriptorR, dst;
         Ptr<ORB> detector = ORB::create();

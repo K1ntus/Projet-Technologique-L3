@@ -39,13 +39,6 @@ Disparity::~Disparity(){
     delete ui;
 }
 
-void Disparity::set_img_mat(cv::Mat *img){
-    img_mat = img;
-    QImage img1 = imagecv::mat_to_qimage(*img_mat);
-    QImage img2 =img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);//resize the qimage
-    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));//Display the original image
-    imagecv::split(*img_mat, img_left, img_right);
-}
 
 /**
  * @brief Apply the disparity map parameters when the button got pressed and display it to the left
@@ -64,7 +57,7 @@ void Disparity::on_apply_clicked(){
     this->IO_P1 = 8* img_right->channels() * IO_SADWindowSize * IO_SADWindowSize;
     this->IO_P2 = 32* img_right->channels() * IO_SADWindowSize * IO_SADWindowSize;
 
-    if(ui->checkbox_fullScale->isChecked())//Consume a lot
+    if(ui->checkbox_fullScale->isChecked()) //Consume a lot of process time
         this->IO_full_scale = StereoSGBM::MODE_HH;
     else
         this->IO_full_scale = false;
@@ -94,6 +87,9 @@ void Disparity::on_loadImage_clicked(){
     }
 }
 
+/**
+ * @brief Reset the sgbm parameters to default values
+ */
 void Disparity::on_reset_image_clicked() {
     ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(*img_mat)));
 
@@ -107,9 +103,12 @@ void Disparity::on_reset_image_clicked() {
     ui->slider_disp12MaxDiff->setSliderPosition(-1);
 }
 
+/**
+ * @brief filter the disparity map
+ */
 void Disparity::on_post_filtering_clicked(){
-    disparity_post_filtering();
-
+    //disparity_post_filtering();
+    qDebug("Not yet implemented");
 }
 
 /**
@@ -144,7 +143,10 @@ Mat Disparity::disparity_map_SGBM() {
     return disp;
 }
 
-Mat Disparity::disparity_post_filtering(){
+//TODO
+Mat Disparity::disparity_post_filtering() {
+    Mat * res = new Mat;
+    /*
     Mat left_disp = disparity_map_SGBM();
     int lambda = 80000;
     double sigma = 1.2;
@@ -157,6 +159,9 @@ Mat Disparity::disparity_post_filtering(){
     //wls_filter = DisparityFilter::filter(left_disp, *img_left, filtered, *img_left);
 
     imshow("confiance map Features", filtered);
+    */
+
+    return *res;
 }
 
 /**
@@ -190,3 +195,14 @@ bool Disparity::load_stereo_image(const QString &file_name) {
 }
 
 
+/**
+ * @brief Load an cv::mat img, display it in the right panel and finally split it then save them in two pointers
+ * @param img
+ */
+void Disparity::set_img_mat(cv::Mat *img){
+    img_mat = img;
+    QImage img1 = imagecv::mat_to_qimage(*img_mat);
+    QImage img2 =img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);//resize the qimage
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));//Display the original image
+    imagecv::split(*img_mat, img_left, img_right);
+}
