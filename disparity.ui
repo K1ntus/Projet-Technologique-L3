@@ -440,6 +440,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Matching block size</string>
    </property>
@@ -452,6 +455,9 @@
      <width>281</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Number of disparities</string>
@@ -466,6 +472,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Truncation for prefiltered pixels</string>
    </property>
@@ -478,6 +487,9 @@
      <width>281</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Minimal Disparity</string>
@@ -492,6 +504,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Uniqueness Ratio</string>
    </property>
@@ -504,6 +519,9 @@
      <width>281</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Speckle Window Size</string>
@@ -518,6 +536,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Speckle Range</string>
    </property>
@@ -531,6 +552,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Maximum allowed difference</string>
    </property>
@@ -543,6 +567,9 @@
      <width>281</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Full-scale (/!\ consumption)</string>
@@ -560,6 +587,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="readOnly">
+    <bool>true</bool>
+   </property>
    <property name="plainText">
     <string>Disparity smoothness</string>
    </property>
@@ -575,6 +605,9 @@
      <width>281</width>
      <height>51</height>
     </rect>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Smoothness
