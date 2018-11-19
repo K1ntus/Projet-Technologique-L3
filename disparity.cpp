@@ -18,8 +18,8 @@ Disparity::Disparity(QWidget *parent) :
     IO_SADWindowSize = 9;
     IO_numberOfDisparities = 144;
     IO_preFilterCap = 50;
-    IO_minDisparity = 0;
-    IO_uniquenessRatio = 10;
+    IO_minDisparity = 5;
+    IO_uniquenessRatio = 5;
     IO_speckleWindowSize = 0;
     IO_speckleRange = 8;
     IO_disp12MaxDif = -1;
@@ -100,15 +100,14 @@ void Disparity::on_reset_image_clicked() {
     ui->slider_windowSize->setSliderPosition(9);
     ui->slider_numberOfDisparities->setSliderPosition(9);
     ui->slider_preFilterCap->setSliderPosition(50);
-    ui->slider_minDisparity->setSliderPosition(0);
-    ui->slider_uniquenessRatio->setSliderPosition(10);
+    ui->slider_minDisparity->setSliderPosition(5);
+    ui->slider_uniquenessRatio->setSliderPosition(5);
     ui->slider_speckleWindowSize->setSliderPosition(0);
     ui->slider_speckleRange->setSliderPosition(8);
     ui->slider_disp12MaxDiff->setSliderPosition(-1);
 }
 
-void Disparity::on_post_filtering_clicked()
-{
+void Disparity::on_post_filtering_clicked(){
     disparity_post_filtering();
 
 }
