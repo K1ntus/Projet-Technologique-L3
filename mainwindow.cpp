@@ -1,5 +1,5 @@
 #include <unistd.h>
-
+#include <opencv2/ximgproc.hpp>
 #include <QtGui>
 #include <QPixmap>
 #include "mainwindow.h"
@@ -51,7 +51,7 @@ void MainWindow::on_actionOuvrir_triggered() {
             load_file(fileName);
 }
 
-void MainWindow::on_button_orbs_clicked(){
+void MainWindow::on_button_stereoBM_clicked(){
     if(img_mat->empty()){
         qDebug("[INFO] Load a stereo file before");
         QString fileName = QFileDialog::getOpenFileName(this, tr("Sélectionnez une image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
@@ -64,8 +64,10 @@ void MainWindow::on_button_orbs_clicked(){
         return;
     }
     split(*img_mat);
-    Mat orb_Image = orb_features(*img_mat);
-    imshow("orb Features", orb_Image);
+    Mat disparity = sbm();
+    imshow("Disparity BM", disparity);
+
+
 
 }
 
@@ -226,29 +228,15 @@ void MainWindow::split(Mat img){
 }
 
 
-Mat MainWindow::orb_features(Mat img){
-        Mat descriptorL, descriptorR, dst;
-        Ptr<ORB> detector = ORB::create();
-        vector<KeyPoint> keypointL, keypointR;
-        vector<DMatch> matches, best_matches;
-        Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-        detector->detect(*img_left,keypointL);      // detect the keypoints in the left image
-        detector->detect(*img_right, keypointR);
-        detector->compute(*img_left,keypointL,descriptorL);
-        detector->compute(*img_right, keypointR,descriptorR); // compute keypoints in the descriptor
-        matcher->match(descriptorL, descriptorR, matches);      //find matches
-        float d_max = 0, d_min = 50;
-        for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
-            if(matches[i].distance<d_min)
-                d_min = matches[i].distance;
-            if(matches[i].distance > d_max)
-                d_max= matches[i].distance;
-        }
-        for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
-            if(matches[i].distance <= 4.0*d_min)
-                best_matches.push_back(matches[i]);
-
-        }
-        cv::drawMatches(*img_left, keypointL, *img_right, keypointR,best_matches,dst, DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-        return dst;
+Mat MainWindow::sbm(){
+    Mat dst, imgL, imgR;
+    cvtColor(*img_left, imgL,CV_BGR2GRAY);
+    cvtColor(*img_right,imgR,CV_BGR2GRAY);
+    int window_size = 21;
+    int numDisparity = 32; // must be a 16's multiple
+    Ptr<StereoBM> matcher= StereoBM::create(numDisparity,window_size);
+    matcher->compute(imgL,imgR,dst);
+     dst.convertTo(dst,CV_8U,1,0);
+     return dst;
 }
+

@@ -59,6 +59,8 @@ private:
     cv::Mat *img_left;
     cv::Mat *img_right;
     Ui::Disparity *ui;
+    int width ;
+    int height;
 };
 
 #endif // DISPARITY_H

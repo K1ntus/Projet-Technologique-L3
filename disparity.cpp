@@ -1,11 +1,13 @@
 #include <QtGui>
 #include <QPixmap>
 
+#include <opencv2/ximgproc/disparity_filter.hpp>
 #include "disparity.h"
 #include "ui_disparity.h"
 
 using namespace cv;
 using namespace std;
+
 
 Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
@@ -27,6 +29,8 @@ Disparity::Disparity(QWidget *parent) :
 
     IO_full_scale = false;
 
+    width = ui->image_loaded->width();
+    height= ui->image_loaded->height();
     img_mat = new Mat;
 
     img_left = new Mat;
@@ -65,8 +69,9 @@ void Disparity::on_apply_clicked(){
     }
 
     QImage img1 = mat_to_qImage(disparity_map_SGBM());  //Generate the disparity map
-    QImage img2 = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
+    ui->image_loaded->adjustSize();
 
 }
 
@@ -85,7 +90,9 @@ void Disparity::on_loadImage_clicked(){
 }
 
 void Disparity::on_reset_image_clicked() {
+    ui->image_loaded->setMaximumSize(width, height);
     ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qImage(*img_mat)));
+    ui->image_loaded->adjustSize();
 }
 
 /**
@@ -96,7 +103,7 @@ Mat Disparity::disparity_map_SGBM() {
 
 
     Mat img_right_gray, img_left_gray;
-    Mat disp;
+    Mat disp, disp8;
 
     //Convert the two stereo image in gray
     cvtColor(*img_left, img_left_gray, CV_BGR2GRAY);
@@ -117,8 +124,8 @@ Mat Disparity::disparity_map_SGBM() {
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
     disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
-
-    return disp;
+    disp8= cv::Scalar::all(255)-disp;
+    return disp8;
 }
 
 /**
@@ -127,6 +134,7 @@ Mat Disparity::disparity_map_SGBM() {
  * @return true if an image has been loaded, else false
  */
 bool Disparity::load_stereo_image(const QString &file_name) {
+
     QFile file(file_name);
 
     qDebug(" *** Loading file *** ");
@@ -137,10 +145,13 @@ bool Disparity::load_stereo_image(const QString &file_name) {
                              .arg(QDir::toNativeSeparators(file_name), file.errorString()));
         return false;
     }
-
+    ui->image_loaded->setMaximumSize(width*2, height*2);
     QImage img1(file_name, "PNM"); //load the file in  a QImage variable (pnm is a format like ttif, ...)
-    QImage img_fit = img1.scaled(ui->image_loaded->width(),ui->image_loaded->height(), Qt::KeepAspectRatio);   //resize the qimage
+    std::cout<< ui->image_loaded->width()<<std::endl;
+    std::cout<< width<<std::endl;
+    QImage img_fit = img1.scaled(width,height, Qt::KeepAspectRatio);   //resize the qimage
     ui->image_loaded->setPixmap(QPixmap::fromImage(img_fit));  //Display the original image
+    ui->image_loaded->adjustSize();
 
 
     qDebug(" *** Image file correctly loaded *** ");
@@ -210,5 +221,4 @@ Mat Disparity::qImage_to_mat(const QImage& src) {
 
     return result;
 }
-
 

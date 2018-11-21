@@ -23,6 +23,7 @@ public:
     QImage mat_2_qimage(cv::Mat const& src);
     cv::Mat contour_sobel(cv::Mat img);
     cv::Mat contour_laplace(cv::Mat img);
+    cv::Mat sbm();
 
 private:
     Ui::MainWindow *ui;
@@ -43,9 +44,7 @@ private slots:
     bool load_file(const QString &fileName);
     void split(cv::Mat img);
 
-    cv::Mat orb_features(cv::Mat img);
-
-    void on_button_orbs_clicked();
+    void on_button_stereoBM_clicked();
     void on_button_disparity_clicked();
     void on_button_sobel_clicked();
     void on_button_laplace_clicked();

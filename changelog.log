@@ -18,3 +18,10 @@ Vendredi 9 Novembre:
           + Récupération des données via le slider (bug graphique sur ma version de Debian, les barres horizontales de mes sliders sont invisibles)
           + Interaction MainWindow <-> Disparity
           
+   *Virginie: 
+	* Modification de split : si une image est impaire elle peut désormais être coupée en 2 	sans perte de données.
+	* Suppression de Orb qui était inutile 
+	   -> Remplacée par SBM qui permet de créer une carte de disparité
+	* Inversion des couleurs de la carte de disparité 
+	   -> Ce qui se trouve au premier plan est blanc
+	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit 			trop étirée.  
