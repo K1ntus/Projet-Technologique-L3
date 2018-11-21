@@ -125,7 +125,7 @@ void Disparity::on_post_filtering_clicked(){
 Mat Disparity::disparity_map_SGBM() {
 
     Mat img_right_gray, img_left_gray;
-    Mat disp, disp8;
+    Mat disp;
 
     //Convert the two stereo image in gray
     cvtColor(*img_left, img_left_gray, CV_BGR2GRAY);
@@ -146,8 +146,8 @@ Mat Disparity::disparity_map_SGBM() {
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
     disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
-    disp8= cv::Scalar::all(255)-disp;
-    return disp8;
+    disp= cv::Scalar::all(255)-disp;
+    return disp;
 }
 
 //TODO

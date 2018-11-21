@@ -34,5 +34,5 @@ Vendredi 16 Novembre:
 	   -> Remplacée par SBM qui permet de créer une carte de disparité
 	* Inversion des couleurs de la carte de disparité dans sgbm()
 	   -> Ce qui se trouve au premier plan est coloré en blanc
-	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit 			trop étirée. 
+	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit 			trop "étirée". 
 
