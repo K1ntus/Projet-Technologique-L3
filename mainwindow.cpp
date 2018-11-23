@@ -48,6 +48,24 @@ void MainWindow::on_actionOuvrir_triggered() {
     load_image();
 }
 
+
+void MainWindow::on_pushButton_clicked(){
+
+    vector<cv::String> fn;
+    vector<Mat> images;
+
+    QString filePath=QFileDialog::getExistingDirectory(this, "Select the ressources folder");
+    glob(filePath.toStdString(), fn, false);
+    size_t count = fn.size();
+    qDebug("string" + count);
+
+    for(size_t i = 0; i < count; i++){
+        images.push_back(imread(fn[i]));
+    }
+
+    //load_all_images_from_folder();
+}
+
 void MainWindow::on_button_stereoBM_clicked(){
     if(img_mat->empty()){
         qDebug("[INFO] Load a stereo file before");
@@ -138,4 +156,3 @@ bool MainWindow::load_image(){
     }
     return false;
 }
-

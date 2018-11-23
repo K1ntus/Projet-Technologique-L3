@@ -153,3 +153,5 @@ Mat imagecv::sbm(Mat img, Mat *img_left, Mat *img_right){
      return dst;
 }
 
+void imagecv::load_all_images_from_folder(){
+}

@@ -60,6 +60,8 @@ namespace imagecv {
 
     cv::Mat sbm(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
 
+    void load_all_images_from_folder();
+
 }
 
 #endif // IMAGECV_H
