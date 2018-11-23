@@ -57,13 +57,12 @@ void MainWindow::on_pushButton_clicked(){
     QString filePath=QFileDialog::getExistingDirectory(this, "Select the ressources folder");
     glob(filePath.toStdString(), fn, false);
     size_t count = fn.size();
-    qDebug("string" + count);
 
     for(size_t i = 0; i < count; i++){
         images.push_back(imread(fn[i]));
     }
 
-    //load_all_images_from_folder();
+    calibration(images);
 }
 
 void MainWindow::on_button_stereoBM_clicked(){
