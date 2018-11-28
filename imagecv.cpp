@@ -154,50 +154,77 @@ Mat imagecv::sbm(Mat img, Mat *img_left, Mat *img_right){
 }
 
 void imagecv::calibration(vector<Mat> imgs){
+
     qDebug("1");
-    size_t count = imgs.size();
-    int nb_lines = 7;
-    int nb_columns = 10;
+    size_t nb_image = imgs.size();
+    int nb_lines = 6;
+    int nb_columns = 9;
     int nb_squares = nb_lines * nb_columns;
     Size board_size = Size(nb_lines, nb_columns);
     int squareSize = 2;
+
+    // 3D coordinates of chessboard points
+    vector<vector<Point3f>> object_points;
+    vector<vector<Point2f>> image_points;
+    vector<Point2f> corners;
+    vector<Point3f> obj;
+    int nb_success = 0;
+
+    Mat image;
+    Mat gray_image;
+
+
     qDebug("2");
-
-
-    vector<Point2f> imagePoints;
-    for(int i = 0; i < count; i++){
-
-        bool found = findChessboardCorners(imgs[i], board_size, imagePoints);
-        if(found == 0)
-            break;
-    }
-
+    for(int i = 0; i < nb_squares; i++)
+        obj.push_back(Point3f(i/nb_columns, i%nb_lines, 0.0f));
 
     qDebug("3");
-    // 3D coordinates of chessboard points
-    vector<Point3f> objectPoints;
-    for(int i=0; i<nb_squares; ++i) {
-        objectPoints.push_back(Point3f(i/nb_lines, i%nb_lines, 0.0f));
+    int im = 0;
+    while(nb_success<nb_image){
+        image = imgs[im%nb_image];
+        cvtColor(image, gray_image, CV_BGR2GRAY);
+        bool found = findChessboardCorners(image, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+
+        if(found){
+            cornerSubPix(gray_image, corners, Size(11,11), Size(-1,-1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+            drawChessboardCorners(gray_image, board_size, corners, found);
+        }
+        imshow("win1", image);
+        imshow("win2", gray_image);
+
+        if(found!=0){
+            image_points.push_back(corners);
+            object_points.push_back(obj);
+
+            qDebug("Snap stored!");
+            nb_success++;
+            if(nb_success >= nb_image)
+                break;
+        }
+
+        im++;
     }
+
     qDebug("4");
-    // One vector of chessboard points for each chessboard image
-    vector<vector<Point2f>> arrayImagePoints;
-    vector<vector<Point3f>> arrayObjectPoints;
-    for(int n=0; n<count; ++n){
 
-        arrayObjectPoints.push_back(objectPoints);
-        arrayImagePoints.push_back(imagePoints);
-    }
-    qDebug("5");
-
-    Mat distCoeffs = Mat::zeros(8, 1, CV_64F);
+    Mat distCoeffs;
     Mat cameraMatrix = Mat(3, 3, CV_32FC1);
     cameraMatrix.ptr<float>(0)[0] = 1;
     cameraMatrix.ptr<float>(1)[1] = 1;
 
     vector<Mat> rvecs, tvecs;
+
+    qDebug("5");
+
+    calibrateCamera(object_points, image_points, image.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
+
     qDebug("6");
-    //double res = calibrateCamera(arrayObjectPoints, arrayImagePoints, count, cameraMatrix, distCoeffs,rvecs, tvecs);
-    calibrateCamera(arrayObjectPoints, arrayImagePoints, imgs[0].size(), cameraMatrix, distCoeffs, rvecs, tvecs);
-    imshow("a", rvecs[0]);
+
+    Mat image_undistorted;
+    undistort(image, image_undistorted, cameraMatrix, distCoeffs);
+
+    qDebug("7");
+    imshow("win3", image);
+    imshow("win4", image_undistorted);
+
 }
