@@ -153,9 +153,7 @@ Mat imagecv::sbm(Mat img, Mat *img_left, Mat *img_right){
      return dst;
 }
 
-void imagecv::calibration(vector<Mat> imgs){
-
-    qDebug("1");
+Mat* imagecv::calibration(vector<Mat> imgs){
     size_t nb_image = imgs.size();
     int nb_lines = 6;
     int nb_columns = 9;
@@ -173,12 +171,9 @@ void imagecv::calibration(vector<Mat> imgs){
     Mat image;
     Mat gray_image;
 
-
-    qDebug("2");
     for(int i = 0; i < nb_squares; i++)
         obj.push_back(Point3f(i/nb_columns, i%nb_lines, 0.0f));
 
-    qDebug("3");
     int im = 0;
     while(nb_success<nb_image){
         image = imgs[im%nb_image];
@@ -189,14 +184,11 @@ void imagecv::calibration(vector<Mat> imgs){
             cornerSubPix(gray_image, corners, Size(11,11), Size(-1,-1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
             drawChessboardCorners(gray_image, board_size, corners, found);
         }
-        imshow("win1", image);
-        imshow("win2", gray_image);
 
         if(found!=0){
             image_points.push_back(corners);
             object_points.push_back(obj);
 
-            qDebug("Snap stored!");
             nb_success++;
             if(nb_success >= nb_image)
                 break;
@@ -205,8 +197,6 @@ void imagecv::calibration(vector<Mat> imgs){
         im++;
     }
 
-    qDebug("4");
-
     Mat distCoeffs;
     Mat cameraMatrix = Mat(3, 3, CV_32FC1);
     cameraMatrix.ptr<float>(0)[0] = 1;
@@ -214,17 +204,16 @@ void imagecv::calibration(vector<Mat> imgs){
 
     vector<Mat> rvecs, tvecs;
 
-    qDebug("5");
-
     calibrateCamera(object_points, image_points, image.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
 
-    qDebug("6");
 
     Mat image_undistorted;
     undistort(image, image_undistorted, cameraMatrix, distCoeffs);
 
-    qDebug("7");
-    imshow("win3", image);
-    imshow("win4", image_undistorted);
+    imshow("calibration points visible", image);
+    imshow("undirstorted", image_undistorted);
 
+    Mat res[2] = {distCoeffs, cameraMatrix};
+
+    return res;
 }
