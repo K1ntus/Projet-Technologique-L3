@@ -60,8 +60,6 @@ namespace imagecv {
 
     cv::Mat sbm(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
 
-    cv::Mat* calibration(vector<cv::Mat> imgs);
-
 }
 
 #endif // IMAGECV_H
