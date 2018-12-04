@@ -1,10 +1,14 @@
-#include "intr_calibration.h"
+#include "calibration_intr.h"
+#include "ui_calibration_intr.h"
 
 using namespace std;
 using namespace cv;
-
-Intr_Calibration::Intr_Calibration(vector<Mat> imgs)
+using namespace imagecv;
+Calibration_intr::Calibration_intr(std::vector<cv::Mat> imgs, QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::Calibration_intr)
 {
+    ui->setupUi(this);
     size_t nb_image = imgs.size();
     int nb_lines = 6;
     int nb_columns = 9;
@@ -56,25 +60,50 @@ Intr_Calibration::Intr_Calibration(vector<Mat> imgs)
     vector<Mat> rvecs, tvecs;
 
     calibrateCamera(object_points, image_points, image.size(), *camera_matrix, *dist_coeffs, rvecs, tvecs);
+    img = new Mat(image);
+
+    int h = ui->Displayer->height();
+    int w = ui->Displayer->width();
+    QImage qimg = mat_to_qimage(gray_image);
+    ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));
+    ui->Displayer->adjustSize();
+
 }
 
-Mat* Intr_Calibration::get_camera_matrix(){
+Calibration_intr::~Calibration_intr()
+{
+    delete ui;
+}
+
+Mat* Calibration_intr::get_camera_matrix(){
     return camera_matrix;
 }
 
-Mat* Intr_Calibration::get_dist_coeffs(){
+Mat* Calibration_intr::get_dist_coeffs(){
     return dist_coeffs;
 }
 
-vector<Mat> Intr_Calibration::get_rvecs(){
+vector<Mat> Calibration_intr::get_rvecs(){
     return rvecs;
 }
 
-vector<Mat> Intr_Calibration::get_tvecs(){
+vector<Mat> Calibration_intr::get_tvecs(){
     return tvecs;
 }
 
-void Intr_Calibration::show_chessboard_corners(Mat *image){
+void Calibration_intr::on_undistortedButton_clicked()
+{
+    Mat image_undistorted;
+    undistort(*img, image_undistorted, *camera_matrix, *dist_coeffs);
+    int h = ui->Displayer->height();
+    int w = ui->Displayer->width();
+    QImage qimg = mat_to_qimage(image_undistorted);
+    ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));
+    ui->Displayer->adjustSize();
+}
+
+void Calibration_intr::on_chesscorners_clicked()
+{
     Mat gray_image;
     int nb_lines = 6;
     int nb_columns = 9;
@@ -82,21 +111,18 @@ void Intr_Calibration::show_chessboard_corners(Mat *image){
     Size board_size = Size(nb_lines, nb_columns);
     vector<Point2f> corners;
 
-    cvtColor(*image, gray_image, CV_BGR2GRAY);
-    bool found = findChessboardCorners(*image, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+    cvtColor(*img, gray_image, CV_BGR2GRAY);
+    bool found = findChessboardCorners(*img, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
     if(found){
         cornerSubPix(gray_image, corners, Size(11,11), Size(-1,-1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
         drawChessboardCorners(gray_image, board_size, corners, found);
     }
 
-    imshow("calibration points visible", gray_image);
-}
+    int h = ui->Displayer->height();
+    int w = ui->Displayer->width();
+    QImage qimg = mat_to_qimage(gray_image);
 
-void Intr_Calibration::show_undistorted_image(cv::Mat* image){
-
-    Mat image_undistorted;
-    undistort(*image, image_undistorted, *camera_matrix, *dist_coeffs);
-
-    imshow("undirstorted", image_undistorted);
+    ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));
+    ui->Displayer->adjustSize();
 }

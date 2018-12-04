@@ -35,4 +35,11 @@ Vendredi 16 Novembre:
 	* Inversion des couleurs de la carte de disparité dans sgbm()
 	   -> Ce qui se trouve au premier plan est coloré en blanc
 	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit 			trop "étirée". 
-
+Mardi 4 Décemnbre:
+    * Meryl:
+        * Implémentaion d'une fonction de calibration de caméra: permet de corriger les deformations dues aux défauts de fabrications.
+        Difficultées rencontrées: 
+            - L'algorithme ne fonctionne mieux lorsque l'on spécifie le nombre de case intérieur du damier.
+            - Problème lors du renvoie des résultats.
+	Solutions apportées:
+	   + Implémentations d'une nouvelle fenêtre permettant d'afficher les coins repérés par l'algorithme.

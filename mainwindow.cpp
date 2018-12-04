@@ -62,10 +62,8 @@ void MainWindow::on_pushButton_clicked(){
         images.push_back(imread(fn[i]));
     }
 
-    //calibration(images);
-    Intr_Calibration* calib = new Intr_Calibration(images);
-    calib->show_chessboard_corners(&images[0]);
-    calib->show_undistorted_image(&images[0]);
+    Calibration_intr* calib = new Calibration_intr(images);
+    calib->show();
 }
 
 void MainWindow::on_button_stereoBM_clicked(){

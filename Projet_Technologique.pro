@@ -30,14 +30,17 @@ CONFIG += opencv
 SOURCES += main.cpp\
         mainwindow.cpp \
     disparity.cpp \
-    imagecv.cpp
+    imagecv.cpp \
+    calibration_intr.cpp
 
 HEADERS  += mainwindow.h \
     disparity.h \
-    imagecv.h
+    imagecv.h \
+    calibration_intr.h
 
 FORMS    += mainwindow.ui \
-    disparity.ui
+    disparity.ui \
+    calibration_intr.ui
 
 RESOURCES += \
     image.qrc
