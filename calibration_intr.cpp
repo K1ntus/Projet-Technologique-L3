@@ -27,13 +27,13 @@ Calibration_intr::Calibration_intr(std::vector<cv::Mat> imgs, QWidget *parent) :
     Mat gray_image;
 
     for(int i = 0; i < nb_squares; i++)
-        obj.push_back(Point3f(i/nb_columns, i%nb_lines, 0.0f));
+        obj.push_back(Point3f(i/nb_lines, i%nb_lines, 0.0f));
 
     int im = 0;
     while(nb_success<nb_image){
         image = imgs[im%nb_image];
         cvtColor(image, gray_image, CV_BGR2GRAY);
-        bool found = findChessboardCorners(image, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+        bool found = findChessboardCorners(image, board_size, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
 
         if(found){
             cornerSubPix(gray_image, corners, Size(11,11), Size(-1,-1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
