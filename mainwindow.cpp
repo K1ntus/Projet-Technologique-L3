@@ -66,30 +66,6 @@ void MainWindow::on_pushButton_clicked(){
     calib->show();
 }
 
-void MainWindow::on_button_stereoBM_clicked(){
-    if(img_mat->empty()){
-        qDebug("[INFO] Load a stereo file before");
-        if(!load_image()){
-            qDebug("[ERROR] No images loaded");
-            return;
-        }
-    }
-
-    if(img_mat->empty()){
-        qDebug("[ERROR] No images loaded");
-        return;
-    }
-    split(*img_mat, img_left, img_right);
-    Mat disparity = sbm(*img_mat, img_left, img_right);
-
-    QString str = speed_test((function_call_3_arg) sbm,*img_mat, img_left, img_right);
-    statusBar()->showMessage(str);
-    imshow("Disparity BM", disparity);
-
-
-
-}
-
 void MainWindow::on_button_disparity_clicked(){
     parametersWindow->set_img_mat(img_mat);
     parametersWindow->show();

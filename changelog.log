@@ -29,12 +29,12 @@ Vendredi 16 Novembre:
 		-> Les fonctions de traitements d'image ne font plus parties des classes MainWindow et Disparity => factorisation du code
 	    
     *Virginie: 
-	* Modification de split : si une image est impaire elle peut désormais être coupée en 2 	  sans perte de données.
+	* Modification de split : si une image est impaire elle peut désormais être coupée en 2 sans perte de données.
 	* Suppression de Orb :  
 	   -> Remplacée par SBM qui permet de créer une carte de disparité
 	* Inversion des couleurs de la carte de disparité dans sgbm()
 	   -> Ce qui se trouve au premier plan est coloré en blanc
-	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit 			trop "étirée". 
+	* Ajustement de la taille de image_loaded pour éviter que la carte de disparité soit trop "étirée". 
 Mardi 4 Décemnbre:
     * Meryl:
         * Implémentaion d'une fonction de calibration de caméra: permet de corriger les deformations dues aux défauts de fabrications.
@@ -43,3 +43,10 @@ Mardi 4 Décemnbre:
             - Problème lors du renvoie des résultats.
 	Solutions apportées:
 	   + Implémentations d'une nouvelle fenêtre permettant d'afficher les coins repérés par l'algorithme.
+
+Vendredi 7 décembre : 
+    *Virginie : 
+	*Ajout de la méthode sbm dans la classe Disparity.
+	* Modification des paramètres de sbm en temps réel.
+	* Création d'une checkBox "sbm"
+	

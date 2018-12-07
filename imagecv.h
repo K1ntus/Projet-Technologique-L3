@@ -57,9 +57,6 @@ namespace imagecv {
      */
     void split(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
 
-
-    cv::Mat sbm(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
-
 }
 
 #endif // IMAGECV_H

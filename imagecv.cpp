@@ -135,21 +135,6 @@ void imagecv::split(Mat img, Mat *img_left, Mat *img_right){
     *img_right = Mat(img,Rect(x_right,y,width,height));
 }
 
-/**
- * @brief Display a disparity map using sbm parameters
- * @param img_left the left point of view of a scene
- * @param img_right the right point of view of a scene
- * @return The image with the similarities displayed
- */
-Mat imagecv::sbm(Mat img, Mat *img_left, Mat *img_right){
-    Mat dst, imgL, imgR;
-    cvtColor(*img_left, imgL,CV_BGR2GRAY);
-    cvtColor(*img_right,imgR,CV_BGR2GRAY);
-    int window_size = 21;
-    int numDisparity = 32; // must be a 16's multiple
-    Ptr<StereoBM> matcher= StereoBM::create(numDisparity,window_size);
-    matcher->compute(imgL,imgR,dst);
-     dst.convertTo(dst,CV_8U,1,0);
-     return dst;
-}
+
+
 

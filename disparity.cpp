@@ -47,6 +47,22 @@ Disparity::~Disparity(){
  * @brief Apply the disparity map parameters when the button got pressed and display it to the left
  */
 void Disparity::on_apply_clicked(){
+    QImage img1;
+    if(img_mat->empty()){
+        qDebug("[ERROR] Please, load a stereo image first");
+        return;
+    }
+
+    if(ui->checkBox->isChecked()){
+        if((this->IO_SADWindowSize = ui->slider_windowSize->value())%2==0)
+            this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
+        else
+            this->IO_SADWindowSize = ui->slider_windowSize->value();
+        this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16; //this parameters had to be a multiple of 16
+
+        img1 = mat_to_qimage(sbm(*img_mat,img_left, img_right));
+
+    }else{
 
     this->IO_SADWindowSize = ui->slider_windowSize->value();    //Getting the value of the slider
     this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16;    //this parameters had to be a multiple of 16
@@ -65,16 +81,12 @@ void Disparity::on_apply_clicked(){
     else
         this->IO_full_scale = false;
 
-    if(img_mat->empty()){
-        qDebug("[ERROR] Please, load a stereo image first");
-        return;
-    }
+    img1 = mat_to_qimage(disparity_map_SGBM());  //Generate the disparity map
 
-    QImage img1 = mat_to_qimage(disparity_map_SGBM());  //Generate the disparity map
+}
     QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
     ui->image_loaded->adjustSize();
-
 }
 
 /**
@@ -153,21 +165,6 @@ Mat Disparity::disparity_map_SGBM() {
 //TODO
 Mat Disparity::disparity_post_filtering() {
     Mat * res = new Mat;
-    /*
-    Mat left_disp = disparity_map_SGBM();
-    int lambda = 80000;
-    double sigma = 1.2;
-    double visual_multiplier = 1.0;
-    int window_size = 3;
-
-
-    Rect Roi;
-    Mat filtered;
-    //wls_filter = DisparityFilter::filter(left_disp, *img_left, filtered, *img_left);
-
-    imshow("confiance map Features", filtered);
-    */
-
     return *res;
 }
 
@@ -215,4 +212,40 @@ void Disparity::set_img_mat(cv::Mat *img){
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));//Display the original image
     imagecv::split(*img_mat, img_left, img_right);
 }
+/**
+ * @brief Display a disparity map using sbm parameters
+ * @param img_left the left point of view of a scene
+ * @param img_right the right point of view of a scene
+ * @return The disparity map using sbm
+ */
 
+Mat Disparity::sbm(Mat img, Mat *img_left, Mat *img_right){
+    Mat dst, imgL, imgR;
+    dst = Mat(img.size(), CV_8U);
+    cvtColor(*img_left, imgL,CV_BGR2GRAY);
+    cvtColor(*img_right,imgR,CV_BGR2GRAY);
+    Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
+    matcher->compute(imgL,imgR,dst);
+     dst.convertTo(dst,CV_8U,1,0);
+     return dst;
+}
+
+
+void Disparity::on_checkBox_clicked()
+{
+    if(ui->checkBox->isChecked()){
+        ui->slider_preFilterCap->setEnabled(false);
+        ui->slider_minDisparity->setEnabled(false);
+        ui->slider_uniquenessRatio->setEnabled(false);
+        ui->slider_speckleWindowSize->setEnabled(false);
+        ui->slider_speckleRange->setEnabled(false);
+        ui->slider_disp12MaxDiff->setEnabled(false);
+    }else{
+        ui->slider_preFilterCap->setEnabled(true);
+        ui->slider_minDisparity->setEnabled(true);
+        ui->slider_uniquenessRatio->setEnabled(true);
+        ui->slider_speckleWindowSize->setEnabled(true);
+        ui->slider_speckleRange->setEnabled(true);
+        ui->slider_disp12MaxDiff->setEnabled(true);
+    }
+}

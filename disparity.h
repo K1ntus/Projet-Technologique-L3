@@ -42,12 +42,12 @@ private slots:
 
     cv::Mat disparity_map_SGBM();
     cv::Mat disparity_post_filtering();
+    cv::Mat sbm(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
 
     bool load_stereo_image(const QString &fileName);
 
     void on_post_filtering_clicked();
-
-
+    void on_checkBox_clicked();
 
 private:
     cv::Mat *img_mat;
