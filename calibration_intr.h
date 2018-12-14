@@ -1,45 +1,41 @@
 #ifndef CALIBRATION_INTR_H
 #define CALIBRATION_INTR_H
 
-#include <QWidget>
-#include <QtGui>
-#include <QPixmap>
 #include <opencv2/opencv.hpp>
 #include "imagecv.h"
 
-
-namespace Ui {
-class Calibration_intr;
-}
-
-class Calibration_intr : public QWidget
+class Calibration_intr
 {
-    Q_OBJECT
-
 public:
-    explicit Calibration_intr(std::vector<cv::Mat>, QWidget *parent = 0);
-    ~Calibration_intr();
 
+    Calibration_intr(std::vector<cv::Mat> imgs);
+    ~Calibration_intr();
+    cv::Mat* get_image_origin();
+    cv::Mat* get_gray_image();
     cv::Mat* get_camera_matrix();
     cv::Mat* get_dist_coeffs();
-    std::vector<cv::Mat> get_rvecs();
-    std::vector<cv::Mat> get_tvecs();
+    std::vector<cv::Mat>* get_rvecs();
+    std::vector<cv::Mat>* get_tvecs();
 
-    void show_chessboard_corners(cv::Mat*);
-    void show_undistorted_image(cv::Mat*);
+    bool find_chessboard_corners(std::vector<cv::Point2f>&);
+    void calibrate(std::vector<cv::Mat>);
+    cv::Mat* undistorted_image();
 
 private:
-    Ui::Calibration_intr *ui;
+
+    int nb_lines;
+    int nb_columns;
+    cv::Size board_size;
+    cv::Mat* img;
+    cv::Mat* gray_image;
+
+    vector<vector<cv::Point3f>>* object_points;
+    vector<vector<cv::Point2f>>* image_points;
     cv::Mat* camera_matrix;
     cv::Mat* dist_coeffs;
-    std::vector<cv::Mat> rvecs;
-    std::vector<cv::Mat> tvecs;
-    cv::Mat* img;
+    std::vector<cv::Mat>* rvecs;
+    std::vector<cv::Mat>* tvecs;
 
-private slots:
-
-    void on_undistortedButton_clicked();
-    void on_chesscorners_clicked();
 };
 
 #endif // CALIBRATION_INTR_H

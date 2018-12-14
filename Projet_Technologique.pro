@@ -31,16 +31,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     disparity.cpp \
     imagecv.cpp \
+    calibration_widget.cpp \
     calibration_intr.cpp
 
 HEADERS  += mainwindow.h \
     disparity.h \
     imagecv.h \
+    calibration_widget.h \
     calibration_intr.h
 
 FORMS    += mainwindow.ui \
     disparity.ui \
-    calibration_intr.ui
+    calibration_widget.ui
 
 RESOURCES += \
     image.qrc

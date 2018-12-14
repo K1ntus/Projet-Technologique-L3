@@ -61,9 +61,9 @@ void MainWindow::on_pushButton_clicked(){
     for(size_t i = 0; i < count; i++){
         images.push_back(imread(fn[i]));
     }
-
     Calibration_intr* calib = new Calibration_intr(images);
-    calib->show();
+    Calibration_widget* calib_widget = new Calibration_widget(calib);
+    calib_widget->show();
 }
 
 void MainWindow::on_button_disparity_clicked(){

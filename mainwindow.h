@@ -5,7 +5,7 @@
 #include <QPlainTextEdit>
 #include "imagecv.h"
 #include "disparity.h"
-#include "calibration_intr.h"
+#include "calibration_widget.h"
 
 
 namespace Ui {
