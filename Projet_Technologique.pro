@@ -6,11 +6,31 @@
 
 QT       += core gui
 
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 # add open CV
 unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += opencv
 }
+
+# uncomment when at home
+CONFIG += c++11
+INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
+
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_highgui320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgcodecs320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
+
+
+# uncomment for commoj project
+#INCLUDEPATH += C:/opencv/build/include/
+
+#LIBS += -LC:/opencv/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui
+
 TARGET = Projet_Technologique
 TEMPLATE = app
 
@@ -28,21 +48,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += opencv
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    disparity.cpp \
-    imagecv.cpp \
-    calibration_widget.cpp \
-    calibration_intr.cpp
+        widgets/mainwindow.cpp \
+    widgets/disparity.cpp \
+    tools/imagecv.cpp \
+    widgets/calibration_widget.cpp \
+    tools/calibration_intr.cpp \
+    tools/imgcv.cpp
 
-HEADERS  += mainwindow.h \
-    disparity.h \
-    imagecv.h \
-    calibration_widget.h \
-    calibration_intr.h
+HEADERS  += widgets/mainwindow.h \
+    widgets/disparity.h \
+    tools/imagecv.h \
+    widgets/calibration_widget.h \
+    tools/calibration_intr.h \
+    tools/imgcv.h
 
-FORMS    += mainwindow.ui \
-    disparity.ui \
-    calibration_widget.ui
+FORMS    += widgets/mainwindow.ui \
+    widgets/disparity.ui \
+    widgets/calibration_widget.ui
 
 RESOURCES += \
     image.qrc
