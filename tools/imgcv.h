@@ -1,4 +1,4 @@
-#ifndef IMGCV_H
+﻿#ifndef IMGCV_H
 #define IMGCV_H
 
 #include <opencv2/core.hpp>
@@ -13,29 +13,42 @@
 class ImgCv
 {
 public:
+
     ImgCv();
-    ImgCv(std::string, bool);
-    ImgCv(cv::Mat const&, bool);
-    ImgCv(cv::Mat const&, cv::Mat const&, bool);
+    ImgCv(std::string, bool = false);
+    ImgCv(cv::Mat const&, bool = false);
+    ImgCv(cv::Mat const&, cv::Mat const&, bool = true);
     ~ImgCv();
+
+    bool isStereo() const;
+
+    cv::Mat& getImg() const;
+
+    cv::Mat& getImgR() const;
+
+    void setImg(cv::Mat const&, bool);
 
     /**
      * @brief 'Cut' an image in two new image of width/2
      * @param cv::Mat Image that will be splitted in two
      * @return nothing but store the result in two pointers
      */
-    void static split(cv::Mat const&, cv::Mat*, cv::Mat*);
+    void static split(cv::Mat &, cv::Mat&, cv::Mat&);
 
-    /**
+    /** static version of the method
      * @brief Convert an image following the laplace algorithm
      * @param Image to convert
      * @return The parameters converted with laplace algorithm
      */
     cv::Mat static contour_laplace(cv::Mat const&);
 
+    /**
+     * @brief Convert an image following the laplace algorithm
+     * @return The parameters converted with laplace algorithm
+     */
     cv::Mat contour_laplace() const;
 
-    /**
+    /** static version of the method
      * @brief Convert an image following the sobel algorithm
      * @param Image to convert
      * @return The parameters converted with sobel algorithm
@@ -44,11 +57,32 @@ public:
 
     cv::Mat contour_sobel() const;
 
-    bool isStereo() const;
 
-    cv::Mat getImg() const;
+    /** Static version
+     * @brief Display a disparity map using sbm parameters
+     * @param img_left the left point of view of a scene
+     * @param img_right the right point of view of a scene
+     * @return The disparity map using sbm
+     */
+    cv::Mat sbm(cv::Mat const&, cv::Mat const&, cv::Mat const&, size_t const& = 144, size_t const& = 9);
 
-    void setImg(cv::Mat const&, bool);
+    /**
+     * @brief Display a disparity map using sbm parameters
+     * @return The disparity map using sbm and the left and right image og the object
+     */
+    cv::Mat sbm(size_t const& = 144, size_t const& = 9) const;
+
+    /**
+     * @brief Generate the disparity map from two cv::mat pointer of a stereo image
+     * &param size_t
+     * @return disparity map
+     */
+    cv::Mat disparity_map_SGBM(size_t const&, size_t const&, size_t const&,
+                               size_t const&, size_t const&, int const&,
+                               size_t const&, size_t const&, size_t const&,
+                               size_t const&, int const&) const;
+
+    cv::Mat disparity_post_filtering();
 
 
 private:

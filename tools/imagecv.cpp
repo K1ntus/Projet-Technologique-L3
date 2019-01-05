@@ -6,10 +6,11 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
 #include "imagecv.h"
+
 using namespace std;
 using namespace cv;
 
-QString imagecv::speed_test(function_call func, cv::Mat args){
+QString imagecv::speed_test(function_call func, cv::Mat const& args){
     clock_t start, end;
     start = clock();
     func(args);
@@ -19,7 +20,7 @@ QString imagecv::speed_test(function_call func, cv::Mat args){
     return str;
 }
 
-QString imagecv::speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg2, cv::Mat* arg3){
+QString imagecv::speed_test(function_call_3_arg func, cv::Mat const& args, cv::Mat* arg2, cv::Mat* arg3){
     clock_t start, end;
     start = clock();
     func(args, arg2, arg3);
@@ -29,13 +30,26 @@ QString imagecv::speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg
     return str;
 }
 
-bool imagecv::load_file(const QString &fileName , Mat *img_mat) {
-    QImage my_image(fileName, "PNM");                                //load the file in  a QImage variable (pnm is a format like ttif, ...)
-    qDebug(" *** Image file correctly loaded *** ");
+bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 
-    *img_mat = qimage_to_mat(my_image);         //Convert QImage to cv::mat
+    QString fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), "", thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
+    QFile file(fileName);
 
-    return true;
+    qDebug(" *** Loading file *** ");
+
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {    //Check file validity/readable/...
+        QMessageBox::warning(&thisWidget, thisWidget.tr("Application"),
+                             thisWidget.tr("Cannot read file %1:\n%2.")
+                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
+        return false;
+    }
+    else if(!fileName.isEmpty()){
+        Mat image = imread(fileName.toStdString());
+        img.setImg(image, stereo); // TODO segfault occurs!
+        return true;
+
+    }
+    return false;
 }
 
 /**
@@ -79,63 +93,6 @@ Mat imagecv::qimage_to_mat(const QImage& src) {
 
     return result;
 }
-/**
- * @brief Convert an image following the laplace algorithm
- * @param Image to convert
- * @return The parameters converted with laplace algorithm
- */
-cv::Mat imagecv::contour_laplace(Mat img){
-    Mat gray_img, result, final;
-    Mat img_read = img.clone();
-
-    GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT); // apply the gaussianBlur to smooth the img
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
-
-    Laplacian(gray_img,result,CV_16S,3,1,0,BORDER_DEFAULT);
-    convertScaleAbs(result,final,1,0);                          //convert to a CV_8U image
-    return final;
-}
-
-/**
- * @brief Convert an image following the sobel algorithm
- * @param Image to convert
- * @return The parameters converted with sobel algorithm
- */
-cv::Mat imagecv::contour_sobel(Mat img){
-    Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
-    Mat img_read=img.clone();
-
-    GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT);
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
-
-    Sobel(gray_img,gx,CV_16S,1,0,3,1,0,BORDER_DEFAULT);  // derivative in x
-    Sobel(gray_img,gy,CV_16S,0,1,3,1,0,BORDER_DEFAULT);// derivative in y
-
-    convertScaleAbs(gy,gy_goodFormat,1,0);
-    convertScaleAbs(gx,gx_goodFormat,1,0);
-
-    addWeighted(gx_goodFormat,0.5,gy_goodFormat,0.5,0,final,-1); // final gradient is the addition of the two gradients
-    return final;
-
-}
-/**
- * @brief 'Cut' an image in two new image of width/2
- * @param cv::Mat Image that will be splitted in two
- * @return nothing but store the result in two pointers
- */
-void imagecv::split(Mat img, Mat *img_left, Mat *img_right){
-    int x = 0;
-    int y = 0;
-    int width=(int)img.cols/2 ;
-    int height= (int) img.rows;
-    int x_right=width +img.cols%2; //First width position for the right image
-
-
-    //Store the result in two pointer of this class
-    *img_left = Mat(img, Rect(x,y,width, height));
-    *img_right = Mat(img,Rect(x_right,y,width,height));
-}
-
 
 
 

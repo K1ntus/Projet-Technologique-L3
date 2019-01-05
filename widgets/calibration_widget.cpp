@@ -1,6 +1,5 @@
 #include "calibration_widget.h"
 
-
 using namespace std;
 using namespace cv;
 using namespace imagecv;
@@ -17,7 +16,9 @@ Calibration_widget::Calibration_widget(Calibration_intr* calib, QWidget *parent)
 
 Calibration_widget::~Calibration_widget()
 {
+    qDebug( "calibration deleted");
     delete ui;
+    delete calib;
 }
 
 void Calibration_widget::on_undistortedButton_clicked()
@@ -32,8 +33,8 @@ void Calibration_widget::on_chesscorners_clicked()
 
 }
 
-void Calibration_widget::display_image(Mat *image){
-    QImage qimg = mat_to_qimage(*image);
+void Calibration_widget::display_image(Mat const&image){
+    QImage qimg = mat_to_qimage(image);
     int h = ui->Displayer->height();
     int w = ui->Displayer->width();
     ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));

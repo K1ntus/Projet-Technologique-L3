@@ -10,16 +10,16 @@ public:
 
     Calibration_intr(std::vector<cv::Mat> &imgs);
     ~Calibration_intr();
-    cv::Mat* get_image_origin();
-    cv::Mat* get_gray_image();
-    cv::Mat* get_camera_matrix();
-    cv::Mat* get_dist_coeffs();
-    std::vector<cv::Mat>* get_rvecs();
-    std::vector<cv::Mat>* get_tvecs();
+    cv::Mat& get_image_origin() const;
+    cv::Mat& get_gray_image() const;
+    cv::Mat& get_camera_matrix() const;
+    cv::Mat& get_dist_coeffs() const;
+    std::vector<cv::Mat>& get_rvecs() const;
+    std::vector<cv::Mat>& get_tvecs() const;
 
     bool find_chessboard_corners(std::vector<cv::Point2f>&);
     void calibrate(std::vector<cv::Mat>&);
-    cv::Mat* undistorted_image();
+    cv::Mat undistorted_image() const;
 
 private:
 

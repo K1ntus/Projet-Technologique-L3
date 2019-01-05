@@ -14,24 +14,37 @@
 //#include "opencv2/ximgproc/disparity_filter.hpp"
 
 // Qt
+
+#include <QWidget>
 #include <time.h>
 #include <QImage>
 #include <QtGui>
+#include <QLabel>
 #include <QPixmap>
 #include <QSlider>
+#include <QFileDialog>
+#include <QMessageBox>
 
+#include "tools/imgcv.h"
 
 using namespace std;
 
 namespace imagecv {
 
-    bool load_file(const QString &fileName, cv::Mat *img_mat);
+    /**
+    * @brief Load an image with a gui, then automatically split it
+    * @param parent widget
+    * @param ImgCv
+    * @param boolean
+    * @return true if an image has been loaded, else false
+    */
+    bool load_file(QWidget &, ImgCv &, bool= false);
 
-    typedef cv::Mat (*function_call)(cv::Mat args);
-    QString speed_test(function_call func, cv::Mat args);
+    typedef cv::Mat (*function_call)(cv::Mat const& args);
+    QString speed_test(function_call func, cv::Mat const& args);
 
-    typedef cv::Mat (*function_call_3_arg)(cv::Mat args, cv::Mat* arg2, cv::Mat* arg3);
-    QString speed_test(function_call_3_arg func, cv::Mat args, cv::Mat* arg2, cv::Mat* arg3);
+    typedef cv::Mat (*function_call_3_arg)(cv::Mat const& args, cv::Mat* arg2, cv::Mat* arg3);
+    QString speed_test(function_call_3_arg func, cv::Mat const& args, cv::Mat* arg2, cv::Mat* arg3);
 
     /**
      * @brief Convert a cv::Mat image to a QImage using the RGB888 format
@@ -46,19 +59,6 @@ namespace imagecv {
      * @return cv::Mat image
      */
     cv::Mat qimage_to_mat(const QImage& src);
-
-    cv::Mat contour_laplace(cv::Mat img);
-
-
-
-    cv::Mat contour_sobel(cv::Mat img);
-
-    /**
-     * @brief 'Cut' an image in two new image of width/2
-     * @param cv::Mat Image that will be splitted in two
-     * @return nothing but store the result in two pointers
-     */
-    void split(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
 
 }
 

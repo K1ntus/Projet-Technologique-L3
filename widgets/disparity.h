@@ -10,6 +10,7 @@
 #include "ui_disparity.h"
 
 #include "tools/imagecv.h"
+#include "tools/imgcv.h"
 
 
 namespace Ui {
@@ -23,7 +24,7 @@ class Disparity : public QWidget
 public:
     explicit Disparity(QWidget *parent = nullptr);
     ~Disparity();
-    void set_img_mat(cv::Mat *img);
+    void set_img_mat(ImgCv &img);
 
 
     unsigned int IO_SADWindowSize;
@@ -45,22 +46,14 @@ private slots:
     void on_loadImage_clicked();
     void on_apply_clicked();
     void on_reset_image_clicked();
-
-    cv::Mat disparity_map_SGBM();
-    cv::Mat disparity_post_filtering();
-    cv::Mat sbm(cv::Mat img, cv::Mat *img_left, cv::Mat *img_right);
-
-    bool load_stereo_image(const QString &fileName);
-
     void on_post_filtering_clicked();
     void on_checkBox_clicked();
+    void displayImage(cv::Mat const&);
 
 private:
-    cv::Mat *img_mat;
-
-    cv::Mat *img_left;
-    cv::Mat *img_right;
     Ui::Disparity *ui;
+
+    ImgCv *img;
     int width ;
     int height;
 };

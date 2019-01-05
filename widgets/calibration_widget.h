@@ -22,7 +22,7 @@ public:
     ~Calibration_widget();
     void show_chessboard_corners(cv::Mat*);
     void show_undistorted_image(cv::Mat*);
-    void display_image(cv::Mat*);
+    void display_image(cv::Mat const&);
 
 private:
     Ui::Calibration_widget *ui;

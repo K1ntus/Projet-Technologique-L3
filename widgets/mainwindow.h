@@ -8,7 +8,6 @@
 
 // Qt
 #include <QMainWindow>
-#include <QPlainTextEdit>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QtGui>
@@ -16,6 +15,7 @@
 
 // own
 #include "tools/imagecv.h"
+#include "tools/imgcv.h"
 #include "disparity.h"
 #include "calibration_widget.h"
 #include "ui_mainwindow.h"
@@ -34,22 +34,15 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QPlainTextEdit *textEdit;
-    cv::Mat *img_mat;
-
-    cv::Mat *img_left;
-    cv::Mat *img_right;
+    ImgCv *img;
     Disparity * parametersWindow;
-
+    Calibration_widget *calib_widget;
 
 
 private slots:
     void on_actionA_propos_triggered();
     void on_actionQuitter_triggered();
     void on_actionOuvrir_triggered();
-
-    bool load_image();
-
     void on_button_disparity_clicked();
     void on_button_sobel_clicked();
     void on_button_laplace_clicked();

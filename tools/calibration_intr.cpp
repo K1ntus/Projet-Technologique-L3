@@ -3,7 +3,11 @@
 using namespace std;
 using namespace cv;
 using namespace imagecv;
-
+/** TODO
+ *  calibration for one image.
+ *  saving the camera matrix
+ *
+ */
 Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs)
 {
     nb_lines = 6;
@@ -27,30 +31,38 @@ Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs)
 Calibration_intr::~Calibration_intr()
 {
     delete img;
+    delete img;
+    delete gray_image;
+    delete object_points;
+    delete image_points;
+    delete camera_matrix;
+    delete dist_coeffs;
+    delete rvecs;
+    delete tvecs;
 }
 
-Mat* Calibration_intr::get_image_origin(){
-    return img;
+Mat& Calibration_intr::get_image_origin() const{
+    return *img;
 }
 
-Mat* Calibration_intr::get_gray_image(){
-    return gray_image;
+Mat& Calibration_intr::get_gray_image() const{
+    return *gray_image;
 }
 
-Mat* Calibration_intr::get_camera_matrix(){
-    return camera_matrix;
+Mat& Calibration_intr::get_camera_matrix() const{
+    return *camera_matrix;
 }
 
-Mat* Calibration_intr::get_dist_coeffs(){
-    return dist_coeffs;
+Mat& Calibration_intr::get_dist_coeffs() const{
+    return *dist_coeffs;
 }
 
-vector<Mat>* Calibration_intr::get_rvecs(){
-    return rvecs;
+vector<Mat>& Calibration_intr::get_rvecs() const{
+    return *rvecs;
 }
 
-vector<Mat>* Calibration_intr::get_tvecs(){
-    return tvecs;
+vector<Mat>& Calibration_intr::get_tvecs() const{
+    return *tvecs;
 }
 
 
@@ -105,8 +117,8 @@ void Calibration_intr::calibrate(std::vector<cv::Mat> &imgs){
 
 }
 
-cv::Mat* Calibration_intr::undistorted_image(){
-    Mat* image_undistorted = new cv::Mat;
-    undistort(*img, *image_undistorted, *camera_matrix, *dist_coeffs);
+cv::Mat Calibration_intr::undistorted_image() const{
+    Mat image_undistorted;
+    undistort(*img, image_undistorted, *camera_matrix, *dist_coeffs);
     return image_undistorted;
 }
