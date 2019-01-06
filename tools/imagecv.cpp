@@ -1,10 +1,3 @@
-#include <time.h>
-#include <QImage>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/features2d.hpp>
 #include "imagecv.h"
 
 using namespace std;
@@ -32,7 +25,7 @@ QString imagecv::speed_test(function_call_3_arg func, cv::Mat const& args, cv::M
 
 bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 
-    QString fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), "", thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
+    QString fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), thisWidget.tr("resources/"), thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
     QFile file(fileName);
 
     qDebug(" *** Loading file *** ");
@@ -45,7 +38,7 @@ bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
     }
     else if(!fileName.isEmpty()){
         Mat image = imread(fileName.toStdString());
-        img.setImg(image, stereo); // TODO segfault occurs!
+        img.setImg(image, stereo);
         return true;
 
     }

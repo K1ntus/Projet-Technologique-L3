@@ -40,7 +40,7 @@ void MainWindow::on_actionA_propos_triggered() {
 }
 
 void MainWindow::on_actionQuitter_triggered() {
-    delete this;
+    this->~MainWindow();
     exit(EXIT_SUCCESS);
 }
 
@@ -55,28 +55,6 @@ void MainWindow::on_actionOuvrir_triggered() {
     else{
         QMessageBox::warning(this, tr("Application"),
                              tr("Cannot read file\n please select a new file "));
-    }
-}
-
-
-void MainWindow::on_pushButton_clicked(){
-
-    QString filePath=QFileDialog::getExistingDirectory(this, "Select the ressources folder");
-    if(!filePath.isEmpty()){
-        vector<cv::String> fn;
-        vector<Mat> images;
-
-        glob(filePath.toStdString(), fn, false);
-        size_t count = fn.size();
-
-        for(size_t i = 0; i < count; i++){
-            images.push_back(imread(fn[i]));
-        }
-
-        if(calib_widget != nullptr)
-            delete calib_widget;
-        calib_widget = new Calibration_widget(new Calibration_intr(images));
-        calib_widget->show();
     }
 }
 
@@ -123,7 +101,30 @@ void MainWindow::on_button_laplace_clicked(){
     QImage image = mat_to_qimage(img->contour_laplace());
 
     QString str = speed_test((function_call) ImgCv::contour_laplace, img->getImg());
-    //    statusBar()->showMessage(str);
+   // this->statusBar()->showMessage(str);
     ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 
+}
+
+void MainWindow::on_calibrate_clicked()
+{
+    QStringList filePath = QFileDialog::getOpenFileNames(
+                this, tr("Select the files for calibration"),
+                tr("./resources/"),
+                tr("Image files (*.png *.jpg *.bmp)") );
+
+    if(!filePath.isEmpty()){
+
+        vector<Mat> images;
+        size_t count = filePath.size();
+
+        for(size_t i = 0; i < count; i++){
+            images.push_back(imread(filePath[i].toStdString()));
+        }
+
+        if(calib_widget != nullptr)
+            delete calib_widget;
+        calib_widget = new Calibration_widget(new Calibration_intr(images));
+        calib_widget->show();
+    }
 }

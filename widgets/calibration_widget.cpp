@@ -40,3 +40,44 @@ void Calibration_widget::display_image(Mat const&image){
     ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));
     ui->Displayer->adjustSize();
 }
+
+void Calibration_widget::on_newImageSet_clicked()
+{
+    QStringList filePath = QFileDialog::getOpenFileNames(
+                this, tr("Select the files for calibration"),
+                tr("./resources/"),
+                tr("Image files (*.png *.jpg *.bmp)") );
+
+    if(!filePath.isEmpty()){
+
+        vector<Mat> images;
+        size_t count = filePath.size();
+
+        for(size_t i = 0; i < count; i++){
+            images.push_back(imread(filePath[i].toStdString()));
+        }
+
+        calib->newImageSet(images);
+    }
+
+}
+
+void Calibration_widget::on_nextImage_clicked()
+{
+    size_t const& incr = calib->getCurrentImgIndex();
+    calib->setNextImgIndex(incr + 1);
+    if(incr == calib->getCurrentImgIndex())
+        QMessageBox::information(this, tr("End of set"), tr("reach the end of the set"));
+    else
+        display_image(calib->get_image_origin());
+}
+
+void Calibration_widget::on_prevImage_clicked()
+{
+    size_t const& decr = calib->getCurrentImgIndex();
+    calib->setNextImgIndex(decr - 1);
+    if(decr == calib->getCurrentImgIndex())
+        QMessageBox::information(this, tr("start of set"), tr("reach the beginning of the set"));
+    else
+        display_image(calib->get_image_origin());
+}

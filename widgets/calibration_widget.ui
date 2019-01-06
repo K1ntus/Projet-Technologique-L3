@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
-    <height>485</height>
+    <width>884</width>
+    <height>478</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,32 +15,61 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QLabel" name="Displayer">
-     <property name="minimumSize">
-      <size>
-       <width>671</width>
-       <height>376</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="Displayer">
+       <property name="minimumSize">
+        <size>
+         <width>671</width>
+         <height>376</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="chesscorners">
+         <property name="text">
+          <string>Chessboard corners</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="undistortedButton">
+         <property name="text">
+          <string>undistorted image</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="newImageSet">
+         <property name="text">
+          <string>new image set</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item alignment="Qt::AlignBottom">
     <widget class="QGroupBox" name="horizontalGroupBox">
      <layout class="QHBoxLayout" name="horizontalLayout">
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QPushButton" name="undistortedButton">
+      <item>
+       <widget class="QPushButton" name="prevImage">
         <property name="text">
-         <string>undistorted image</string>
+         <string>previous image</string>
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignHCenter">
-       <widget class="QPushButton" name="chesscorners">
+      <item>
+       <widget class="QPushButton" name="nextImage">
         <property name="text">
-         <string>Chessboard corners</string>
+         <string>next image</string>
         </property>
        </widget>
       </item>

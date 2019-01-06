@@ -4,9 +4,12 @@
 #include <QWidget>
 #include <QtGui>
 #include <QPixmap>
-#include "ui_calibration_widget.h"
+#include <QFileDialog>
+#include <QMessageBox>
 
+#include "ui_calibration_widget.h"
 #include "tools/calibration_intr.h"
+#include "imagecv.h"
 
 
 namespace Ui {
@@ -33,6 +36,9 @@ private slots:
 
     void on_undistortedButton_clicked();
     void on_chesscorners_clicked();
+    void on_newImageSet_clicked();
+    void on_nextImage_clicked();
+    void on_prevImage_clicked();
 };
 
 #endif // CALIBRATION_WIDGET_H

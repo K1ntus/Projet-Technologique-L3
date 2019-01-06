@@ -46,7 +46,7 @@ private slots:
     void on_button_disparity_clicked();
     void on_button_sobel_clicked();
     void on_button_laplace_clicked();
-    void on_pushButton_clicked();
+    void on_calibrate_clicked();
 };
 
 #endif // MAINWINDOW_H

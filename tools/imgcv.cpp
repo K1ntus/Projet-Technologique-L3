@@ -252,10 +252,10 @@ void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right)
     int x_right= width +img.cols%2; //First width position for the right image
 
     // check if the ptr is already in use
-    img.adjustROI(0,0, 0, -width);
+    img.adjustROI(0,0, 0, -x_right);
     img.copyTo(img_left);
 
-    img.adjustROI(0,0, -x_right, width);
+    img.adjustROI(0,0, -x_right, x_right);
     img.copyTo(img_right);
 
     img.adjustROI(0,0, x_right, 0);
