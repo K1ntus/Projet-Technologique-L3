@@ -137,6 +137,8 @@ void Calibration_intr::calibrate(){
             if(nb_success >= nb_image)
                 break;
         }
+       else if(im > 3*nb_image)
+           return;
 
         im++;
 

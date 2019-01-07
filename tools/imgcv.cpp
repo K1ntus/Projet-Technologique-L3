@@ -179,7 +179,7 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
     return disp;
 }
 
-Mat ImgCv::sbm(const Mat &img, Mat const& img_left, Mat const& img_right, unsigned int const& IO_numberOfDisparities, unsigned int const& IO_SADWindowSize)
+Mat ImgCv::sbm(const Mat &img, const Mat &img_left, const Mat &img_right, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize)
 {
     Mat dst, imgL, imgR;
     dst = Mat(img.size(), CV_8U);
@@ -191,7 +191,7 @@ Mat ImgCv::sbm(const Mat &img, Mat const& img_left, Mat const& img_right, unsign
     return dst;
 }
 
-Mat ImgCv::sbm(unsigned int const& IO_numberOfDisparities, unsigned int const& IO_SADWindowSize) const
+Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) const
 {
     Mat imgL, imgR;
     Mat dst = Mat(cvImg->size(), CV_8U);

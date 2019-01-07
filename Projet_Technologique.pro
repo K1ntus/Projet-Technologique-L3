@@ -27,9 +27,9 @@ unix {
 
 
 # uncomment for commoj project
-INCLUDEPATH += C:/opencv/build/include/
+#INCLUDEPATH += C:/opencv/build/include/
 
-LIBS += -LC:/opencv/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui
+#LIBS += -LC:/opencv/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui
 
 TARGET = Projet_Technologique
 TEMPLATE = app

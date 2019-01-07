@@ -4,7 +4,6 @@
 // opencv uitlities
 // uncomment for common project
 #include <unistd.h>
-//#include <opencv2/ximgproc.hpp>
 
 // Qt
 #include <QMainWindow>

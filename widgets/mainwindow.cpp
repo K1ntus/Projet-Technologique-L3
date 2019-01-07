@@ -50,7 +50,7 @@ void MainWindow::on_actionOuvrir_triggered() {
         QMessageBox::information(this, "Open image", "Image loaded");
         QImage img_qimg = mat_to_qimage(img->getImg());         //Convert the new cv::mat to QImage
         ui->backgroundLabel->setPixmap(QPixmap::fromImage(img_qimg));    //Display the original image
-        //            statusBar()->showMessage(tr("file loaded"), 2500);
+        statusBar()->showMessage(tr("file loaded"), 2500);
     }
     else{
         QMessageBox::warning(this, tr("Application"),
@@ -82,7 +82,7 @@ void MainWindow::on_button_sobel_clicked(){
     QImage image = mat_to_qimage(img->contour_sobel());
 
     QString str = speed_test((function_call) ImgCv::contour_sobel, img->getImg());
-    //    statusBar()->showMessage(str);
+    statusBar()->showMessage(str);
 
     ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 
@@ -101,7 +101,7 @@ void MainWindow::on_button_laplace_clicked(){
     QImage image = mat_to_qimage(img->contour_laplace());
 
     QString str = speed_test((function_call) ImgCv::contour_laplace, img->getImg());
-   // this->statusBar()->showMessage(str);
+    statusBar()->showMessage(str);
     ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 
 }

@@ -9,7 +9,7 @@
 
 #include "ui_calibration_widget.h"
 #include "tools/calibration_intr.h"
-#include "imagecv.h"
+#include "tools/imagecv.h"
 
 
 namespace Ui {
