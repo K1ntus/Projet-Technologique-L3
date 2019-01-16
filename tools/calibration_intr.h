@@ -7,6 +7,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "intrinsicparameters.h"
+
 class Calibration_intr
 {
 public:
@@ -22,12 +24,12 @@ public:
     cv::Mat& get_image_origin() const;
     cv::Mat& get_gray_image() const;
 
-    cv::Mat& get_camera_matrix() const;
-    cv::Mat& get_dist_coeffs() const;
+    IntrinsicParameters& getIntrinsicParameters() const;
+    void setIntrinsincParameters(IntrinsicParameters &intrinsicParam);
     std::vector<cv::Mat>& get_rvecs() const;
     std::vector<cv::Mat>& get_tvecs() const;
 
-    bool find_chessboard_corners(std::vector<cv::Point2f>&);
+    bool find_chessboard_corners(std::vector<cv::Point2f>&corners);
     void calibrate();
     cv::Mat undistorted_image() const;
 
@@ -42,8 +44,7 @@ private:
     // intrinseque parameters
     std::vector<std::vector<cv::Point3f>>* object_points;
     std::vector<std::vector<cv::Point2f>>* image_points;
-    cv::Mat* camera_matrix;
-    cv::Mat* dist_coeffs;
+    IntrinsicParameters *intrParam;
 
     // extrinseques
     std::vector<cv::Mat>* rvecs;

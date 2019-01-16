@@ -13,16 +13,10 @@ Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs, int nLines, int n
     object_points = new vector<vector<Point3f>>;
     image_points = new vector<vector<Point2f>>;
 
-    dist_coeffs = new Mat;
-    camera_matrix = new Mat(3, 3, CV_32FC1);
-    camera_matrix->ptr<float>(0)[0] = 1;
-    camera_matrix->ptr<float>(1)[1] = 1;
+    intrParam = new IntrinsicParameters();
 
     rvecs = new std::vector<cv::Mat>;
     tvecs = new std::vector<cv::Mat>;
-
-    calibrate();
-
 }
 
 Calibration_intr::~Calibration_intr()
@@ -32,8 +26,7 @@ Calibration_intr::~Calibration_intr()
     delete object_points;
     delete image_points;
 
-    delete camera_matrix;
-    delete dist_coeffs;
+    delete intrParam;
 
     delete rvecs;
     delete tvecs;
@@ -50,8 +43,6 @@ void Calibration_intr::newImageSet(const std::vector<Mat> &images)
     for (size_t i = 0; i < images.size(); i++) {
         imgs->push_back(images[i]);
     }
-
-    calibrate();
 }
 
 size_t Calibration_intr::getCurrentImgIndex() const
@@ -63,7 +54,13 @@ void Calibration_intr::setNextImgIndex(size_t const& newIndex)
 {
     if(newIndex < imgs->size()){
         currentImg = newIndex;
-        find_chessboard_corners(image_points->at(currentImg));
+        if(image_points->size() != 0)
+            find_chessboard_corners(image_points->at(currentImg));
+        else{
+            vector<Point2f> corners;
+            find_chessboard_corners(corners);
+        }
+
     }
 }
 
@@ -75,12 +72,15 @@ Mat& Calibration_intr::get_gray_image() const{
     return *gray_image;
 }
 
-Mat& Calibration_intr::get_camera_matrix() const{
-    return *camera_matrix;
+IntrinsicParameters& Calibration_intr::getIntrinsicParameters() const{
+    return *this->intrParam;
 }
 
-Mat& Calibration_intr::get_dist_coeffs() const{
-    return *dist_coeffs;
+void Calibration_intr::setIntrinsincParameters(IntrinsicParameters &intrinsicParam)
+{
+    this->intrParam->setCameraMatrix(intrinsicParam.getCameraMatrix());
+    this->intrParam->setDistCoeffsMatrix(intrinsicParam.getDistCoeffs());
+
 }
 
 vector<Mat>& Calibration_intr::get_rvecs() const{
@@ -117,7 +117,7 @@ void Calibration_intr::calibrate(){
     vector<Point3f> obj;
 
     for (int i = 0; i < nb_lines; i++)
-          for (int j = 0; j < nb_columns; j++)
+        for (int j = 0; j < nb_columns; j++)
             obj.push_back(Point3f((float)j * squareSize, (float)i * squareSize, 0));
 
     size_t nb_image = imgs->size();
@@ -128,7 +128,7 @@ void Calibration_intr::calibrate(){
     while(nb_success<nb_image){
         currentImg =  im%nb_image;
 
-       if(find_chessboard_corners(corners)){
+        if(find_chessboard_corners(corners)){
             image_points->push_back(corners);
             object_points->push_back(obj);
 
@@ -137,21 +137,34 @@ void Calibration_intr::calibrate(){
             if(nb_success >= nb_image)
                 break;
         }
-       else if(im > 3*nb_image)
-           return;
+        else if(im > 3*nb_image)
+            return;
 
         im++;
 
     }
 
     Mat &img = imgs->at(currentImg);
+    Mat *dist_coeffs = new Mat;
+    Mat *camera_matrix = new Mat(3, 3, CV_32FC1);
+    camera_matrix->ptr<float>(0)[0] = 1;
+    camera_matrix->ptr<float>(1)[1] = 1;
+
     calibrateCamera(*object_points, *image_points, img.size(), *camera_matrix, *dist_coeffs, *rvecs, *tvecs);// , CV_CALIB_USE_INTRINSIC_GUESS);
 
+    intrParam->setCameraMatrix(*camera_matrix);
+    intrParam->setDistCoeffsMatrix(*dist_coeffs);
 }
 
 cv::Mat Calibration_intr::undistorted_image() const{
-    Mat &img = imgs->at(currentImg);
     Mat image_undistorted;
-    undistort(img, image_undistorted, *camera_matrix, *dist_coeffs);
-    return image_undistorted;
+    if(imgs->empty() || intrParam == nullptr || intrParam->empty())
+        return image_undistorted;
+    else {
+        Mat &img = imgs->at(currentImg);
+        Mat &dist_coeffs = intrParam->getDistCoeffs();
+        Mat &camera_matrix = intrParam->getCameraMatrix();
+
+        undistort(img, image_undistorted, camera_matrix, dist_coeffs);
+    }
 }

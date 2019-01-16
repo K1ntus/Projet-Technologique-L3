@@ -16,6 +16,12 @@ namespace Ui {
 class Calibration_widget;
 }
 
+enum DisplayerMode{
+    ORIGINAL,
+    CHESSBOARD_CORNERS,
+    UNDISTORTED
+};
+
 class Calibration_widget : public QWidget
 {
     Q_OBJECT
@@ -23,13 +29,13 @@ class Calibration_widget : public QWidget
 public:
     explicit Calibration_widget(Calibration_intr*, QWidget *parent = nullptr);
     ~Calibration_widget();
-    void show_chessboard_corners(cv::Mat*);
-    void show_undistorted_image(cv::Mat*);
-    void display_image(cv::Mat const&);
+
+    void display_image(DisplayerMode const&displayerMode);
 
 private:
     Ui::Calibration_widget *ui;
     Calibration_intr* calib;
+    DisplayerMode currentMode;
 
 
 private slots:
@@ -39,6 +45,11 @@ private slots:
     void on_newImageSet_clicked();
     void on_nextImage_clicked();
     void on_prevImage_clicked();
+    void on_save_clicked();
+    void on_loadCalib_clicked();
+    void on_originalImage_clicked();
+    void on_calibration_clicked();
+    void on_Calibration_widget_destroyed();
 };
 
 #endif // CALIBRATION_WIDGET_H

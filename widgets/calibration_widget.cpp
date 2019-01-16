@@ -6,11 +6,12 @@ using namespace imagecv;
 
 Calibration_widget::Calibration_widget(Calibration_intr* calib, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Calibration_widget)
+    ui(new Ui::Calibration_widget),
+    currentMode(ORIGINAL)
 {
     ui->setupUi(this);
     this->calib = calib;
-    display_image(calib->get_gray_image());
+    display_image(currentMode);
 
 }
 
@@ -23,18 +24,43 @@ Calibration_widget::~Calibration_widget()
 
 void Calibration_widget::on_undistortedButton_clicked()
 {
-    display_image(calib->undistorted_image());
+    if(calib->getIntrinsicParameters().empty())
+        return;
+
+    currentMode = UNDISTORTED;
+    display_image(UNDISTORTED);
 
 }
 
 void Calibration_widget::on_chesscorners_clicked()
 {
-        display_image(calib->get_gray_image());
+    currentMode = CHESSBOARD_CORNERS;
+    display_image(CHESSBOARD_CORNERS);
 
 }
 
-void Calibration_widget::display_image(Mat const&image){
-    QImage qimg = mat_to_qimage(image);
+void Calibration_widget::display_image(DisplayerMode const&displayerMode){
+    Mat *imagePtr(nullptr);
+
+    switch (displayerMode) {
+
+    case ORIGINAL:
+        imagePtr = &calib->get_image_origin();
+        break;
+
+    case CHESSBOARD_CORNERS:
+        imagePtr = &calib->get_gray_image();
+        break;
+
+    case UNDISTORTED:
+        break;
+    }
+    QImage qimg;
+    if(imagePtr != nullptr)
+        qimg = mat_to_qimage(*imagePtr);
+    else
+        qimg = mat_to_qimage(calib->undistorted_image());
+
     int h = ui->Displayer->height();
     int w = ui->Displayer->width();
     ui->Displayer->setPixmap(QPixmap::fromImage(qimg.scaled(w, h, Qt::KeepAspectRatio)));
@@ -58,6 +84,9 @@ void Calibration_widget::on_newImageSet_clicked()
         }
 
         calib->newImageSet(images);
+        ui->undistortedButton->setEnabled(false);
+        on_originalImage_clicked();
+
     }
 
 }
@@ -66,18 +95,64 @@ void Calibration_widget::on_nextImage_clicked()
 {
     size_t const& incr = calib->getCurrentImgIndex();
     calib->setNextImgIndex(incr + 1);
-    if(incr == calib->getCurrentImgIndex())
+    if(incr == calib->getCurrentImgIndex()){
         QMessageBox::information(this, tr("End of set"), tr("reach the end of the set"));
+    }
     else
-        display_image(calib->get_image_origin());
+        display_image(currentMode);
 }
 
 void Calibration_widget::on_prevImage_clicked()
 {
     size_t const& decr = calib->getCurrentImgIndex();
     calib->setNextImgIndex(decr - 1);
-    if(decr == calib->getCurrentImgIndex())
+    if(decr == calib->getCurrentImgIndex()){
         QMessageBox::information(this, tr("start of set"), tr("reach the beginning of the set"));
+    } else
+        display_image(currentMode);
+}
+
+void Calibration_widget::on_save_clicked()
+{
+
+    if(calib->getIntrinsicParameters().empty()){
+        QMessageBox::warning(this, tr("Error while saving file"), tr("no calibration to save."));
+        return;
+    }
+    string outFile("test.yml");
+    IntrinsicParameters::printIntrCalibration(outFile, calib->getIntrinsicParameters());
+    //    delete this;
+}
+
+void Calibration_widget::on_loadCalib_clicked()
+{
+    string inFile("test.yml");
+    IntrinsicParameters intrParam;
+    IntrinsicParameters::readIntrCalibration(inFile, intrParam);
+    if(!intrParam.empty()){
+        calib->setIntrinsincParameters(intrParam);
+        ui->undistortedButton->setEnabled(true);
+    }
     else
-        display_image(calib->get_image_origin());
+        QMessageBox::warning(this, tr("Parse error"), tr("Error while parsing file"));
+
+}
+
+void Calibration_widget::on_originalImage_clicked()
+{
+    currentMode = ORIGINAL;
+    display_image(ORIGINAL);
+}
+
+void Calibration_widget::on_calibration_clicked()
+{
+    calib->calibrate();
+    QMessageBox::information(this, tr("Calibration"), tr("Calibrated!"));
+    ui->undistortedButton->setEnabled(true);
+
+}
+
+void Calibration_widget::on_Calibration_widget_destroyed()
+{
+    delete this;
 }
