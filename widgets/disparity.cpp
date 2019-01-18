@@ -95,8 +95,18 @@ void Disparity::on_apply_clicked(){
                                                  )
                          );
 
-}
+    }
+
+
     QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+
+    if(ui->checkbox_colorize->isChecked()){
+        // Apply the colormap:
+        Mat cm_img0;
+        applyColorMap(qimage_to_mat(img2), cm_img0, COLORMAP_JET);
+        img2 = mat_to_qimage(cm_img0);
+    }
+
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
     ui->image_loaded->adjustSize();
 }
