@@ -1,5 +1,4 @@
 #include "imgcv.h"
-#include <QMainWindow>
 
 using namespace cv;
 
@@ -57,7 +56,6 @@ ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : cvImg(nullptr),
 
 ImgCv::~ImgCv()
 {
-    qDebug("delete imgcv");
     delete cvImg;
     cvImg = nullptr;
 

@@ -15,15 +15,15 @@ unix {
 }
 
 # uncomment when at home
-CONFIG += c++11
-INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
+#CONFIG += c++11
+#INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
 
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_highgui320.dll
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgcodecs320.dll
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
-LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_highgui320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgcodecs320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
+#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
 
 
 # uncomment for commoj project
