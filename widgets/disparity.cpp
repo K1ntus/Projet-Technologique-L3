@@ -1,13 +1,15 @@
 #include "disparity.h"
 
-
-
 using namespace cv;
 using namespace cv::ximgproc;
 using namespace std;
 using namespace imagecv;
 
-
+/**
+ * @brief Disparity::DisparityCreate the disparity gui, and define the "default" parameters for the disparity map generation.
+ *
+ * @param parent parent of this widget
+ */
 Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Disparity),
@@ -35,7 +37,6 @@ Disparity::Disparity(QWidget *parent) :
 }
 
 Disparity::~Disparity(){
-
     qDebug("delete disparity");
     delete ui;
     delete img;
@@ -43,7 +44,14 @@ Disparity::~Disparity(){
 
 
 /**
- * @brief Apply the disparity map parameters when the button got pressed and display it to the left
+ * @brief Apply the disparity map parameters when the button got pressed and display it to the right
+ * \n
+ * When the apply button is triggered, a disparity map will be generated and displayed depending of the parameters\n
+ * using the differents checkbox and sliders.\n
+ * \n
+ * If no image has been loaded, the program just display an error.\n
+ * \n
+ * When the image has been correctly generated, it's displayed in the right slot.
  */
 void Disparity::on_apply_clicked(){
     QImage img1;
@@ -52,6 +60,7 @@ void Disparity::on_apply_clicked(){
         return;
     }
 
+    /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->checkBox->isChecked()){
         if((this->IO_SADWindowSize = ui->slider_windowSize->value())%2==0)
             this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
@@ -79,6 +88,7 @@ void Disparity::on_apply_clicked(){
         this->IO_full_scale = StereoSGBM::MODE_HH;
     else
         this->IO_full_scale = false;
+    /*  END PARAMETERS DISPARITY MAP    */
 
     //Generate the disparity map
     img1 = mat_to_qimage(img->disparity_map_SGBM(IO_minDisparity,
@@ -96,10 +106,9 @@ void Disparity::on_apply_clicked(){
                          );
 
     }
-
-
     QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
 
+    //Colorize the disparity map if the dedicated checkbox is checked
     if(ui->checkbox_colorize->isChecked()){
         // Apply the colormap:
         Mat cm_img0;
@@ -107,7 +116,8 @@ void Disparity::on_apply_clicked(){
         img2 = mat_to_qimage(cm_img0);
     }
 
-    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));  //Display the disparity map in the specific slot
+    //Display the generated disparity map in the left image slot
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
     ui->image_loaded->adjustSize();
 }
 
@@ -129,7 +139,7 @@ void Disparity::on_loadImage_clicked(){
 }
 
 /**
- * @brief Reset the sgbm parameters to default values
+ * @brief Reset the sgbm parameters to default values (arbitrary fixed, as the more "commons")
  */
 void Disparity::on_reset_image_clicked() {
 
@@ -145,19 +155,17 @@ void Disparity::on_reset_image_clicked() {
     ui->slider_disp12MaxDiff->setSliderPosition(-1);
 }
 
-/**
- * @brief filter the disparity map
- */
-void Disparity::on_post_filtering_clicked(){
 
+void Disparity::on_post_filtering_clicked(){
     qDebug("Not yet implemented");
-   displayImage(img->disparity_post_filtering());
+    if(!img)
+        displayImage(img->disparity_post_filtering());
 
 }
 
 /**
  * @brief Load an cv::mat img, display it in the right panel and finally split it then save them in two pointers
- * @param img
+ * @param img the stereo image to manage, split and display
  */
 void Disparity::set_img_mat(ImgCv &img){
     delete this->img;
@@ -166,8 +174,10 @@ void Disparity::set_img_mat(ImgCv &img){
     displayImage(this->img->getImg());
 }
 
-void Disparity::on_checkBox_clicked()
-{
+/**
+ * @brief Disparity::on_checkBox_clicked enable or disable the differents parameters, depending of the disparity generation mode (ie. sbm/sgbm)
+ */
+void Disparity::on_checkBox_clicked(){
     if(ui->checkBox->isChecked()){
         ui->slider_preFilterCap->setEnabled(false);
         ui->slider_minDisparity->setEnabled(false);
@@ -185,6 +195,10 @@ void Disparity::on_checkBox_clicked()
     }
 }
 
+/**
+ * @brief Disparity::displayImage display a cv:mat image in the right image slot
+ * @param image image to be displayed
+ */
 void Disparity::displayImage(Mat const& image){
     ui->image_loaded->setMaximumSize(width, height);
     ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));

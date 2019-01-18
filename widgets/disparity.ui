@@ -1249,6 +1249,9 @@
    <property name="text">
     <string>Activer</string>
    </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QLabel" name="disparityRes">
    <property name="geometry">
@@ -1332,6 +1335,9 @@
    </property>
    <property name="text">
     <string>sbm</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkbox_colorize">

@@ -31,6 +31,9 @@ MainWindow::~MainWindow() {
 
 /**         Interface Interaction           **/
 
+/**
+ * @brief MainWindow::on_actionA_propos_triggered open a little popup window displaying few informations about this project
+ */
 void MainWindow::on_actionA_propos_triggered() {
     QMessageBox::about(this, tr("About"),
                        tr("Project members:\n\n"
@@ -39,13 +42,23 @@ void MainWindow::on_actionA_propos_triggered() {
                           "Meryl Eugenie\n"));
 }
 
+/**
+ * @brief MainWindow::on_actionQuitter_triggered exit the application
+ */
 void MainWindow::on_actionQuitter_triggered() {
     this->~MainWindow();
     exit(EXIT_SUCCESS);
 }
 
+/**
+ * @brief MainWindow::on_actionOuvrir_triggered triggered when the open button is pressed.
+ * \n
+ * Open a file dialog to load an image that will be bufferized for later modification,\n
+ * filters applies, ...\n
+ * \n
+ * The loaded image is displayed to the left of the application main menu.
+ */
 void MainWindow::on_actionOuvrir_triggered() {
-//    load_image();
     if(load_file(*this, *img)){
         QMessageBox::information(this, "Open image", "Image loaded");
         QImage img_qimg = mat_to_qimage(img->getImg());         //Convert the new cv::mat to QImage
@@ -58,6 +71,13 @@ void MainWindow::on_actionOuvrir_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::on_button_disparity_clicked triggered when the disparity button is pressed. \n
+ * \n
+ * It'll display a new window to manage the disparity generation parameters.\n
+ * \n
+ * @sa Disparity
+ */
 void MainWindow::on_button_disparity_clicked(){
 
     if(parametersWindow == nullptr)
@@ -69,7 +89,13 @@ void MainWindow::on_button_disparity_clicked(){
 
 }
 
-//Display Sobel Image
+/**
+ * @brief MainWindow::on_button_sobel_clicked triggered when the sobel button is pressed.\n
+ * \n
+ * This method apply the sobelian filter on the loaded image if not null, and display it in the application main menu.\n
+ * The sobelian filter detect edges of each elements of an image like the laplacian filter, \n
+ * but using the gradient method
+ */
 void MainWindow::on_button_sobel_clicked(){
     if(img->getImg().empty()){
         qDebug("[INFO] Load a stereo file before");
@@ -88,7 +114,12 @@ void MainWindow::on_button_sobel_clicked(){
 
 }
 
-//Display Laplace image
+/**
+ * @brief MainWindow::on_button_laplace_clicked triggered when the laplace button is pressed.\n
+ * \n
+ * This method apply the laplacian filter on the loaded image if not null, then display it in the application main menu \n
+ * The laplacian filter is useful to detect edges of elements of the image.
+ */
 void MainWindow::on_button_laplace_clicked(){
     if(img->getImg().empty()){
         qDebug("[INFO] Load a stereo file before");
@@ -106,8 +137,10 @@ void MainWindow::on_button_laplace_clicked(){
 
 }
 
-void MainWindow::on_calibrate_clicked()
-{
+/**
+ * @brief MainWindow::on_calibrate_clicked is triggered when the calibration button is pressed
+ */
+void MainWindow::on_calibrate_clicked() {
     QStringList filePath = QFileDialog::getOpenFileNames(
                 this, tr("Select the files for calibration"),
                 tr("./resources/"),
