@@ -3,6 +3,13 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * @brief imagecv::speed_test Calculate the time consumption of a function and one cv::Mat parameter
+ *
+ * @param func the function to test
+ * @param args argument of the function
+ * @return string containing the result of speed test
+ */
 QString imagecv::speed_test(function_call func, cv::Mat const& args){
     clock_t start, end;
     start = clock();
@@ -13,6 +20,15 @@ QString imagecv::speed_test(function_call func, cv::Mat const& args){
     return str;
 }
 
+/**
+ * @brief imagecv::speed_test Calculate the time consumption of a function with the 3 cv::Mat parameters.
+ *
+ * @param func the function to test
+ * @param args first argument of func
+ * @param arg2 second argument of func
+ * @param arg3 third argument of third
+ * @return string containing the result of speed test
+ */
 QString imagecv::speed_test(function_call_3_arg func, cv::Mat const& args, cv::Mat* arg2, cv::Mat* arg3){
     clock_t start, end;
     start = clock();
@@ -23,6 +39,14 @@ QString imagecv::speed_test(function_call_3_arg func, cv::Mat const& args, cv::M
     return str;
 }
 
+/**
+ * @brief imagecv::load_file
+ *
+ * @param thisWidget the widget using this method
+ * @param img pointer that will contain the result image if the stereo parameter is set to false
+ * @param stereo if true, the loaded image will be automatically split in two and store into pointers
+ * @return true if a file has been loaded, else false
+ */
 bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 
     QString fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), thisWidget.tr("resources/"), thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));

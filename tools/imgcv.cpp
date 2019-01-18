@@ -232,8 +232,13 @@ Mat &ImgCv::getImgR() const
     return *this->cvImgR;
 }
 
-void ImgCv::setImg(const Mat &newImg, bool isStereo)
-{
+/**
+ * @brief ImgCv::setImg set the image, is the stereo parameters is enable, automatically split them
+ *
+ * @param newImg image to set
+ * @param isStereo check if the image is stereo
+ */
+void ImgCv::setImg(const Mat &newImg, bool isStereo){
     newImg.copyTo(*cvImg);
     if(isStereo)
         split(*cvImg, *cvImgL, *cvImgR);
@@ -241,11 +246,16 @@ void ImgCv::setImg(const Mat &newImg, bool isStereo)
         cvImgL->deallocate();
         cvImgR->deallocate();
     }
-
 }
 
-void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right)
-{
+/**
+ * @brief ImgCv::split Split the first parameters into two image of the same width and put them into the two others parameters
+ *
+ * @param img image to split
+ * @param img_left left splitted image
+ * @param img_right right splitted image
+ */
+void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right){
     int width= img.cols/2 ;
     int x_right= width +img.cols%2; //First width position for the right image
 
