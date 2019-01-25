@@ -9,6 +9,8 @@
 
 #include "ui_calibration_widget.h"
 #include "tools/calibration_intr.h"
+#include "tools/chessboardcalibration.h"
+#include "tools/charucocalibration.h"
 #include "tools/imagecv.h"
 
 
@@ -50,6 +52,7 @@ private slots:
     void on_originalImage_clicked();
     void on_calibration_clicked();
     void on_Calibration_widget_destroyed();
+    void on_CharucoCalib_clicked();
 };
 
 #endif // CALIBRATION_WIDGET_H

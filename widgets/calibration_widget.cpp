@@ -156,3 +156,14 @@ void Calibration_widget::on_Calibration_widget_destroyed()
 {
     delete this;
 }
+
+void Calibration_widget::on_CharucoCalib_clicked()
+{
+    vector<cv::Mat> &set = calib->getSet();
+    delete calib;
+    if(ui->CharucoCalib->isChecked()){
+        calib = new CharucoCalibration(set);
+    }else{
+        calib = new ChessboardCalibration(set);
+    }
+}

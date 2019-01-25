@@ -59,7 +59,7 @@ void Disparity::on_apply_clicked(){
             this->IO_SADWindowSize = ui->slider_windowSize->value();
         this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16; //this parameters had to be a multiple of 16
 
-        img1 = mat_to_qimage(img->sbm());
+        img1 = mat_to_qimage(img->sbm(IO_numberOfDisparities, IO_SADWindowSize));
 
     }else{
 

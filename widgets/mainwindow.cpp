@@ -124,7 +124,7 @@ void MainWindow::on_calibrate_clicked()
 
         if(calib_widget != nullptr)
             delete calib_widget;
-        calib_widget = new Calibration_widget(new Calibration_intr(images));
+        calib_widget = new Calibration_widget(new ChessboardCalibration(images));
         calib_widget->show();
     }
 }

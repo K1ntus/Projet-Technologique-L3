@@ -24,9 +24,6 @@ unix {
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
-
-
-# uncomment for commoj project
 #INCLUDEPATH += C:/opencv/build/include/
 
 #LIBS += -LC:/opencv/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui
@@ -52,17 +49,21 @@ SOURCES += main.cpp\
     widgets/disparity.cpp \
     tools/imagecv.cpp \
     widgets/calibration_widget.cpp \
-    tools/calibration_intr.cpp \
+    tools/calibration/calibration_intr.cpp \
     tools/imgcv.cpp \
-    tools/intrinsicparameters.cpp
+    tools/calibration/intrinsicparameters.cpp \
+    tools/calibration/chessboardcalibration.cpp \
+    tools/calibration/charucocalibration.cpp
 
 HEADERS  += widgets/mainwindow.h \
     widgets/disparity.h \
     tools/imagecv.h \
     widgets/calibration_widget.h \
-    tools/calibration_intr.h \
+    tools/calibration/calibration_intr.h \
     tools/imgcv.h \
-    tools/intrinsicparameters.h
+    tools/calibration/intrinsicparameters.h \
+    tools/calibration/chessboardcalibration.h \
+    tools/calibration/charucocalibration.h
 
 FORMS    += widgets/mainwindow.ui \
     widgets/disparity.ui \

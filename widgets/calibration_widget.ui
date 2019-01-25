@@ -2,11 +2,14 @@
 <ui version="4.0">
  <class>Calibration_widget</class>
  <widget class="QWidget" name="Calibration_widget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>984</width>
+    <width>1001</width>
     <height>483</height>
    </rect>
   </property>
@@ -83,8 +86,27 @@
       <layout class="QVBoxLayout" name="calibrationOption">
        <item>
         <widget class="QPushButton" name="calibration">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>calibrate</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignTop">
+        <widget class="QCheckBox" name="CharucoCalib">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Charuco calibration</string>
          </property>
         </widget>
        </item>

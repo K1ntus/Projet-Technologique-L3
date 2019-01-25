@@ -1,5 +1,9 @@
 #include "charucocalibration.h"
-
+#include <QWidget>
+#include <QtGui>
+#include <QPixmap>
+#include <QFileDialog>
+#include <QMessageBox>
 using namespace std;
 using namespace cv;
 using namespace cv::aruco;
@@ -20,8 +24,9 @@ bool CharucoCalibration::find_chessboard_corners(std::vector<cv::Point2f> &corne
 void CharucoCalibration::calibrate()
 {
     // creation of the charuco board
-//    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(11);
-    Ptr<aruco::CharucoBoard> board = aruco::CharucoBoard::create(board_size.width, board_size.height, 0.02, 0.02, aruco::getPredefinedDictionary(0));
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(PREDEFINED_DICTIONARY_NAME::DICT_6X6_250);
+
+    Ptr<aruco::CharucoBoard> board = aruco::CharucoBoard::create(board_size.width, board_size.height, 0.02, 0.01, dictionary);
     Mat boardImage;
     Mat &img = imgs->at(currentImg);
     Size imgSize = img.size();
