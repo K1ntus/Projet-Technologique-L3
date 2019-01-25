@@ -8,9 +8,9 @@
 #include <QMessageBox>
 
 #include "ui_calibration_widget.h"
-#include "tools/calibration_intr.h"
-#include "tools/chessboardcalibration.h"
-#include "tools/charucocalibration.h"
+#include "tools/calibration/calibration_intr.h"
+#include "tools/calibration/chessboardcalibration.h"
+#include "tools/calibration/charucocalibration.h"
 #include "tools/imagecv.h"
 
 

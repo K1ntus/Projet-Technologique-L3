@@ -7,7 +7,7 @@ Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs, int nLines, int n
     currentImg(0)
 {
     this->imgs = new vector<cv::Mat>(imgs);
-    board_size = Size(nLines, nCols);
+    board_size = Size(nCols, nLines);
     gray_image = new Mat;
 
     image_points = new vector<vector<Point2f>>;
