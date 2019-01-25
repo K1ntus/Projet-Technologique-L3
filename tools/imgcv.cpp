@@ -73,8 +73,12 @@ Mat ImgCv::contour_laplace(Mat const&img)
     Mat gray_img, result, final;
     Mat img_read = img.clone();
 
+
     GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT); // apply the gaussianBlur to smooth the img
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
+    if(img_read.channels()!=1)
+        cvtColor(img_read,gray_img,CV_BGR2GRAY);
+    else
+        gray_img=img_read.clone();
 
     Laplacian(gray_img,result,CV_16S,3,1,0,BORDER_DEFAULT);
     convertScaleAbs(result,final,1,0);                          //convert to a CV_8U image
@@ -102,12 +106,15 @@ Mat ImgCv::contour_laplace() const
 }
 
 // static version
-cv::Mat ImgCv::contour_sobel(Mat const& img){
+Mat ImgCv::contour_sobel(const Mat &img){
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
     Mat img_read=img.clone();
 
     GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT);
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
+    if(img_read.channels()!=1)
+        cvtColor(img_read,gray_img,CV_BGR2GRAY);
+    else
+        gray_img=img_read.clone();
 
     Sobel(gray_img,gx,CV_16S,1,0,3,1,0,BORDER_DEFAULT);  // derivative in x
     Sobel(gray_img,gy,CV_16S,0,1,3,1,0,BORDER_DEFAULT);// derivative in y
@@ -198,6 +205,7 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
     dst.convertTo(dst,CV_8U,1,0);
+    bitwise_not(dst, dst);
     return dst;
 }
 

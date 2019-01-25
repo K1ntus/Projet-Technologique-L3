@@ -204,3 +204,78 @@ void Disparity::displayImage(Mat const& image){
     ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));
     ui->image_loaded->adjustSize();
 }
+
+/**
+ * @brief Disparity::on_Sobel_clicked apply the Sobel filter on the disparity map to display its contours
+ */
+void Disparity::on_Sobel_clicked()
+{
+    if(img->getImg().empty() || img->getImgR().empty()){
+            qDebug("[ERROR] Please, load a stereo image first");
+            return;
+        }
+    Mat sobel, img1;
+
+        if(ui->checkBox->isChecked()){
+            img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
+            sobel = ImgCv::contour_sobel(img1);
+       }else {
+            img1 = img->disparity_map_SGBM(IO_minDisparity,
+                                           IO_numberOfDisparities,
+                                           IO_SADWindowSize,
+                                           IO_P1,
+                                           IO_P2,
+                                           IO_disp12MaxDif,
+                                           IO_preFilterCap,
+                                           IO_uniquenessRatio,
+                                           IO_speckleWindowSize,
+                                           IO_speckleRange,
+                                           IO_full_scale
+                                                );
+            sobel = ImgCv::contour_sobel(img1);
+        }
+    QImage img2 = mat_to_qimage(sobel).scaled(width,height, Qt::KeepAspectRatio);
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
+    ui->image_loaded->adjustSize();
+
+
+
+
+
+}
+/**
+ * @brief Disparity::on_Laplace_clicked apply the Laplacian filter on the disparity map to display its contours
+ */
+
+void Disparity::on_Laplace_clicked()
+{
+    if(img->getImg().empty() || img->getImgR().empty()){
+            qDebug("[ERROR] Please, load a stereo image first");
+            return;
+        }
+    Mat laplace, img1;
+        if(ui->checkBox->isChecked()){
+            img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
+            laplace = ImgCv::contour_laplace(img1);
+        }else {
+             img1 = img->disparity_map_SGBM(IO_minDisparity,
+                                            IO_numberOfDisparities,
+                                            IO_SADWindowSize,
+                                            IO_P1,
+                                            IO_P2,
+                                            IO_disp12MaxDif,
+                                            IO_preFilterCap,
+                                            IO_uniquenessRatio,
+                                            IO_speckleWindowSize,
+                                            IO_speckleRange,
+                                            IO_full_scale
+                                                 );
+             laplace = ImgCv::contour_laplace(img1);
+         }
+    QImage img2 = mat_to_qimage(laplace).scaled(width,height, Qt::KeepAspectRatio);
+    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
+    ui->image_loaded->adjustSize();
+
+
+
+}

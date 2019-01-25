@@ -674,6 +674,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_preFilterCap">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -693,6 +696,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_minDisparity">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -715,6 +721,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_uniquenessRatio">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -734,6 +743,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_speckleWindowSize">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -747,6 +759,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_speckleRange">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -763,6 +778,9 @@
    </property>
   </widget>
   <widget class="QSlider" name="slider_disp12MaxDiff">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -1766,6 +1784,32 @@
    </property>
    <property name="text">
     <string>Activer</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Sobel">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>460</y>
+     <width>71</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sobel</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Laplace">
+   <property name="geometry">
+    <rect>
+     <x>520</x>
+     <y>460</y>
+     <width>71</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Laplace</string>
    </property>
   </widget>
  </widget>

@@ -49,6 +49,8 @@ private slots:
     void on_post_filtering_clicked();
     void on_checkBox_clicked();
     void displayImage(cv::Mat const&);
+    void on_Sobel_clicked();
+    void on_Laplace_clicked();
 
 private:
     Ui::Disparity *ui;
