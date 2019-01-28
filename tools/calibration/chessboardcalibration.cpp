@@ -3,11 +3,34 @@
 using namespace std;
 using namespace cv;
 
-ChessboardCalibration::ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLines, int nCols): Calibration_intr(imgs, nLines, nCols)
-{}
+ChessboardCalibration::ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLines, int nCols):
+    Calibration_intr(imgs, nLines, nCols),
+     image_points(nullptr)
+{
+    image_points = new vector<vector<Point2f>>;
+
+}
 
 ChessboardCalibration::~ChessboardCalibration()
 {
+    delete image_points;
+
+}
+
+void ChessboardCalibration::setNextImgIndex(const size_t &newIndex)
+{
+    super::setNextImgIndex(newIndex);
+    if(image_points->size() != 0 && currentImg < image_points->size())
+        find_chessboard_corners(image_points->at(currentImg));
+    else
+        find_corners();
+
+}
+
+bool ChessboardCalibration::find_corners()
+{
+    vector<Point2f> corners;
+    return find_chessboard_corners(corners);
 }
 
 bool ChessboardCalibration::find_chessboard_corners(std::vector<cv::Point2f>& corners){
@@ -24,6 +47,7 @@ bool ChessboardCalibration::find_chessboard_corners(std::vector<cv::Point2f>& co
 }
 
 void ChessboardCalibration::calibrate(){
+    clearCalib();
 
 
     int &nb_lines(board_size.height), &nb_columns(board_size.width),
@@ -72,4 +96,10 @@ void ChessboardCalibration::calibrate(){
 
     intrParam->setCameraMatrix(*camera_matrix);
     intrParam->setDistCoeffsMatrix(*dist_coeffs);
+}
+
+void ChessboardCalibration::clearCalib(bool clearSet)
+{
+    super::clearCalib();
+    image_points->clear();
 }

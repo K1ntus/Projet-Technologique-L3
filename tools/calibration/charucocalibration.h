@@ -12,13 +12,17 @@ public:
     CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines = 7, int nCols = 10);
     ~CharucoCalibration();
 
-    bool find_chessboard_corners(std::vector<cv::Point2f>&charucoCorners);
-    bool find_charuco_corners(std::vector<cv::Point2f>&charucoCorners, std::vector<int>&charucoIds);
+    void setNextImgIndex(size_t const& newIndex);
+
+    bool find_corners();
+    bool find_charuco_corners(std::vector<std::vector<cv::Point2f>>&charucoCorners, std::vector<int>&charucoIds);
     void calibrate();
+    void clearCalib(bool clearSet = false);
 
 private:
-
+    typedef Calibration_intr super;
     cv::Ptr<cv::aruco::CharucoBoard> board;
+    std::vector< std::vector< std::vector< cv::Point2f > > > *charucoCornersTab;
     std::vector<std::vector<int>> *charucoIdsTab;
 };
 

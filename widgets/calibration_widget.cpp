@@ -159,11 +159,11 @@ void Calibration_widget::on_Calibration_widget_destroyed()
 
 void Calibration_widget::on_CharucoCalib_clicked()
 {
-    vector<cv::Mat> &set = calib->getSet();
+    vector<cv::Mat> &imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-        calib = new CharucoCalibration(set);
+        calib = new CharucoCalibration(imageSet);
     }else{
-        calib = new ChessboardCalibration(set);
+        calib = new ChessboardCalibration(imageSet);
     }
 }

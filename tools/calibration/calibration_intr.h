@@ -20,7 +20,7 @@ public:
     void newImageSet(std::vector<cv::Mat> const& images);
     std::vector<cv::Mat>& getSet() const;
     size_t getCurrentImgIndex() const;
-    void setNextImgIndex(size_t const& newIndex);
+    virtual void setNextImgIndex(size_t const& newIndex);
 
     cv::Mat& get_image_origin() const;
     cv::Mat& get_gray_image() const;
@@ -30,7 +30,9 @@ public:
     std::vector<cv::Mat>& get_rvecs() const;
     std::vector<cv::Mat>& get_tvecs() const;
 
-    bool find_chessboard_corners(std::vector<cv::Point2f>&corners);
+    virtual void clearCalib(bool clearSet = false);
+
+    virtual bool find_corners() = 0;
     virtual void calibrate() = 0;
     cv::Mat undistorted_image() const;
 
@@ -41,8 +43,6 @@ protected:
     cv::Size board_size;
 
     cv::Mat* gray_image;
-
-    std::vector<std::vector<cv::Point2f>>* image_points;
 
     // intrinseque parameters
     IntrinsicParameters *intrParam;
