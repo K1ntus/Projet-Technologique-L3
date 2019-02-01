@@ -32,6 +32,7 @@ public:
 
     void setImg(cv::Mat const&, bool);
 
+    void setImg(cv::Mat const&imgL, cv::Mat const&imgR, bool isStereo = true);
     /**
      * @brief 'Cut' an image in two new image of width/2
      * @param cv::Mat Image that will be splitted in two
@@ -86,7 +87,7 @@ public:
                                size_t const&, size_t const&, size_t const&,
                                size_t const&, int const&) const;
 
-    cv::Mat disparity_post_filtering();
+    cv::Mat &disparity_post_filtering() const;
 
 
 private:

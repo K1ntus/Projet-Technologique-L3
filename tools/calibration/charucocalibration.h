@@ -14,6 +14,7 @@ public:
 
     void setNextImgIndex(size_t const& newIndex);
 
+    void prepareCalibration();
     bool find_corners();
     bool find_charuco_corners(std::vector<std::vector<cv::Point2f>>&charucoCorners, std::vector<int>&charucoIds);
     void calibrate();

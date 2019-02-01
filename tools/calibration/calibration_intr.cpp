@@ -26,6 +26,7 @@ Calibration_intr::~Calibration_intr()
 void Calibration_intr::newImageSet(const std::vector<Mat> &images)
 {
     clearCalib(true);
+    imgs->clear();
     for (size_t i = 0; i < images.size(); i++) {
         imgs->push_back(images[i]);
     }
@@ -52,7 +53,7 @@ Mat& Calibration_intr::get_image_origin() const{
     return imgs->at(currentImg);
 }
 
-Mat& Calibration_intr::get_gray_image() const{
+Mat& Calibration_intr::get_compute_image() const{
     return *gray_image;
 }
 
@@ -80,8 +81,8 @@ void Calibration_intr::clearCalib(bool clearSet)
     rvecs->clear();
     tvecs->clear();
     currentImg = 0;
-    if(clearSet)
-        imgs->clear();
+//    if(clearSet)
+//        imgs->clear();
 }
 
 cv::Mat Calibration_intr::undistorted_image() const{

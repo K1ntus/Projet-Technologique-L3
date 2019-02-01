@@ -4,6 +4,7 @@
 // opencv uitlities
 // uncomment for common project
 #include <unistd.h>
+#include "opencv2/opencv.hpp"
 
 // Qt
 #include <QMainWindow>
@@ -46,6 +47,7 @@ private slots:
     void on_button_sobel_clicked();
     void on_button_laplace_clicked();
     void on_calibrate_clicked();
+    void on_videoTest_clicked();
 };
 
 #endif // MAINWINDOW_H

@@ -15,7 +15,7 @@ unix {
 }
 
 # uncomment when at home
-#CONFIG += c++11
+CONFIG += c++11
 #INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
 
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     tools/imgcv.cpp \
     tools/calibration/intrinsicparameters.cpp \
     tools/calibration/chessboardcalibration.cpp \
-    tools/calibration/charucocalibration.cpp
+    tools/calibration/charucocalibration.cpp \
+    tools/calibration/pt_stereocalibration.cpp
 
 HEADERS  += widgets/mainwindow.h \
     widgets/disparity.h \
@@ -63,7 +64,8 @@ HEADERS  += widgets/mainwindow.h \
     tools/imgcv.h \
     tools/calibration/intrinsicparameters.h \
     tools/calibration/chessboardcalibration.h \
-    tools/calibration/charucocalibration.h
+    tools/calibration/charucocalibration.h \
+    tools/calibration/pt_stereocalibration.h
 
 FORMS    += widgets/mainwindow.ui \
     widgets/disparity.ui \

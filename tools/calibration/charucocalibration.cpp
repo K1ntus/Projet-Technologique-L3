@@ -39,6 +39,41 @@ void CharucoCalibration::setNextImgIndex(const size_t &newIndex)
         find_corners();
 }
 
+void CharucoCalibration::prepareCalibration()
+{
+    size_t nb_image = imgs->size();
+    vector<vector<Point2f>> charucoCorners;
+    vector<int> charucoIds;
+
+    size_t im = 0;
+    size_t nb_success = 0;
+    while(im < nb_image){
+        currentImg =  im%nb_image;
+
+        //TODO debugging
+        if(find_charuco_corners(charucoCorners, charucoIds)){
+            charucoCornersTab->push_back(charucoCorners);
+            charucoIdsTab->push_back(charucoIds);
+
+            nb_success++;
+
+            if(nb_success >= nb_image)
+                break;
+        }
+        else if(im > (nb_image << 2))
+            return;
+
+        im++;
+
+    }
+
+
+
+    std::cout << "charuco corners: " << charucoCornersTab->size() << std::endl;
+    std::cout << "charuco ids: " << charucoIdsTab->size() << std::endl;
+
+}
+
 bool CharucoCalibration::find_charuco_corners(std::vector<std::vector<Point2f> > &charucoCorners, std::vector<int> &charucoIds)
 {
     Mat &img = imgs->at(currentImg);
@@ -77,51 +112,22 @@ bool CharucoCalibration::find_corners()
 
 void CharucoCalibration::calibrate()
 {
-    this->clearCalib();
+    clearCalib();
 
     // detection of the corners
-    size_t nb_image = imgs->size();
-    vector<vector<Point2f>> charucoCorners;
-    vector<int> charucoIds;
-
-    size_t im = 0;
-    size_t nb_success = 0;
-    while(im < nb_image){
-        currentImg =  im%nb_image;
-
-        //TODO debugging
-        if(find_charuco_corners(charucoCorners, charucoIds)){
-            charucoCornersTab->push_back(charucoCorners);
-            charucoIdsTab->push_back(charucoIds);
-
-            nb_success++;
-
-            if(nb_success >= nb_image)
-                break;
-        }
-        else if(im > (nb_image << 2))
-            return;
-
-        im++;
-
-    }
-
-
-
-    std::cout << "charuco corners: " << charucoCornersTab->size() << std::endl;
-    std::cout << "charuco ids: " << charucoIdsTab->size() << std::endl;
+    prepareCalibration();
 
     Size imgSize = imgs->at(currentImg).size();
 
-    Mat *dist_coeffs = new Mat;
-    Mat *camera_matrix = new Mat(3, 3, CV_32FC1);
-    camera_matrix->ptr<float>(0)[0] = 1;
-    camera_matrix->ptr<float>(1)[1] = 1;
+    Mat dist_coeffs;
+    Mat camera_matrix(3, 3, CV_32FC1);
+    camera_matrix.ptr<float>(0)[0] = 1;
+    camera_matrix.ptr<float>(1)[1] = 1;
 
-            double repError = calibrateCameraCharuco(*charucoCornersTab, *charucoIdsTab, board, imgSize, *camera_matrix, *dist_coeffs, *rvecs, *tvecs,0,  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON));
+            double repError = calibrateCameraCharuco(*charucoCornersTab, *charucoIdsTab, board, imgSize, camera_matrix, dist_coeffs, *rvecs, *tvecs,0,  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON));
 
-    intrParam->setCameraMatrix(*camera_matrix);
-    intrParam->setDistCoeffsMatrix(*dist_coeffs);
+    intrParam->setCameraMatrix(camera_matrix);
+    intrParam->setDistCoeffsMatrix(dist_coeffs);
 
 
 }

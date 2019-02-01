@@ -210,19 +210,9 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 }
 
 //TODO
-Mat ImgCv::disparity_post_filtering() {
-    int leftWidth = cvImgL->size().width;
-    int rightWidth = cvImgR->size().width;
-    Mat res(cvImgL->size().height, leftWidth + rightWidth, cvImgL->type());
-
-    res.adjustROI(0, 0, 0, -rightWidth);
-    cvImgL->copyTo(res);
-
-    res.adjustROI(0, 0, -leftWidth, rightWidth);
-    cvImgR->copyTo(res);
-
-    res.adjustROI(0, 0, leftWidth, 0);
-    return res;
+Mat& ImgCv::disparity_post_filtering() const {
+    setImg(*cvImgL, *cvImgR, true);
+    return *cvImg;
 }
 
 bool ImgCv::isStereo() const
@@ -246,14 +236,31 @@ Mat &ImgCv::getImgR() const
  * @param newImg image to set
  * @param isStereo check if the image is stereo
  */
-void ImgCv::setImg(const Mat &newImg, bool isStereo){
-    newImg.copyTo(*cvImg);
+void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo){
+    imgL.copyTo(*cvImg);
     if(isStereo)
         split(*cvImg, *cvImgL, *cvImgR);
     else{
         cvImgL->deallocate();
         cvImgR->deallocate();
     }
+}
+
+void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo)
+{
+
+    int leftWidth = imgL.cols;
+    int rightWidth = imgR.cols;
+    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
+
+    res.adjustROI(0, 0, 0, -rightWidth);
+    imgL.copyTo(res);
+
+    res.adjustROI(0, 0, -leftWidth, rightWidth);
+    imgR.copyTo(res);
+
+    res.adjustROI(0, 0, leftWidth, 0);
+    res.copyTo(*cvImg);
 }
 
 /**

@@ -8,12 +8,13 @@ ChessboardCalibration::ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLi
      image_points(nullptr)
 {
     image_points = new vector<vector<Point2f>>;
-
+    object_points = new vector<vector<Point3f>>;
 }
 
 ChessboardCalibration::~ChessboardCalibration()
 {
     delete image_points;
+    delete object_points;
 
 }
 
@@ -25,6 +26,44 @@ void ChessboardCalibration::setNextImgIndex(const size_t &newIndex)
     else
         find_corners();
 
+}
+
+void ChessboardCalibration::prepareCalibration()
+{
+    int &nb_lines(board_size.height), &nb_columns(board_size.width),
+            squareSize = 2;
+
+    // 3D coordinates of chessboard points
+
+    vector<Point3f> obj;
+
+    for (int i = 0; i < nb_lines; i++)
+        for (int j = 0; j < nb_columns; j++)
+            obj.push_back(Point3f((float)j * squareSize, (float)i * squareSize, 0));
+
+    size_t nb_image = imgs->size();
+    vector<Point2f> corners;
+
+    size_t im = 0;
+    size_t nb_success = 0;
+    while(nb_success<nb_image){
+        currentImg =  im%nb_image;
+
+        if(find_chessboard_corners(corners)){
+            image_points->push_back(corners);
+            object_points->push_back(obj);
+
+            nb_success++;
+
+            if(nb_success >= nb_image)
+                break;
+        }
+        else if(im > 3*nb_image)
+            return;
+
+        im++;
+
+    }
 }
 
 bool ChessboardCalibration::find_corners()
@@ -47,59 +86,25 @@ bool ChessboardCalibration::find_chessboard_corners(std::vector<cv::Point2f>& co
 }
 
 void ChessboardCalibration::calibrate(){
+
     clearCalib();
-
-
-    int &nb_lines(board_size.height), &nb_columns(board_size.width),
-            squareSize = 2;
-
-    // 3D coordinates of chessboard points
-
-    vector<Point3f> obj;
-    vector<vector<Point3f>> object_points;
-
-    for (int i = 0; i < nb_lines; i++)
-        for (int j = 0; j < nb_columns; j++)
-            obj.push_back(Point3f((float)j * squareSize, (float)i * squareSize, 0));
-
-    size_t nb_image = imgs->size();
-    vector<Point2f> corners;
-
-    size_t im = 0;
-    size_t nb_success = 0;
-    while(nb_success<nb_image){
-        currentImg =  im%nb_image;
-
-        if(find_chessboard_corners(corners)){
-            image_points->push_back(corners);
-            object_points.push_back(obj);
-
-            nb_success++;
-
-            if(nb_success >= nb_image)
-                break;
-        }
-        else if(im > 3*nb_image)
-            return;
-
-        im++;
-
-    }
+    prepareCalibration();
 
     Mat &img = imgs->at(currentImg);
-    Mat *dist_coeffs = new Mat;
-    Mat *camera_matrix = new Mat(3, 3, CV_32FC1);
-    camera_matrix->ptr<float>(0)[0] = 1;
-    camera_matrix->ptr<float>(1)[1] = 1;
+    Mat dist_coeffs;
+    Mat camera_matrix(3, 3, CV_32FC1);
+    camera_matrix.ptr<float>(0)[0] = 1;
+    camera_matrix.ptr<float>(1)[1] = 1;
 
-    calibrateCamera(object_points, *image_points, img.size(), *camera_matrix, *dist_coeffs, *rvecs, *tvecs);// , CV_CALIB_USE_INTRINSIC_GUESS);
+    calibrateCamera(*object_points, *image_points, img.size(), camera_matrix, dist_coeffs, *rvecs, *tvecs);// , CV_CALIB_USE_INTRINSIC_GUESS);
 
-    intrParam->setCameraMatrix(*camera_matrix);
-    intrParam->setDistCoeffsMatrix(*dist_coeffs);
+    intrParam->setCameraMatrix(camera_matrix);
+    intrParam->setDistCoeffsMatrix(dist_coeffs);
 }
 
 void ChessboardCalibration::clearCalib(bool clearSet)
 {
     super::clearCalib();
     image_points->clear();
+    object_points->clear();
 }

@@ -161,3 +161,17 @@ void MainWindow::on_calibrate_clicked() {
         calib_widget->show();
     }
 }
+
+void MainWindow::on_videoTest_clicked()
+{
+    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+    std::cout << fileName2.toStdString() << std::endl;
+//    cv::VideoCapture *cap = new VideoCapture(fileName2.toStdString());
+//    if(cap != nullptr){
+//        if(cap->isOpened())
+//            std::cout << "video opend" << std::endl;
+//        cap->release();
+//    }else
+//        std::cout << "file empty" << std::endl;
+
+}

@@ -11,7 +11,7 @@ public:
     ~ChessboardCalibration();
 
     void setNextImgIndex(size_t const& newIndex);
-
+    void prepareCalibration();
     bool find_corners();
     bool find_chessboard_corners(std::vector<cv::Point2f>&corners);
     void calibrate();
@@ -20,6 +20,7 @@ public:
 private:
     typedef Calibration_intr super;
     std::vector<std::vector<cv::Point2f>>* image_points;
+    std::vector<std::vector<cv::Point3f>>* object_points;
 };
 
 #endif // CHESSBOARDCALIBRATION_H

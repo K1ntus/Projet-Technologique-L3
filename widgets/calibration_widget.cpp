@@ -49,7 +49,7 @@ void Calibration_widget::display_image(DisplayerMode const&displayerMode){
         break;
 
     case CHESSBOARD_CORNERS:
-        imagePtr = &calib->get_gray_image();
+        imagePtr = &calib->get_compute_image();
         break;
 
     case UNDISTORTED:
@@ -149,6 +149,7 @@ void Calibration_widget::on_calibration_clicked()
     calib->calibrate();
     QMessageBox::information(this, tr("Calibration"), tr("Calibrated!"));
     ui->undistortedButton->setEnabled(true);
+    display_image(currentMode);
 
 }
 

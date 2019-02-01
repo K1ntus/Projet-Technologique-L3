@@ -23,7 +23,7 @@ public:
     virtual void setNextImgIndex(size_t const& newIndex);
 
     cv::Mat& get_image_origin() const;
-    cv::Mat& get_gray_image() const;
+    cv::Mat& get_compute_image() const;
 
     IntrinsicParameters& getIntrinsicParameters() const;
     void setIntrinsincParameters(IntrinsicParameters &intrinsicParam);
@@ -31,7 +31,7 @@ public:
     std::vector<cv::Mat>& get_tvecs() const;
 
     virtual void clearCalib(bool clearSet = false);
-
+    virtual void prepareCalibration() = 0;
     virtual bool find_corners() = 0;
     virtual void calibrate() = 0;
     cv::Mat undistorted_image() const;
