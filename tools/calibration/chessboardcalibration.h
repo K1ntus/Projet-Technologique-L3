@@ -13,7 +13,6 @@ public:
     void setNextImgIndex(size_t const& newIndex);
 
     std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
-    std::vector<std::vector<cv::Point3f>>& getObjectPoints() const;
 
     void clearCalib(bool clearSet = false);
     void prepareCalibration();

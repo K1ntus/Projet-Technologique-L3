@@ -34,11 +34,6 @@ std::vector<std::vector<Point2f> > &ChessboardCalibration::getImagePoints() cons
     return *image_points;
 }
 
-std::vector<std::vector<Point3f> > &ChessboardCalibration::getObjectPoints() const
-{
-    return *object_points;
-}
-
 void ChessboardCalibration::prepareCalibration()
 {
     int &nb_lines(board_size.height), &nb_columns(board_size.width),

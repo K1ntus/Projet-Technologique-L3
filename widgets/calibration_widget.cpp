@@ -29,7 +29,7 @@ Calibration_widget::~Calibration_widget()
 
 void Calibration_widget::on_undistortedButton_clicked()
 {
-    if(calib->hasIntrinsicParameters())
+    if(!calib->hasIntrinsicParameters())
         return;
 
     currentMode = UNDISTORTED;
@@ -180,7 +180,7 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-//        calib = new CharucoCalibration(imageSet);
+        calib = new CharucoCalibration(imageSet);
     }else{
         calib = new ChessboardCalibration(imageSet);
     }
@@ -222,7 +222,8 @@ void Calibration_widget::on_stereoCalibration_clicked()
             calib->prepareCalibration();
             ui->undistortedButton->setEnabled(true);
             enableFeatures(true);
-
+            int nbImg = calib->getSet().size();
+            ui->nbImage->setNum(nbImg);
             on_originalImage_clicked();
         }
         else

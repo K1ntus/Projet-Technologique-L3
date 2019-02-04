@@ -147,22 +147,24 @@ void MainWindow::on_calibrate_clicked() {
 
 void MainWindow::on_videoTest_clicked()
 {
-    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
     std::cout << fileName2.toStdString() << std::endl;
-    cv::VideoCapture cap(fileName2.toStdString());
-    if(cap.isOpened()){
+    const string& fileLeft(fileName2.toStdString());
+    cv::VideoCapture capL(fileLeft);
+    if(capL.isOpened()){
         vector<ImgCv> stereoImgTab;
 
         std::cout << "video opend" << std::endl;
-        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
         std::cout << fileName2.toStdString() << std::endl;
-        cv::VideoCapture capR(fileName2.toStdString());
+        const string& fileRight(fileName2.toStdString());
+        cv::VideoCapture capR(fileRight);
         if(capR.isOpened()){
             cv::Mat imgVidL, imgVidR;
             int key = ' ';
-            if(!cap.grab() || !capR.grab()) return;
+            if(!capL.grab() || !capR.grab()) return;
 
-            double framerate = cap.get(CV_CAP_PROP_FPS);
+            double framerate = capL.get(CV_CAP_PROP_FPS);
             while(key != 'q'){
 
                 if(key == 'p'){
@@ -187,7 +189,7 @@ void MainWindow::on_videoTest_clicked()
                         key = 'p';
 
                 }else{
-                    cap.retrieve(imgVidL);
+                    capL.retrieve(imgVidL);
                     capR.retrieve(imgVidR);
                     img->setImg(imgVidL, imgVidR);
 
@@ -199,20 +201,19 @@ void MainWindow::on_videoTest_clicked()
                         std::cout << "saved" << std::endl;
 
                         stereoImgTab.push_back(img->getImg());
-                        if(stereoImgTab.size() >= 20)
-                            key = 'q';
-                    }
-                    key = waitKey((int) framerate);
-                    if(!cap.grab() || !capR.grab())
                         key = 'q';
-
                 }
+                key = waitKey((int) framerate);
+                if(!capL.grab() || !capR.grab())
+                    key = 'q';
+
+            }
+                        if(stereoImgTab.size() >= 20)
             }
 
-            capR.release();
         }
+        capR.release();
         destroyWindow("video test");
-        cap.release();
         if(!stereoImgTab.empty()){
             delete calib_widget;
             calib_widget = new Calibration_widget(new PT_StereoCalibration(stereoImgTab));
@@ -220,6 +221,7 @@ void MainWindow::on_videoTest_clicked()
         }
     }else
         std::cout << "file empty" << std::endl;
+    capL.release();
 
 }
 

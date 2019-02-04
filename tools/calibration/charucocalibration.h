@@ -14,16 +14,18 @@ public:
 
     void setNextImgIndex(size_t const& newIndex);
 
+    std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
+
     void clearCalib(bool clearSet = false);
     void prepareCalibration();
     bool find_corners();
-    bool find_charuco_corners(std::vector<std::vector<cv::Point2f>>&charucoCorners, std::vector<int>&charucoIds);
+    bool find_charuco_corners(std::vector<cv::Point2f>&charucoCorners, std::vector<int>&charucoIds);
     void calibrate();
 
 private:
     typedef Calibration_intr super;
     cv::Ptr<cv::aruco::CharucoBoard> board;
-    std::vector< std::vector< std::vector< cv::Point2f > > > *charucoCornersTab;
+    std::vector< std::vector< cv::Point2f > > *charucoCornersTab;
     std::vector<std::vector<int>> *charucoIdsTab;
 };
 

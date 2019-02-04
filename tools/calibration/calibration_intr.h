@@ -12,7 +12,6 @@ public:
     virtual ~Calibration_intr();
 
     virtual std::vector<std::vector<cv::Point2f>>& getImagePoints() const = 0;
-    virtual std::vector<std::vector<cv::Point3f>>& getObjectPoints() const = 0;
 
     void newImageSet(std::vector<cv::Mat> const& images);
     std::vector<cv::Mat>& getSet() const;

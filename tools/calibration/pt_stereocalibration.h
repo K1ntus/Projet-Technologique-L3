@@ -4,7 +4,7 @@
 #include "pt_icalibration.h"
 #include "calibration_intr.h"
 #include "chessboardcalibration.h"
-//#include "charucocalibration.h"
+#include "charucocalibration.h"
 #include "../imgcv.h"
 
 enum CalibrationMode{

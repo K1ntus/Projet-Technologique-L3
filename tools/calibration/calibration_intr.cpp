@@ -83,7 +83,7 @@ bool Calibration_intr::runCalibration(string const &inFile)
 
 cv::Mat Calibration_intr::undistorted_image() const{
     Mat image_undistorted;
-    if(imgs->empty() || hasIntrinsicParameters()){}
+    if(imgs->empty() || !hasIntrinsicParameters()){}
     else {
         Mat &img = imgs->at(currentImg);
         Mat &dist_coeffs = intrParam->getDistCoeffs();

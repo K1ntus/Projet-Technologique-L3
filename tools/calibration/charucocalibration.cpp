@@ -10,7 +10,7 @@ CharucoCalibration::CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines, i
     charucoIdsTab(nullptr)
 {
 
-    charucoCornersTab = new vector< vector< vector<Point2f> > >;
+    charucoCornersTab = new vector< vector<Point2f> >;
     charucoIdsTab = new vector<vector<int>>;
 
     // creation of the charuco board
@@ -19,9 +19,9 @@ CharucoCalibration::CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines, i
     int const& squareY = board_size.height;
     board = aruco::CharucoBoard::create(squareX, squareY, 0.02, 0.01, dictionary);
 
-    Mat boardImage;
-//    board->draw(imgs.at(currentImg).size(), boardImage, 10, 1);
-//    imshow("test board", boardImage);
+    //    Mat boardImage;
+    //    board->draw(imgs.at(currentImg).size(), boardImage, 10, 1);
+    //    imshow("test board", boardImage);
 }
 
 CharucoCalibration::~CharucoCalibration()
@@ -39,10 +39,15 @@ void CharucoCalibration::setNextImgIndex(const size_t &newIndex)
         find_corners();
 }
 
+std::vector<std::vector<Point2f> > &CharucoCalibration::getImagePoints() const
+{
+    return *charucoCornersTab;
+}
+
 void CharucoCalibration::prepareCalibration()
 {
     size_t nb_image = imgs->size();
-    vector<vector<Point2f>> charucoCorners;
+    vector<Point2f> charucoCorners;
     vector<int> charucoIds;
 
     size_t im = 0;
@@ -74,28 +79,28 @@ void CharucoCalibration::prepareCalibration()
 
 }
 
-bool CharucoCalibration::find_charuco_corners(std::vector<std::vector<Point2f> > &charucoCorners, std::vector<int> &charucoIds)
+bool CharucoCalibration::find_charuco_corners(std::vector<Point2f> &charucoCorners, std::vector<int> &charucoIds)
 {
     Mat &img = imgs->at(currentImg);
+    vector<int> markerIds;
+    vector<vector<Point2f>> markerCorners;
     Ptr<aruco::DetectorParameters> params = new DetectorParameters;
     params->doCornerRefinement = false;
 
     // detection of the corners
-    aruco::detectMarkers(img, board->dictionary, charucoCorners, charucoIds, params);
+    aruco::detectMarkers(img, board->dictionary, markerCorners, markerIds, params);
 
-    if(charucoIds.size() > 0) {
+    if(markerIds.size() > 0) {
         cvtColor(img, *gray_image, CV_BGR2GRAY);
 
-        aruco::drawDetectedMarkers(*gray_image, charucoCorners, charucoIds, cv::Scalar(255,0 ,0));
+        aruco::drawDetectedMarkers(*gray_image, markerCorners, markerIds, cv::Scalar(255,0 ,0));
 
-        vector<int> markerIds;
-        vector<Point2f> markerCorners;
-        aruco::interpolateCornersCharuco(charucoCorners, charucoIds, img, board, markerCorners, markerIds);
+        aruco::interpolateCornersCharuco(markerCorners, markerIds, img, board, charucoCorners, charucoIds);
 
-        if(markerIds.size() > 0){
+        if(charucoIds.size() > 0){
             std::cout << "charuco corners: " << markerCorners.size() << std::endl;
             std::cout << "charuco ids: " << markerIds.size() << std::endl;
-            aruco::drawDetectedCornersCharuco(*gray_image, markerCorners, markerIds, cv::Scalar(255, 0, 0));
+            aruco::drawDetectedCornersCharuco(*gray_image, charucoCorners, charucoIds, cv::Scalar(255, 0, 0));
             return true;
         }
     }
@@ -105,7 +110,7 @@ bool CharucoCalibration::find_charuco_corners(std::vector<std::vector<Point2f> >
 
 bool CharucoCalibration::find_corners()
 {
-    vector<vector<Point2f>> charucoCorners;
+    vector<Point2f> charucoCorners;
     vector<int> charucoIds;
     return find_charuco_corners(charucoCorners, charucoIds);
 }
@@ -116,6 +121,7 @@ void CharucoCalibration::calibrate()
 
     // detection of the corners
     prepareCalibration();
+    currentImg = 0;
 
     Size imgSize = imgs->at(currentImg).size();
 
@@ -124,7 +130,7 @@ void CharucoCalibration::calibrate()
     camera_matrix.ptr<float>(0)[0] = 1;
     camera_matrix.ptr<float>(1)[1] = 1;
 
-            double repError = calibrateCameraCharuco(*charucoCornersTab, *charucoIdsTab, board, imgSize, camera_matrix, dist_coeffs, *rvecs, *tvecs,0,  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON));
+    double repError = calibrateCameraCharuco(*charucoCornersTab, *charucoIdsTab, board, imgSize, camera_matrix, dist_coeffs, *rvecs, *tvecs,0,  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON));
 
     intrParam->setCameraMatrix(camera_matrix);
     intrParam->setDistCoeffsMatrix(dist_coeffs);

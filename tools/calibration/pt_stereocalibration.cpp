@@ -13,8 +13,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<cv::Mat> &imgsL, std::vec
         calibRight = new ChessboardCalibration(imgsR, nLines, nCols);
         break;
     case CHARUCO:
-        //        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-        //        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     }
     imgs = new std::vector<cv::Mat>;
@@ -22,9 +22,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<cv::Mat> &imgsL, std::vec
 
     for(size_t i(0); i < imgsL.size(); i++){
         stereoImg->setImg(imgsL.at(i), imgsR.at(i));
-        cv::Mat img;
-        stereoImg->copyTo(img);
-        imgs->push_back(img);
+
+        imgs->push_back(stereoImg->getImg());
     }
 
 }
@@ -50,8 +49,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
         calibRight = new ChessboardCalibration(imgsR, nLines, nCols);
         break;
     case CHARUCO:
-        //        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-        //        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     }
     stereoImg = new ImgCv(calibLeft->get_image_origin(), calibRight->get_image_origin(), true);
@@ -60,6 +59,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
 
 PT_StereoCalibration::~PT_StereoCalibration()
 {
+    imgs->~vector()->clear();
+    delete imgs;
     delete calibLeft;
     delete calibRight;
     delete stereoImg;
@@ -181,10 +182,11 @@ void PT_StereoCalibration::calibrate()
 
     cout << "making of object points..." << endl;
 
+
+    for (int i = 0; i < nb_lines; i++)
+        for (int j = 0; j < nb_columns; j++)
+            obj.push_back(cv::Point3f((float)j * squareSize, (float)i * squareSize, 0));
     for(size_t k(0); k < imgPointsSize; k++){
-        for (int i = 0; i < nb_lines; i++)
-            for (int j = 0; j < nb_columns; j++)
-                obj.push_back(cv::Point3f((float)j * squareSize, (float)i * squareSize, 0));
         objectPoints.push_back(obj);
     }
 
@@ -217,7 +219,7 @@ bool PT_StereoCalibration::runCalibration(std::string const &inFile)
 cv::Mat PT_StereoCalibration::undistorted_image() const
 {
     ImgCv undistortedImg;
-    if(imgs->empty() || hasIntrinsicParameters()){}
+    if(imgs->empty() || !hasIntrinsicParameters()){}
     else {
         const cv::Mat &image_undistortedL = calibLeft->undistorted_image();
         const cv::Mat &image_undistortedR = calibRight->undistorted_image();
