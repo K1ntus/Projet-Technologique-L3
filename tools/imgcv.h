@@ -10,11 +10,12 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/utility.hpp>
 
+#include <iostream>
 // uncomment for common project
-#include "opencv2/ximgproc.hpp"
-#include "opencv2/ximgproc/disparity_filter.hpp"
+//#include "opencv2/ximgproc.hpp"
+//#include "opencv2/ximgproc/disparity_filter.hpp"
 
-class ImgCv
+class ImgCv : public cv::Mat
 {
 public:
 
@@ -26,13 +27,13 @@ public:
 
     bool isStereo() const;
 
-    cv::Mat& getImg() const;
-
-    cv::Mat& getImgR() const;
+    cv::Mat getImg() const;
+    cv::Mat getImgL() const;
+    cv::Mat getImgR() const;
 
     void setImg(cv::Mat const&, bool);
 
-    void setImg(cv::Mat const&imgL, cv::Mat const&imgR, bool isStereo = true);
+    void setImg(cv::Mat const&imgL, cv::Mat const&imgR);
     /**
      * @brief 'Cut' an image in two new image of width/2
      * @param cv::Mat Image that will be splitted in two
@@ -87,12 +88,11 @@ public:
                                size_t const&, size_t const&, size_t const&,
                                size_t const&, int const&) const;
 
-    cv::Mat &disparity_post_filtering() const;
+    cv::Mat &disparity_post_filtering();
 
 
 private:
 
-    cv::Mat *cvImg, *cvImgL, *cvImgR;
     bool stereo;
 
 };

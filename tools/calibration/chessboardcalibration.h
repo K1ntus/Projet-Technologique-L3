@@ -11,11 +11,15 @@ public:
     ~ChessboardCalibration();
 
     void setNextImgIndex(size_t const& newIndex);
+
+    std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
+    std::vector<std::vector<cv::Point3f>>& getObjectPoints() const;
+
+    void clearCalib(bool clearSet = false);
     void prepareCalibration();
     bool find_corners();
     bool find_chessboard_corners(std::vector<cv::Point2f>&corners);
     void calibrate();
-    void clearCalib(bool clearSet = false);
 
 private:
     typedef Calibration_intr super;

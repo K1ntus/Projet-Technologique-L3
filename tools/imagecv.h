@@ -51,6 +51,8 @@ namespace imagecv {
      */
     cv::Mat qimage_to_mat(const QImage& src);
 
+    void displayImage(QLabel &frame, cv::Mat const& image);
+
 }
 
 #endif // IMAGECV_H

@@ -3,69 +3,40 @@
 using namespace cv;
 
 ImgCv::ImgCv():
-    cvImg(nullptr),
-    cvImgL(nullptr),
-    cvImgR(nullptr),
+    Mat(),
     stereo(false)
-{
-    cvImg = new Mat();
-    cvImgL = new Mat();
-    cvImgR = new Mat();
-}
+{}
 
-ImgCv::ImgCv(std::string filePath, bool is_stereo) : cvImg(nullptr), cvImgL(nullptr), cvImgR(nullptr), stereo(is_stereo)
+ImgCv::ImgCv(std::string filePath, bool is_stereo) :  Mat(), stereo(is_stereo)
 {
     Mat img = imread(filePath);
-    cvImg = new Mat(img);
-    cvImgL = new Mat();
-    cvImgR = new Mat();
-    if(stereo)
-        split(*cvImg, *cvImgL, *cvImgR);
+    img.copyTo(*this);
 
 }
 
-ImgCv::ImgCv(const Mat &img, bool is_stereo) :cvImg(nullptr), cvImgL(nullptr), cvImgR(nullptr), stereo(is_stereo)
-{
-    cvImg = new Mat(img);
-    cvImgL = new Mat();
-    cvImgR = new Mat();
-    if(stereo)
-        split(*cvImg, *cvImgL, *cvImgR);
+ImgCv::ImgCv(const Mat &img, bool is_stereo) :Mat(img), stereo(is_stereo)
+{}
 
-}
-
-ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : cvImg(nullptr), cvImgL(nullptr), cvImgR(nullptr), stereo(is_stereo)
+ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : Mat(), stereo(is_stereo)
 {
 
-    cvImgL = new Mat(imgL);
-    cvImgR = new Mat(imgR);
-    if(stereo){
-        // put the left and right image side by side
-        int leftWidth = cvImgL->size().width;
-        int rightWidth = cvImgR->size().width;
-        cvImg = new Mat(cvImgL->size().height, leftWidth + rightWidth, cvImgL->type());
-        cvImg->adjustROI(0, 0, 0, -rightWidth);
-        cvImgL->copyTo(*cvImg);
 
-        cvImg->adjustROI(0, 0, -leftWidth, rightWidth);
-        cvImgR->copyTo(*cvImg);
+    // put the left and right image side by side
+    int leftWidth = imgL.size().width;
+    int rightWidth = imgR.size().width;
+    cv::Mat cvImg(imgL.size().height, leftWidth + rightWidth, imgL.type());
+    cvImg.adjustROI(0, 0, 0, -rightWidth);
+    imgL.copyTo(cvImg);
 
-        cvImg->adjustROI(0, 0, leftWidth, 0);
-    }
+    cvImg.adjustROI(0, 0, -leftWidth, rightWidth);
+    imgR.copyTo(cvImg);
+
+    cvImg.adjustROI(0, 0, leftWidth, 0);
+    cvImg.copyTo(*this);
 }
 
 ImgCv::~ImgCv()
-{
-    delete cvImg;
-    cvImg = nullptr;
-
-    delete cvImgL;
-    cvImgL = nullptr;
-
-    delete cvImgR;
-    cvImgR = nullptr;
-
-}
+{}
 
 // static version
 Mat ImgCv::contour_laplace(Mat const&img)
@@ -88,13 +59,11 @@ Mat ImgCv::contour_laplace(Mat const&img)
 Mat ImgCv::contour_laplace() const
 {
     Mat img_read;
-    if(cvImg == nullptr){
-        if(cvImgL == nullptr)
-            exit(EXIT_FAILURE);
-        else
-            img_read = cvImgL->clone();
+    if(this == nullptr){
+        std::cout << "img is empty" << std::endl;
+        return img_read;
     }else
-        img_read = cvImg->clone();
+        img_read = this->clone();
     Mat gray_img, result, final;
 
     GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT); // apply the gaussianBlur to smooth the img
@@ -130,13 +99,12 @@ Mat ImgCv::contour_sobel(const Mat &img){
 Mat ImgCv::contour_sobel() const
 {
     Mat img_read;
-    if(cvImg == nullptr){
-        if(cvImgL == nullptr)
-            exit(EXIT_FAILURE);
-        else
-            img_read = cvImgL->clone();
+    if(this == nullptr){
+        std::cout << "img is empty" << std::endl;
+        return img_read;
+
     }else
-        img_read = cvImg->clone();
+        img_read = this->clone();
 
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
 
@@ -162,21 +130,21 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
     Mat disp;
 
     //Convert the two stereo image in gray
-    cvtColor(*cvImgL, img_left_gray, CV_BGR2GRAY);
-    cvtColor(*cvImgR, img_right_gray, CV_BGR2GRAY);
+    cvtColor(getImgL(), img_left_gray, CV_BGR2GRAY);
+    cvtColor(getImgR(),img_right_gray, CV_BGR2GRAY);
 
     Ptr<StereoSGBM> sgbm = StereoSGBM::create(
-                    IO_minDisparity,
-                    IO_numberOfDisparities,
-                    IO_SADWindowSize,
-                    IO_P1,
-                    IO_P2,
-                    IO_disp12MaxDif,
-                    IO_preFilterCap,
-                    IO_uniquenessRatio,
-                    IO_speckleWindowSize,
-                    IO_speckleRange,
-                    IO_full_scale
+                IO_minDisparity,
+                IO_numberOfDisparities,
+                IO_SADWindowSize,
+                IO_P1,
+                IO_P2,
+                IO_disp12MaxDif,
+                IO_preFilterCap,
+                IO_uniquenessRatio,
+                IO_speckleWindowSize,
+                IO_speckleRange,
+                IO_full_scale
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
     disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
@@ -199,9 +167,10 @@ Mat ImgCv::sbm(const Mat &img, const Mat &img_left, const Mat &img_right, const 
 Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) const
 {
     Mat imgL, imgR;
-    Mat dst = Mat(cvImg->size(), CV_8U);
-    cvtColor(*this->cvImgL, imgL,CV_BGR2GRAY);
-    cvtColor(*this->cvImgR,imgR,CV_BGR2GRAY);
+    Mat dst = Mat(this->size(), CV_8U);
+    cvtColor(getImgL(), imgL,CV_BGR2GRAY);
+    cvtColor(getImgR(),imgR,CV_BGR2GRAY);
+
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
     dst.convertTo(dst,CV_8U,1,0);
@@ -210,9 +179,9 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 }
 
 //TODO
-Mat& ImgCv::disparity_post_filtering() const {
-    setImg(*cvImgL, *cvImgR, true);
-    return *cvImg;
+Mat& ImgCv::disparity_post_filtering() {
+    std::cout << "not yet implemented" << std::endl;
+    return *this;
 }
 
 bool ImgCv::isStereo() const
@@ -220,14 +189,21 @@ bool ImgCv::isStereo() const
     return stereo;
 }
 
-Mat &ImgCv::getImg() const
+Mat ImgCv::getImg() const
 {
-    return *this->cvImg;
+    return this->clone();
 }
 
-Mat &ImgCv::getImgR() const
+Mat ImgCv::getImgL() const
 {
-    return *this->cvImgR;
+    Range rows(0, this->rows), columns(0, this->cols >> 1);
+    return this->operator()(rows, columns);
+}
+
+Mat ImgCv::getImgR() const
+{
+    Range rows(0, this->rows), columns((this->cols & 1) ? (this->cols >> 1) + this->cols % 2 : this->cols >> 1, this->cols);
+    return this->operator()(rows, columns);
 }
 
 /**
@@ -236,21 +212,16 @@ Mat &ImgCv::getImgR() const
  * @param newImg image to set
  * @param isStereo check if the image is stereo
  */
-void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo){
-    imgL.copyTo(*cvImg);
-    if(isStereo)
-        split(*cvImg, *cvImgL, *cvImgR);
-    else{
-        cvImgL->deallocate();
-        cvImgR->deallocate();
-    }
+void ImgCv::setImg(const Mat &img, bool isStereo){
+    img.copyTo(*this);
+    stereo = isStereo;
 }
 
-void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo)
+void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
 {
 
-    int leftWidth = imgL.cols;
-    int rightWidth = imgR.cols;
+    const int& leftWidth = imgL.cols;
+    const int& rightWidth = imgR.cols;
     Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
 
     res.adjustROI(0, 0, 0, -rightWidth);
@@ -260,7 +231,8 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo)
     imgR.copyTo(res);
 
     res.adjustROI(0, 0, leftWidth, 0);
-    res.copyTo(*cvImg);
+    res.copyTo(*this);
+    stereo = true;
 }
 
 /**
@@ -271,7 +243,7 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR, bool isStereo)
  * @param img_right right splitted image
  */
 void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right){
-    int width= img.cols/2 ;
+    int width= img.cols >> 1 ;
     int x_right= width +img.cols%2; //First width position for the right image
 
     // check if the ptr is already in use

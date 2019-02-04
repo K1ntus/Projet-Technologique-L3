@@ -113,3 +113,14 @@ Mat imagecv::qimage_to_mat(const QImage& src) {
 
 
 
+
+void imagecv::displayImage(QLabel &frame, const Mat &image)
+{
+
+//    frame.setMaximumSize(width, height);
+    frame.setPixmap(QPixmap::fromImage(
+                        mat_to_qimage(image).scaled(frame.width(),frame.height(), Qt::KeepAspectRatio))  //Convert the new cv::mat to QImage
+                    ); //Display the original image
+
+    frame.adjustSize();
+}

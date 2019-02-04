@@ -20,8 +20,8 @@ CharucoCalibration::CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines, i
     board = aruco::CharucoBoard::create(squareX, squareY, 0.02, 0.01, dictionary);
 
     Mat boardImage;
-    board->draw(imgs.at(currentImg).size(), boardImage, 10, 1);
-    imshow("test board", boardImage);
+//    board->draw(imgs.at(currentImg).size(), boardImage, 10, 1);
+//    imshow("test board", boardImage);
 }
 
 CharucoCalibration::~CharucoCalibration()
@@ -134,7 +134,7 @@ void CharucoCalibration::calibrate()
 
 void CharucoCalibration::clearCalib(bool clearSet)
 {
-    super::clearCalib();
+    super::clearCalib(clearSet);
     charucoCornersTab->clear();
     charucoIdsTab->clear();
 }

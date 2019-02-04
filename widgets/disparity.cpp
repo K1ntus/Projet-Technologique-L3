@@ -1,7 +1,7 @@
 #include "disparity.h"
 
 using namespace cv;
-using namespace cv::ximgproc;
+//using namespace cv::ximgproc;
 using namespace std;
 using namespace imagecv;
 
@@ -72,38 +72,38 @@ void Disparity::on_apply_clicked(){
 
     }else{
 
-    this->IO_SADWindowSize = ui->slider_windowSize->value();    //Getting the value of the slider
-    this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16;    //this parameters had to be a multiple of 16
-    this->IO_preFilterCap = ui->slider_preFilterCap->value();
-    this->IO_minDisparity = ui->slider_minDisparity->value();
-    this->IO_uniquenessRatio = ui->slider_uniquenessRatio->value();
-    this->IO_speckleWindowSize = ui->slider_speckleWindowSize->value();
-    this->IO_speckleRange = ui->slider_speckleRange->value();
-    this->IO_disp12MaxDif = ui->slider_disp12MaxDiff->value();
+        this->IO_SADWindowSize = ui->slider_windowSize->value();    //Getting the value of the slider
+        this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16;    //this parameters had to be a multiple of 16
+        this->IO_preFilterCap = ui->slider_preFilterCap->value();
+        this->IO_minDisparity = ui->slider_minDisparity->value();
+        this->IO_uniquenessRatio = ui->slider_uniquenessRatio->value();
+        this->IO_speckleWindowSize = ui->slider_speckleWindowSize->value();
+        this->IO_speckleRange = ui->slider_speckleRange->value();
+        this->IO_disp12MaxDif = ui->slider_disp12MaxDiff->value();
 
-    this->IO_P1 = 8* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
-    this->IO_P2 = 32* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
+        this->IO_P1 = 8* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
+        this->IO_P2 = 32* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
 
-    if(ui->checkbox_fullScale->isChecked()) //Consume a lot of process time
-        this->IO_full_scale = StereoSGBM::MODE_HH;
-    else
-        this->IO_full_scale = false;
-    /*  END PARAMETERS DISPARITY MAP    */
+        if(ui->checkbox_fullScale->isChecked()) //Consume a lot of process time
+            this->IO_full_scale = StereoSGBM::MODE_HH;
+        else
+            this->IO_full_scale = false;
+        /*  END PARAMETERS DISPARITY MAP    */
 
-    //Generate the disparity map
-    img1 = mat_to_qimage(img->disparity_map_SGBM(IO_minDisparity,
-                                            IO_numberOfDisparities,
-                                            IO_SADWindowSize,
-                                            IO_P1,
-                                            IO_P2,
-                                            IO_disp12MaxDif,
-                                            IO_preFilterCap,
-                                            IO_uniquenessRatio,
-                                            IO_speckleWindowSize,
-                                            IO_speckleRange,
-                                            IO_full_scale
-                                                 )
-                         );
+        //Generate the disparity map
+        img1 = mat_to_qimage(img->disparity_map_SGBM(IO_minDisparity,
+                                                     IO_numberOfDisparities,
+                                                     IO_SADWindowSize,
+                                                     IO_P1,
+                                                     IO_P2,
+                                                     IO_disp12MaxDif,
+                                                     IO_preFilterCap,
+                                                     IO_uniquenessRatio,
+                                                     IO_speckleWindowSize,
+                                                     IO_speckleRange,
+                                                     IO_full_scale
+                                                     )
+                             );
 
     }
     QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
@@ -211,36 +211,30 @@ void Disparity::displayImage(Mat const& image){
 void Disparity::on_Sobel_clicked()
 {
     if(img->getImg().empty() || img->getImgR().empty()){
-            qDebug("[ERROR] Please, load a stereo image first");
-            return;
-        }
+        qDebug("[ERROR] Please, load a stereo image first");
+        return;
+    }
     Mat sobel, img1;
 
-        if(ui->checkBox->isChecked()){
-            img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
-            sobel = ImgCv::contour_sobel(img1);
-       }else {
-            img1 = img->disparity_map_SGBM(IO_minDisparity,
-                                           IO_numberOfDisparities,
-                                           IO_SADWindowSize,
-                                           IO_P1,
-                                           IO_P2,
-                                           IO_disp12MaxDif,
-                                           IO_preFilterCap,
-                                           IO_uniquenessRatio,
-                                           IO_speckleWindowSize,
-                                           IO_speckleRange,
-                                           IO_full_scale
-                                                );
-            sobel = ImgCv::contour_sobel(img1);
-        }
-    QImage img2 = mat_to_qimage(sobel).scaled(width,height, Qt::KeepAspectRatio);
-    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
-    ui->image_loaded->adjustSize();
-
-
-
-
+    if(ui->checkBox->isChecked()){
+        img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
+        sobel = ImgCv::contour_sobel(img1);
+    }else {
+        img1 = img->disparity_map_SGBM(IO_minDisparity,
+                                       IO_numberOfDisparities,
+                                       IO_SADWindowSize,
+                                       IO_P1,
+                                       IO_P2,
+                                       IO_disp12MaxDif,
+                                       IO_preFilterCap,
+                                       IO_uniquenessRatio,
+                                       IO_speckleWindowSize,
+                                       IO_speckleRange,
+                                       IO_full_scale
+                                       );
+        sobel = ImgCv::contour_sobel(img1);
+    }
+    imagecv::displayImage(*ui->image_loaded, sobel);
 
 }
 /**
@@ -250,31 +244,30 @@ void Disparity::on_Sobel_clicked()
 void Disparity::on_Laplace_clicked()
 {
     if(img->getImg().empty() || img->getImgR().empty()){
-            qDebug("[ERROR] Please, load a stereo image first");
-            return;
-        }
+        qDebug("[ERROR] Please, load a stereo image first");
+        return;
+    }
     Mat laplace, img1;
-        if(ui->checkBox->isChecked()){
-            img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
-            laplace = ImgCv::contour_laplace(img1);
-        }else {
-             img1 = img->disparity_map_SGBM(IO_minDisparity,
-                                            IO_numberOfDisparities,
-                                            IO_SADWindowSize,
-                                            IO_P1,
-                                            IO_P2,
-                                            IO_disp12MaxDif,
-                                            IO_preFilterCap,
-                                            IO_uniquenessRatio,
-                                            IO_speckleWindowSize,
-                                            IO_speckleRange,
-                                            IO_full_scale
-                                                 );
-             laplace = ImgCv::contour_laplace(img1);
-         }
-    QImage img2 = mat_to_qimage(laplace).scaled(width,height, Qt::KeepAspectRatio);
-    ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
-    ui->image_loaded->adjustSize();
+    if(ui->checkBox->isChecked()){
+        img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
+        laplace = ImgCv::contour_laplace(img1);
+    }else {
+        img1 = img->disparity_map_SGBM(IO_minDisparity,
+                                       IO_numberOfDisparities,
+                                       IO_SADWindowSize,
+                                       IO_P1,
+                                       IO_P2,
+                                       IO_disp12MaxDif,
+                                       IO_preFilterCap,
+                                       IO_uniquenessRatio,
+                                       IO_speckleWindowSize,
+                                       IO_speckleRange,
+                                       IO_full_scale
+                                       );
+        laplace = ImgCv::contour_laplace(img1);
+    }
+    imagecv::displayImage(*ui->image_loaded, laplace);
+
 
 
 

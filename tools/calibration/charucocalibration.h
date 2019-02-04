@@ -14,11 +14,11 @@ public:
 
     void setNextImgIndex(size_t const& newIndex);
 
+    void clearCalib(bool clearSet = false);
     void prepareCalibration();
     bool find_corners();
     bool find_charuco_corners(std::vector<std::vector<cv::Point2f>>&charucoCorners, std::vector<int>&charucoIds);
     void calibrate();
-    void clearCalib(bool clearSet = false);
 
 private:
     typedef Calibration_intr super;

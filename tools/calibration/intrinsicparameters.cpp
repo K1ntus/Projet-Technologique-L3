@@ -53,7 +53,7 @@ bool IntrinsicParameters::empty()
     return dist_coeffs  == nullptr || dist_coeffs->empty() || camera_matrix == nullptr;
 }
 
-void IntrinsicParameters::readIntrCalibration(std::string& filename, IntrinsicParameters &outputIntrinsicParam)
+bool IntrinsicParameters::readIntrCalibration(std::string const &filename, IntrinsicParameters &outputIntrinsicParam)
 {
     FileStorage in(filename, FileStorage::READ);
     if(in.isOpened()){
@@ -67,13 +67,43 @@ void IntrinsicParameters::readIntrCalibration(std::string& filename, IntrinsicPa
         in.release();
         outputIntrinsicParam.setCameraMatrix(cameraMat);
         outputIntrinsicParam.setDistCoeffsMatrix(distCoeffs);
+        return true;
 
     }else
         cout << "error while opening file stream" << endl;
+    return false;
 
 }
 
-void IntrinsicParameters::printIntrCalibration(string& filename, IntrinsicParameters &intrinsicParamToPrint)
+bool IntrinsicParameters::readIntrStereoCalibration(string const &filename, IntrinsicParameters &outputIntrinsicParamLeft, IntrinsicParameters &outputIntrinsicParamRight)
+{
+    FileStorage in(filename, FileStorage::READ);
+    if(in.isOpened()){
+
+        Mat cameraMat, distCoeffs;
+
+        in["cameraMatrixLeft"] >> cameraMat;
+        in["distCoefficientsMatrixRight"] >> distCoeffs;
+
+        outputIntrinsicParamLeft.setCameraMatrix(cameraMat);
+        outputIntrinsicParamLeft.setDistCoeffsMatrix(distCoeffs);
+
+
+        in["cameraMatrixRight"] >> cameraMat;
+        in["distCoefficientsMatrixRight"] >> distCoeffs;
+
+        outputIntrinsicParamRight.setCameraMatrix(cameraMat);
+        outputIntrinsicParamRight.setDistCoeffsMatrix(distCoeffs);
+        in.release();
+
+        return true;
+
+    }else
+        cout << "error while opening file stream" << endl;
+    return false;
+}
+
+bool IntrinsicParameters::printIntrCalibration(string const &filename, IntrinsicParameters const &intrinsicParamToPrint)
 {
     FileStorage out(filename, FileStorage::WRITE);
     if(out.isOpened()){
@@ -84,8 +114,36 @@ void IntrinsicParameters::printIntrCalibration(string& filename, IntrinsicParame
         out << "distCoefficientsMatrix" << dist_coeffs;
 
         out.release();
+        return true;
 
     }
     else
         cout << "error while opening file stream" << endl;
+    return false;
+}
+
+bool IntrinsicParameters::printIntrStereoCalibration(string const &filename, IntrinsicParameters const &intrinsicParamLeftToPrint, IntrinsicParameters const &intrinsicParamRightToPrint)
+{
+    FileStorage out(filename, FileStorage::WRITE);
+    if(out.isOpened()){
+        Mat &dist_coeffsL = intrinsicParamLeftToPrint.getDistCoeffs();
+        Mat &camera_matrixL = intrinsicParamLeftToPrint.getCameraMatrix();
+
+        out << "cameraMatrixLeft" << camera_matrixL;
+        out << "distCoefficientsMatrixLeft" << dist_coeffsL;
+
+        Mat &dist_coeffsR = intrinsicParamRightToPrint.getDistCoeffs();
+        Mat &camera_matrixR = intrinsicParamRightToPrint.getCameraMatrix();
+
+        out << "cameraMatrixRight" << camera_matrixR;
+        out << "distCoefficientsMatrixRight" << dist_coeffsR;
+
+        out.release();
+        return true;
+
+    }
+    else
+        cout << "error while opening file stream" << endl;
+    return false;
+
 }

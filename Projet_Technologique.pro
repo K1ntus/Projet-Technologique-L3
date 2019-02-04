@@ -12,21 +12,23 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += opencv
+    LIBS += -LC:/Users/meryl/source/opencv-3.2/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui -lopencv_videoio
+
 }
 
 # uncomment when at home
 CONFIG += c++11
-#INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
 
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_highgui320.dll
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgcodecs320.dll
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
-#LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
+INCLUDEPATH += C:/Users/meryl/source/opencv-3.2/build/install/include
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_core320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_highgui320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgcodecs320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_imgproc320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_features2d320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
+LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_videoio320.dll
 #INCLUDEPATH += C:/opencv/build/include/
 
-#LIBS += -LC:/opencv/build/bin -libopencv_core -libopencv_imgproc -libopencv_highgui
 
 TARGET = Projet_Technologique
 TEMPLATE = app
@@ -53,8 +55,9 @@ SOURCES += main.cpp\
     tools/imgcv.cpp \
     tools/calibration/intrinsicparameters.cpp \
     tools/calibration/chessboardcalibration.cpp \
-    tools/calibration/charucocalibration.cpp \
-    tools/calibration/pt_stereocalibration.cpp
+#    tools/calibration/charucocalibration.cpp \
+    tools/calibration/pt_stereocalibration.cpp \
+    tools/calibration/pt_icalibration.cpp
 
 HEADERS  += widgets/mainwindow.h \
     widgets/disparity.h \
@@ -64,8 +67,9 @@ HEADERS  += widgets/mainwindow.h \
     tools/imgcv.h \
     tools/calibration/intrinsicparameters.h \
     tools/calibration/chessboardcalibration.h \
-    tools/calibration/charucocalibration.h \
-    tools/calibration/pt_stereocalibration.h
+#    tools/calibration/charucocalibration.h \
+    tools/calibration/pt_stereocalibration.h \
+    tools/calibration/pt_icalibration.h
 
 FORMS    += widgets/mainwindow.ui \
     widgets/disparity.ui \

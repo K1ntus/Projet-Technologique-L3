@@ -3,24 +3,18 @@
 using namespace std;
 using namespace cv;
 
-Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs, int nLines, int nCols) :
-    currentImg(0)
+Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs, int nLines, int nCols):
+    PT_ICalibration (nLines, nCols)
 {
-    this->imgs = new vector<cv::Mat>(imgs);
-    board_size = Size(nCols, nLines);
-    gray_image = new Mat;
-
+    this->imgs = new std::vector<cv::Mat>(imgs);
     intrParam = new IntrinsicParameters();
-    rvecs = new std::vector<cv::Mat>;
-    tvecs = new std::vector<cv::Mat>;
+
 }
 
-Calibration_intr::~Calibration_intr()
-{
-    delete gray_image;
+Calibration_intr::~Calibration_intr(){
+    delete imgs;
     delete intrParam;
-    delete rvecs;
-    delete tvecs;
+
 }
 
 void Calibration_intr::newImageSet(const std::vector<Mat> &images)
@@ -35,11 +29,6 @@ void Calibration_intr::newImageSet(const std::vector<Mat> &images)
 std::vector<Mat> &Calibration_intr::getSet() const
 {
     return *imgs;
-}
-
-size_t Calibration_intr::getCurrentImgIndex() const
-{
-    return currentImg;
 }
 
 void Calibration_intr::setNextImgIndex(size_t const& newIndex)
@@ -57,6 +46,11 @@ Mat& Calibration_intr::get_compute_image() const{
     return *gray_image;
 }
 
+bool Calibration_intr::hasIntrinsicParameters() const
+{
+    return !(intrParam == nullptr || intrParam->empty());
+}
+
 IntrinsicParameters& Calibration_intr::getIntrinsicParameters() const{
     return *this->intrParam;
 }
@@ -68,26 +62,28 @@ void Calibration_intr::setIntrinsincParameters(IntrinsicParameters &intrinsicPar
 
 }
 
-vector<Mat>& Calibration_intr::get_rvecs() const{
-    return *rvecs;
-}
-
-vector<Mat>& Calibration_intr::get_tvecs() const{
-    return *tvecs;
-}
-
 void Calibration_intr::clearCalib(bool clearSet)
 {
-    rvecs->clear();
-    tvecs->clear();
-    currentImg = 0;
-//    if(clearSet)
-//        imgs->clear();
+    super::clearCalib(clearSet);
+    if(clearSet)
+        imgs->clear();
+}
+
+bool Calibration_intr::saveCalibration(string const &outFile) const
+{
+    return IntrinsicParameters::printIntrCalibration(outFile, *intrParam);
+
+}
+
+bool Calibration_intr::runCalibration(string const &inFile)
+{
+    return IntrinsicParameters::readIntrCalibration(inFile, *intrParam);
+
 }
 
 cv::Mat Calibration_intr::undistorted_image() const{
     Mat image_undistorted;
-    if(imgs->empty() || intrParam == nullptr || intrParam->empty()){}
+    if(imgs->empty() || hasIntrinsicParameters()){}
     else {
         Mat &img = imgs->at(currentImg);
         Mat &dist_coeffs = intrParam->getDistCoeffs();

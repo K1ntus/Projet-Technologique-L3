@@ -61,8 +61,8 @@ void MainWindow::on_actionQuitter_triggered() {
 void MainWindow::on_actionOuvrir_triggered() {
     if(load_file(*this, *img)){
         QMessageBox::information(this, "Open image", "Image loaded");
-        QImage img_qimg = mat_to_qimage(img->getImg());         //Convert the new cv::mat to QImage
-        ui->backgroundLabel->setPixmap(QPixmap::fromImage(img_qimg));    //Display the original image
+        imagecv::displayImage(*ui->backgroundLabel, *img);  //Display the original image
+
         statusBar()->showMessage(tr("file loaded"), 2500);
     }
     else{
@@ -104,13 +104,10 @@ void MainWindow::on_button_sobel_clicked(){
             return;
         }
     }
-
-    QImage image = mat_to_qimage(img->contour_sobel());
-
+    imagecv::displayImage(*ui->backgroundLabel, img->contour_sobel());
     QString str = speed_test((function_call) ImgCv::contour_sobel, img->getImg());
     statusBar()->showMessage(str);
 
-    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 
 }
 
@@ -129,11 +126,10 @@ void MainWindow::on_button_laplace_clicked(){
         }
     }
 
-    QImage image = mat_to_qimage(img->contour_laplace());
+    imagecv::displayImage(*ui->backgroundLabel, img->contour_laplace());
 
     QString str = speed_test((function_call) ImgCv::contour_laplace, img->getImg());
     statusBar()->showMessage(str);
-    ui->backgroundLabel->setPixmap(QPixmap::fromImage(image));
 
 }
 
@@ -141,37 +137,112 @@ void MainWindow::on_button_laplace_clicked(){
  * @brief MainWindow::on_calibrate_clicked is triggered when the calibration button is pressed
  */
 void MainWindow::on_calibrate_clicked() {
-    QStringList filePath = QFileDialog::getOpenFileNames(
-                this, tr("Select the files for calibration"),
-                tr("./resources/"),
-                tr("Image files (*.png *.jpg *.bmp)") );
 
-    if(!filePath.isEmpty()){
+    if(calib_widget != nullptr)
+        delete calib_widget;
+    calib_widget = new Calibration_widget();
+    calib_widget->show();
 
-        vector<Mat> images;
-        size_t count = filePath.size();
-
-        for(size_t i = 0; i < count; i++){
-            images.push_back(imread(filePath[i].toStdString()));
-        }
-
-        if(calib_widget != nullptr)
-            delete calib_widget;
-        calib_widget = new Calibration_widget(new ChessboardCalibration(images));
-        calib_widget->show();
-    }
 }
 
 void MainWindow::on_videoTest_clicked()
 {
     QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
     std::cout << fileName2.toStdString() << std::endl;
-//    cv::VideoCapture *cap = new VideoCapture(fileName2.toStdString());
-//    if(cap != nullptr){
-//        if(cap->isOpened())
-//            std::cout << "video opend" << std::endl;
-//        cap->release();
-//    }else
-//        std::cout << "file empty" << std::endl;
+    cv::VideoCapture cap(fileName2.toStdString());
+    if(cap.isOpened()){
+        vector<ImgCv> stereoImgTab;
 
+        std::cout << "video opend" << std::endl;
+        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+        std::cout << fileName2.toStdString() << std::endl;
+        cv::VideoCapture capR(fileName2.toStdString());
+        if(capR.isOpened()){
+            cv::Mat imgVidL, imgVidR;
+            int key = ' ';
+            if(!cap.grab() || !capR.grab()) return;
+
+            double framerate = cap.get(CV_CAP_PROP_FPS);
+            while(key != 'q'){
+
+                if(key == 'p'){
+
+                    std::cout << "pause" << std::endl;
+
+
+                    //            ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(imgVid)));
+
+
+
+                    key = waitKey((int) framerate);
+                    if(key == 'p')
+                        key = ' ';
+                    else if(key == 'v'){
+                        std::cout << "saved" << std::endl;
+
+                        stereoImgTab.push_back(img->getImg());
+                        if(stereoImgTab.size() >= 20)
+                            key = 'q';
+                    }else
+                        key = 'p';
+
+                }else{
+                    cap.retrieve(imgVidL);
+                    capR.retrieve(imgVidR);
+                    img->setImg(imgVidL, imgVidR);
+
+
+                    imshow("video test", *img);
+                    std::cout << "next frame" << std::endl;
+
+                    if(key == 'v'){
+                        std::cout << "saved" << std::endl;
+
+                        stereoImgTab.push_back(img->getImg());
+                        if(stereoImgTab.size() >= 20)
+                            key = 'q';
+                    }
+                    key = waitKey((int) framerate);
+                    if(!cap.grab() || !capR.grab())
+                        key = 'q';
+
+                }
+            }
+
+            capR.release();
+        }
+        destroyWindow("video test");
+        cap.release();
+        if(!stereoImgTab.empty()){
+            delete calib_widget;
+            calib_widget = new Calibration_widget(new PT_StereoCalibration(stereoImgTab));
+            calib_widget->show();
+        }
+    }else
+        std::cout << "file empty" << std::endl;
+
+}
+
+void MainWindow::on_actionCv_Mat_triggered()
+{
+
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+
+    QImage image = mat_to_qimage(*img);
+    clock_t start, end;
+    start = clock();
+    qimage_to_mat(image);
+
+    end = clock();
+    double delta = (end-start);
+    QString str = "result of speed test: " + QString::number((delta/CLOCKS_PER_SEC));
+    statusBar()->showMessage(str);
+
+    imshow("cv image", *img);
 }

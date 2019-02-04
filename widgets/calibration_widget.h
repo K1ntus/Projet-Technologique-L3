@@ -8,9 +8,10 @@
 #include <QMessageBox>
 
 #include "ui_calibration_widget.h"
-#include "tools/calibration/calibration_intr.h"
+
+#include "tools/calibration/pt_stereocalibration.h"
 #include "tools/calibration/chessboardcalibration.h"
-#include "tools/calibration/charucocalibration.h"
+//#include "tools/calibration/charucocalibration.h"
 #include "tools/imagecv.h"
 
 
@@ -29,16 +30,16 @@ class Calibration_widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit Calibration_widget(Calibration_intr*, QWidget *parent = nullptr);
+    explicit Calibration_widget(PT_ICalibration *calibration = nullptr, QWidget *parent = nullptr);
     ~Calibration_widget();
 
     void display_image(DisplayerMode const&displayerMode);
 
 private:
     Ui::Calibration_widget *ui;
-    Calibration_intr* calib;
+    PT_ICalibration* calib;
     DisplayerMode currentMode;
-
+    void enableFeatures(bool isEnabled =false);
 
 private slots:
 
@@ -51,8 +52,10 @@ private slots:
     void on_loadCalib_clicked();
     void on_originalImage_clicked();
     void on_calibration_clicked();
-    void on_Calibration_widget_destroyed();
     void on_CharucoCalib_clicked();
+    void on_stereoCalibration_clicked();
+    void on_Quit_clicked();
+    void on_ImageSetFromVideo_clicked();
 };
 
 #endif // CALIBRATION_WIDGET_H

@@ -5,7 +5,11 @@
 // uncomment for common project
 #include <unistd.h>
 #include "opencv2/opencv.hpp"
-
+#include <opencv2/core/core.hpp>
+#include <opencv/highgui.h>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+#include <iostream>
 // Qt
 #include <QMainWindow>
 #include <QFileDialog>
@@ -48,6 +52,7 @@ private slots:
     void on_button_laplace_clicked();
     void on_calibrate_clicked();
     void on_videoTest_clicked();
+    void on_actionCv_Mat_triggered();
 };
 
 #endif // MAINWINDOW_H

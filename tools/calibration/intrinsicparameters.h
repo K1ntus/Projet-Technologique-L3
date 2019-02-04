@@ -20,9 +20,11 @@ public:
     void setDistCoeffsMatrix(cv::Mat& dist_coeffs_mat);
 
     bool empty();
-    void static readIntrCalibration(std::string& filename, IntrinsicParameters &outputIntrinsicParam);
-    void static printIntrCalibration(std::string& filename, IntrinsicParameters &intrinsicParamToPrint);
+    bool static readIntrCalibration(std::string const &filename, IntrinsicParameters &outputIntrinsicParam);
+    bool static readIntrStereoCalibration(std::string const &filename, IntrinsicParameters &outputIntrinsicParamLeft, IntrinsicParameters &outputIntrinsicParamRight);
 
+    bool static printIntrCalibration(std::string const &filename, IntrinsicParameters const &intrinsicParamToPrint);
+    bool static printIntrStereoCalibration(std::string const &filename, IntrinsicParameters const &intrinsicParamLeftToPrint, IntrinsicParameters const &intrinsicParamRightToPrint);
 
 private:
     cv::Mat* camera_matrix;

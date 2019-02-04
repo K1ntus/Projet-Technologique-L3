@@ -5,7 +5,8 @@ using namespace cv;
 
 ChessboardCalibration::ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLines, int nCols):
     Calibration_intr(imgs, nLines, nCols),
-     image_points(nullptr)
+     image_points(nullptr),
+     object_points(nullptr)
 {
     image_points = new vector<vector<Point2f>>;
     object_points = new vector<vector<Point3f>>;
@@ -26,6 +27,16 @@ void ChessboardCalibration::setNextImgIndex(const size_t &newIndex)
     else
         find_corners();
 
+}
+
+std::vector<std::vector<Point2f> > &ChessboardCalibration::getImagePoints() const
+{
+    return *image_points;
+}
+
+std::vector<std::vector<Point3f> > &ChessboardCalibration::getObjectPoints() const
+{
+    return *object_points;
 }
 
 void ChessboardCalibration::prepareCalibration()
@@ -89,7 +100,7 @@ void ChessboardCalibration::calibrate(){
 
     clearCalib();
     prepareCalibration();
-
+    currentImg = 0;
     Mat &img = imgs->at(currentImg);
     Mat dist_coeffs;
     Mat camera_matrix(3, 3, CV_32FC1);
@@ -104,7 +115,7 @@ void ChessboardCalibration::calibrate(){
 
 void ChessboardCalibration::clearCalib(bool clearSet)
 {
-    super::clearCalib();
+    super::clearCalib(clearSet);
     image_points->clear();
     object_points->clear();
 }
