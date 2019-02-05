@@ -104,7 +104,7 @@ void MainWindow::on_button_sobel_clicked(){
             return;
         }
     }
-    imagecv::displayImage(*ui->backgroundLabel, img->contour_sobel());
+    imagecv::displayImage(*ui->backgroundLabel, ImgCv::contour_sobel(*img));
     QString str = speed_test((function_call) ImgCv::contour_sobel, img->getImg());
     statusBar()->showMessage(str);
 
@@ -126,7 +126,7 @@ void MainWindow::on_button_laplace_clicked(){
         }
     }
 
-    imagecv::displayImage(*ui->backgroundLabel, img->contour_laplace());
+    imagecv::displayImage(*ui->backgroundLabel, ImgCv::contour_laplace(*img));
 
     QString str = speed_test((function_call) ImgCv::contour_laplace, img->getImg());
     statusBar()->showMessage(str);

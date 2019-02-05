@@ -1,6 +1,7 @@
 #include "imgcv.h"
 
 using namespace cv;
+using namespace cv::ximgproc;
 
 ImgCv::ImgCv():
     Mat(),
@@ -38,7 +39,11 @@ ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : Mat(), stereo(i
 ImgCv::~ImgCv()
 {}
 
-// static version
+/**
+ * @brief ImgCv::contour_laplace :  Calculate the Laplacian filter to draw picture's countours
+ * @param img :  the image loaded
+ * @return the converted image
+ */
 Mat ImgCv::contour_laplace(Mat const&img)
 {
     Mat gray_img, result, final;
@@ -55,6 +60,11 @@ Mat ImgCv::contour_laplace(Mat const&img)
     convertScaleAbs(result,final,1,0);                          //convert to a CV_8U image
     return final;
 }
+
+/**
+* @brief Convert an image following the laplace algorithm
+* @return The parameters converted with laplace algorithm
+*/
 
 Mat ImgCv::contour_laplace() const
 {
@@ -74,7 +84,11 @@ Mat ImgCv::contour_laplace() const
     return final;
 }
 
-// static version
+/**
+ * @brief ImgCv::contour_sobel :  convert an image using the Sobel filter. Permits to detect the contours of an image.
+ * @param img :  the loaded image
+ * @return the converted image
+ */
 Mat ImgCv::contour_sobel(const Mat &img){
     Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
     Mat img_read=img.clone();
@@ -95,7 +109,11 @@ Mat ImgCv::contour_sobel(const Mat &img){
     return final;
 
 }
-
+/**
+* @brief Convert an image following the sobel algorithm
+* @param Image to convert
+*  @return The parameters converted with sobel algorithm
+*/
 Mat ImgCv::contour_sobel() const
 {
     Mat img_read;
@@ -121,6 +139,21 @@ Mat ImgCv::contour_sobel() const
     return final;
 }
 
+/**
+ * @brief ImgCv::disparity_map_SGBM : compute a disparity map, using SGBM (a block matching method)\n
+ * @param IO_minDisparity : the minimal disparity\n
+ * @param IO_numberOfDisparities
+ * @param IO_SADWindowSize
+ * @param IO_P1
+ * @param IO_P2
+ * @param IO_disp12MaxDif
+ * @param IO_preFilterCap
+ * @param IO_uniquenessRatio
+ * @param IO_speckleWindowSize
+ * @param IO_speckleRange
+ * @param IO_full_scale\n
+ * @return the disparity map computed.
+ */
 Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
                               const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif,
                               const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
@@ -148,22 +181,15 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
     disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
-    disp= cv::Scalar::all(255)-disp;
+    bitwise_not(disp, disp);
     return disp;
 }
-
-Mat ImgCv::sbm(const Mat &img, const Mat &img_left, const Mat &img_right, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize)
-{
-    Mat dst, imgL, imgR;
-    dst = Mat(img.size(), CV_8U);
-    cvtColor(img_left, imgL,CV_BGR2GRAY);
-    cvtColor(img_right,imgR,CV_BGR2GRAY);
-    Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
-    matcher->compute(imgL,imgR,dst);
-    dst.convertTo(dst,CV_8U,1,0);
-    return dst;
-}
-
+/**
+ * @brief ImgCv::sbm : Compute the disparity map using the SBM method (a block matching method)
+ * @param IO_numberOfDisparities : the number of disparities
+ * @param IO_SADWindowSize :  the size of the block
+ * @return the disparity map
+ */
 Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) const
 {
     Mat imgL, imgR;
@@ -178,12 +204,74 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
     return dst;
 }
 
-//TODO
-Mat& ImgCv::disparity_post_filtering() {
-    std::cout << "not yet implemented" << std::endl;
-    return *this;
+/**
+ * @brief ImgCv::disparity_post_filtering : Filter the disparity map
+ * @return the filtered disparity map
+ */
+Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
+    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+    Mat final_disparity_map;
+    cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5);//reduce the image's dimensions
+    cv::resize(getImgR(),right_for_matching,Size(),0.5,0.5);
+
+    Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
+    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
+    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
+
+    cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
+    cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
+
+    matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
+    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+
+    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
+
+    filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
+
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 6.0);// permits to visualize the disparity map
+    cv::bitwise_not(final_disparity_map, final_disparity_map);// reverse black & white colors
+    return final_disparity_map;
+}
+/**
+ * @brief ImgCv::disparity_post_filtering: applies a filter on a disparity map compute with SGBM
+ * @return the disparity map post_filtered
+ */
+Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
+    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+    Mat final_disparity_map;
+
+    cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5); //reduce the image's dimensions
+    cv::resize(getImgR(),right_for_matching,Size(),0.5,0.5);
+
+    Ptr <StereoSGBM> matcher_left = StereoSGBM::create(0,IO_numberOfDisparities,IO_SADWindowSize); // use SBM to create a matcher
+
+    matcher_left->setPreFilterCap(IO_preFilterCap);
+    matcher_left->setP1(IO_P1); // smoothness of the disparity map
+    matcher_left->setP2(IO_P2);
+
+    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
+    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
+
+    matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
+    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+
+    filter->setLambda(8000);
+    filter->setSigmaColor(1.0);
+
+    filter->filter(left_disparity,getImgL(),filtered,right_disparity);
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 5.0);
+    cv::bitwise_not(final_disparity_map, final_disparity_map); // reverse black and white
+    return final_disparity_map;
+
 }
 
+/**
+ * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
+ * @param disparityMap
+ * @param dispToDepthMatrix
+ * @return the depth map
+ */
 Mat ImgCv::depthMap(cv::Mat &disparityMap, Mat &dispToDepthMatrix)
 {
     Mat depthMapImage;
@@ -191,23 +279,35 @@ Mat ImgCv::depthMap(cv::Mat &disparityMap, Mat &dispToDepthMatrix)
     return depthMapImage;
 
 }
-
+/**
+ * @brief ImgCv::isStereo : Check if
+ * @return
+ */
 bool ImgCv::isStereo() const
 {
     return stereo;
 }
-
+/**
+ * @brief ImgCv::getImg : Clone an image and recover it.
+ * @return a clone of the image loaded
+ */
 Mat ImgCv::getImg() const
 {
     return this->clone();
 }
-
+/**
+ * @brief ImgCv::getImgL : Get the left side of a stereo image
+ * @return  the left image
+ */
 Mat ImgCv::getImgL() const
 {
     Range rows(0, this->rows), columns(0, this->cols >> 1);
     return this->operator()(rows, columns);
 }
-
+/**
+ * @brief ImgCv::getImgR : Get the right side of an image
+ * @return the right image
+ */
 Mat ImgCv::getImgR() const
 {
     Range rows(0, this->rows), columns((this->cols & 1) ? (this->cols >> 1) + this->cols % 2 : this->cols >> 1, this->cols);
