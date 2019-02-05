@@ -90,6 +90,8 @@ public:
 
     cv::Mat &disparity_post_filtering();
 
+    cv::Mat depthMap(cv::Mat &disparityMap, cv::Mat &dispToDepthMatrix);
+
 
 private:
 

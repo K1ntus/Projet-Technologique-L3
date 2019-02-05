@@ -12,7 +12,7 @@ public:
     virtual ~Calibration_intr();
 
     virtual std::vector<std::vector<cv::Point2f>>& getImagePoints() const = 0;
-
+    virtual void setImagePoints(std::vector<std::vector<cv::Point2f>>&) = 0;
     void newImageSet(std::vector<cv::Mat> const& images);
     std::vector<cv::Mat>& getSet() const;
     virtual void setNextImgIndex(size_t const& newIndex);

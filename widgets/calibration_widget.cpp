@@ -133,7 +133,7 @@ void Calibration_widget::on_prevImage_clicked()
 void Calibration_widget::on_save_clicked()
 {
 
-    if( calib == nullptr || calib->hasIntrinsicParameters()){
+    if( calib == nullptr || !calib->hasIntrinsicParameters()){
         QMessageBox::warning(this, tr("Error while saving file"), tr("no calibration to save."));
         return;
     }
@@ -180,7 +180,7 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-        calib = new CharucoCalibration(imageSet);
+//        calib = new CharucoCalibration(imageSet);
     }else{
         calib = new ChessboardCalibration(imageSet);
     }
@@ -263,11 +263,6 @@ void Calibration_widget::on_ImageSetFromVideo_clicked()
 
                     std::cout << "pause" << std::endl;
 
-
-                    //            ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(imgVid)));
-
-
-
                     key = waitKey((int) framerate);
                     if(key == 'p')
                         key = ' ';
@@ -285,6 +280,7 @@ void Calibration_widget::on_ImageSetFromVideo_clicked()
                     capR.retrieve(imgVidR);
                     img.setImg(imgVidL, imgVidR);
 
+                    imagecv::displayImage(*ui->Displayer, img);
 
                     imshow("video test", img);
                     std::cout << "next frame" << std::endl;

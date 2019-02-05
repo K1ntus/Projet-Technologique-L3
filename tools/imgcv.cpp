@@ -59,7 +59,7 @@ Mat ImgCv::contour_laplace(Mat const&img)
 Mat ImgCv::contour_laplace() const
 {
     Mat img_read;
-    if(this == nullptr){
+    if(this->empty()){
         std::cout << "img is empty" << std::endl;
         return img_read;
     }else
@@ -99,7 +99,7 @@ Mat ImgCv::contour_sobel(const Mat &img){
 Mat ImgCv::contour_sobel() const
 {
     Mat img_read;
-    if(this == nullptr){
+    if(this->empty()){
         std::cout << "img is empty" << std::endl;
         return img_read;
 
@@ -182,6 +182,14 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 Mat& ImgCv::disparity_post_filtering() {
     std::cout << "not yet implemented" << std::endl;
     return *this;
+}
+
+Mat ImgCv::depthMap(cv::Mat &disparityMap, Mat &dispToDepthMatrix)
+{
+    Mat depthMapImage;
+    reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix);
+    return depthMapImage;
+
 }
 
 bool ImgCv::isStereo() const

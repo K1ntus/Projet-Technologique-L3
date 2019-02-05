@@ -13,8 +13,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<cv::Mat> &imgsL, std::vec
         calibRight = new ChessboardCalibration(imgsR, nLines, nCols);
         break;
     case CHARUCO:
-        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+        //        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+        //        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     }
     imgs = new std::vector<cv::Mat>;
@@ -49,8 +49,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
         calibRight = new ChessboardCalibration(imgsR, nLines, nCols);
         break;
     case CHARUCO:
-        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+        //        calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+        //        calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     }
     stereoImg = new ImgCv(calibLeft->get_image_origin(), calibRight->get_image_origin(), true);
@@ -59,7 +59,6 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
 
 PT_StereoCalibration::~PT_StereoCalibration()
 {
-    imgs->~vector()->clear();
     delete imgs;
     delete calibLeft;
     delete calibRight;
@@ -160,49 +159,105 @@ void PT_StereoCalibration::calibrate()
 {
     using namespace std;
 
-    cout << "calibrating left camera" << endl;
-    calibLeft->calibrate();
-
-    cout << "calibrating right camera" << endl;
-    calibRight->calibrate();
-
     vector<vector<cv::Point3f>> objectPoints;
-    vector<vector<cv::Point2f>> &imagePointsL = calibLeft->getImagePoints();
-    vector<vector<cv::Point2f>> &imagePointsR = calibRight->getImagePoints();
-
+    vector<vector<cv::Point2f>> imagePointsL;
+    vector<vector<cv::Point2f>> imagePointsR;
+    cv::Size imgSize(calibLeft->get_image_origin().size());
     int &nb_lines(board_size.height), &nb_columns(board_size.width),
             squareSize = 2;
 
-    vector<cv::Point3f> obj;
+    cv::Mat grayL, grayR, imgL, imgR;
+    for (size_t i(0); i < imgs->size(); i++) {
+        using namespace cv;
+        imgs->at(i).copyTo(*stereoImg);
+        imgL = stereoImg->getImgL();
+        imgR = stereoImg->getImgR();
 
-    if(imagePointsL.size() != imagePointsR.size())
-        return;
-
-    const size_t &imgPointsSize = imagePointsL.size();
-
-    cout << "making of object points..." << endl;
+        cvtColor(imgL, grayL, CV_BGR2GRAY);
+        cvtColor(imgR, grayR, CV_BGR2GRAY);
 
 
-    for (int i = 0; i < nb_lines; i++)
-        for (int j = 0; j < nb_columns; j++)
-            obj.push_back(cv::Point3f((float)j * squareSize, (float)i * squareSize, 0));
-    for(size_t k(0); k < imgPointsSize; k++){
-        objectPoints.push_back(obj);
+        bool foundL =false, foundR = false;
+        vector<Point2f> cornersL, cornersR;
+        foundL = findChessboardCorners(imgL, board_size, cornersL);
+        foundR = findChessboardCorners(imgR, board_size, cornersR);
+
+        if(foundL)
+            cornerSubPix(grayL, cornersL, Size(5,5), Size(-1, -1),
+                         TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+
+        if(foundR)
+            cornerSubPix(grayR, cornersR, Size(5,5), Size(-1, -1),
+                         TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+
+
+        vector<cv::Point3f> obj;
+        for (int i = 0; i < nb_lines; i++)
+            for (int j = 0; j < nb_columns; j++)
+                obj.push_back(cv::Point3f((float)j * squareSize, (float)i * squareSize, 0));
+        if(foundL && foundR){
+            cout << "stereo corners found" << endl;
+            imagePointsL.push_back(cornersL);
+            imagePointsR.push_back(cornersR);
+            objectPoints.push_back(obj);
+        }
     }
+    calibLeft->setImagePoints(imagePointsL);
+    calibRight->setImagePoints(imagePointsR);
 
-    cv::Mat &dist_coeffsL = calibLeft->getIntrinsicParameters().getDistCoeffs();
-    cv::Mat &camera_matrixL = calibLeft->getIntrinsicParameters().getCameraMatrix();
-    cv::Mat &dist_coeffsR = calibRight->getIntrinsicParameters().getDistCoeffs();
-    cv::Mat &camera_matrixR = calibRight->getIntrinsicParameters().getCameraMatrix();
+    cv::Mat dist_coeffsL, camera_matrixL(3, 3, CV_32FC1), rvecL, tvecL,
+            dist_coeffsR, camera_matrixR(3, 3, CV_32FC1), rvecR, tvecR ;
+    camera_matrixL.ptr<float>(0)[0] = 1;
+    camera_matrixL.ptr<float>(1)[1] = 1;
+    camera_matrixR.ptr<float>(0)[0] = 1;
+    camera_matrixR.ptr<float>(1)[1] = 1;
 
-    cv::Mat RMat, TMat, E, F;
+    double errL = cv::calibrateCamera(objectPoints, imagePointsL, imgSize, camera_matrixL, dist_coeffsL, rvecL, tvecL);
+    cout << "done with left camera error=" << errL << endl;
+
+    IntrinsicParameters intr(camera_matrixL, dist_coeffsL);
+    calibLeft->setIntrinsincParameters(intr);
+
+    double errR = cv::calibrateCamera(objectPoints, imagePointsR, imgSize, camera_matrixR, dist_coeffsR, rvecR, tvecR);
+    cout << "done with right camera error=" << errR << endl;
+
+    intr.setCameraMatrix(camera_matrixR);
+    intr.setDistCoeffsMatrix(dist_coeffsR);
+    calibRight->setIntrinsincParameters(intr);
+
+    cv::Mat RMat, E, F;
+    cv::Vec3d TMat;
     currentImg = 0;
     cout << "calibrating stereo..." << endl;
 
-    cv::stereoCalibrate(objectPoints, imagePointsL, imagePointsR, camera_matrixL, dist_coeffsL,
-                        camera_matrixR, dist_coeffsR, calibLeft->get_image_origin().size(),
-                        RMat, TMat, E, F,
-                        CV_CALIB_FIX_INTRINSIC);
+    double err = cv::stereoCalibrate(objectPoints, imagePointsL, imagePointsR, camera_matrixL, dist_coeffsL,
+                                     camera_matrixR, dist_coeffsR, imgSize,
+                                     RMat, TMat, E, F,
+                                     CV_CALIB_FIX_INTRINSIC);
+
+    cout << "done with stereo calibration error :" << err << endl;
+
+    cv::Mat rotL, rotR, projL, projR, dispToDepthMat;
+
+    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR, imgSize, RMat, TMat, rotL, rotR, projL, projR, dispToDepthMat);
+
+    cv::FileStorage fs("extrinics.yml", cv::FileStorage::WRITE);
+    if(!saveCalibration("intrinsic.yml"))
+        cout << "couldn't print the intrinsic parameters" << endl;
+
+    if(fs.isOpened()){
+        fs << "rotationMatrix" << RMat;
+        fs << "translationMatrix" << TMat;
+        fs << "essentialMatrix" << E;
+        fs << "fundamentalMatrix" << E;
+        fs << "rotationMatrixLeft" << rotL;
+        fs << "rotationMatrixRight" << rotR;
+        fs << "projectionMatrixLeft" << projL;
+        fs << "projectionMatrixRight" << projR;
+        fs << "dispToDepthMatrix" << dispToDepthMat;
+        fs.release();
+    }else
+        cout << "couldn't print the extrinsic parameters" << endl;
 }
 
 bool PT_StereoCalibration::saveCalibration(const std::string &outFile) const

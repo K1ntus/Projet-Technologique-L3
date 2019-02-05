@@ -34,6 +34,12 @@ std::vector<std::vector<Point2f> > &ChessboardCalibration::getImagePoints() cons
     return *image_points;
 }
 
+void ChessboardCalibration::setImagePoints(std::vector<std::vector<Point2f> > &imagePoints)
+{
+    this->image_points->clear();
+    *this->image_points = imagePoints;
+}
+
 void ChessboardCalibration::prepareCalibration()
 {
     int &nb_lines(board_size.height), &nb_columns(board_size.width),
@@ -102,8 +108,9 @@ void ChessboardCalibration::calibrate(){
     camera_matrix.ptr<float>(0)[0] = 1;
     camera_matrix.ptr<float>(1)[1] = 1;
 
-    calibrateCamera(*object_points, *image_points, img.size(), camera_matrix, dist_coeffs, *rvecs, *tvecs);// , CV_CALIB_USE_INTRINSIC_GUESS);
+    double err = calibrateCamera(*object_points, *image_points, img.size(), camera_matrix, dist_coeffs, *rvecs, *tvecs);// , CV_CALIB_USE_INTRINSIC_GUESS);
 
+    std::cout <<  "error percentage : "  << err << endl;
     intrParam->setCameraMatrix(camera_matrix);
     intrParam->setDistCoeffsMatrix(dist_coeffs);
 }

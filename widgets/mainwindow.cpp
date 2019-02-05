@@ -171,11 +171,6 @@ void MainWindow::on_videoTest_clicked()
 
                     std::cout << "pause" << std::endl;
 
-
-                    //            ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(imgVid)));
-
-
-
                     key = waitKey((int) framerate);
                     if(key == 'p')
                         key = ' ';
@@ -183,7 +178,7 @@ void MainWindow::on_videoTest_clicked()
                         std::cout << "saved" << std::endl;
 
                         stereoImgTab.push_back(img->getImg());
-                        if(stereoImgTab.size() >= 20)
+                        if(stereoImgTab.size() >= 30)
                             key = 'q';
                     }else
                         key = 'p';
@@ -193,6 +188,7 @@ void MainWindow::on_videoTest_clicked()
                     capR.retrieve(imgVidR);
                     img->setImg(imgVidL, imgVidR);
 
+                    ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(*img)));
 
                     imshow("video test", *img);
                     std::cout << "next frame" << std::endl;
@@ -202,13 +198,15 @@ void MainWindow::on_videoTest_clicked()
 
                         stereoImgTab.push_back(img->getImg());
                         key = 'q';
+                    }
+                    key = waitKey((int) framerate);
+                    if(!capL.grab() || !capR.grab())
+                        key = 'q';
+
                 }
-                key = waitKey((int) framerate);
-                if(!capL.grab() || !capR.grab())
+                if(stereoImgTab.size() >= 30)
                     key = 'q';
 
-            }
-                        if(stereoImgTab.size() >= 20)
             }
 
         }
