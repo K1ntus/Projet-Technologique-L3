@@ -1,3 +1,4 @@
+
 #include "disparity.h"
 
 using namespace cv;
@@ -392,23 +393,20 @@ void Disparity::on_video_clicked()
 void Disparity::on_depthMap_clicked()
 {
 
-    if(img->getImg().empty() || img->getImgR().empty()){
-        qDebug("[ERROR] Please, load a stereo image first");
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
         if(!load_file(*this, *img, true)){
-            qDebug("[ERROR] no image load");
-
+            qDebug("[ERROR] No images loaded");
+            return;
         }
-        return;
     }
-
-    static QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
     if(!inFile.isEmpty()){
-        im1 = (img->rectifiedImage(*img, inFile.toStdString()));
+        im1 = img->rectifiedImage(*img, inFile.toStdString());
         on_apply_clicked();
-        static cv::Mat Q = img->getDispToDepthMat(inFile.toStdString());
-        cv::Mat depthMap = img->depthMap(im1, Q);
-        cvtColor(depthMap, depthMap, CV_BGR2GRAY);
-
-        imshow("depth map", depthMap);
+        cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
+        Mat depth_map = img->depthMap(im1,Q);
+        cvtColor(depth_map,depth_map,CV_BGR2GRAY);
+        imshow("depthmap",depth_map);
     }
 }
