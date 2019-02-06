@@ -200,11 +200,11 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
-//    dst.convertTo(dst,CV_8U,1,0);
-    dst.convertTo(dst, CV_8U, 255/(IO_numberOfDisparities*16.));
+    dst.convertTo(dst, CV_8U);
     bitwise_not(dst, dst);
     return dst;
 }
+
 
 /**
  * @brief ImgCv::disparity_post_filtering : Filter the disparity map
@@ -232,8 +232,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 6.0);// permits to visualize the disparity map
-    cv::bitwise_not(final_disparity_map, final_disparity_map);// reverse black & white colors
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
     return final_disparity_map;
 
 }
@@ -264,8 +263,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     filter->setSigmaColor(1.0);
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 5.0);
-    cv::bitwise_not(final_disparity_map, final_disparity_map); // reverse black and white
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
     return final_disparity_map;
 
 }
@@ -294,10 +292,11 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
     cv::Size imgSize(imgL.size());
     cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
                       imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
-                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
+                      0, -1, imgSize, &roi1, &roi2);
 
 
     cv::Mat map11, map12, map21, map22;
+
     cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
     cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
 
@@ -414,9 +413,9 @@ Mat ImgCv::getImgR() const
     return this->operator()(rows, columns);
 }
 
-Mat ImgCv::getDisparityMap()
-{
-    return sbm(((this->size().width >> 3) + 15) & -16 , 15);
+Mat ImgCv::getDisparityMap(){
+
+   return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
 
 Mat ImgCv::getDepthMap(Mat &TProjectionMat)

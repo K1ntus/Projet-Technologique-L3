@@ -1856,6 +1856,19 @@
     <string>Post-filtered</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="depth_map">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>560</y>
+     <width>80</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Depth Map</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

@@ -53,7 +53,7 @@ Disparity::~Disparity(){
  * When the image has been correctly generated, it's displayed in the right slot.
  */
 void Disparity::on_apply_clicked(){
-    QImage img1;
+    QImage imgQ;
     if(img->getImg().empty() || img->getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
@@ -66,17 +66,17 @@ void Disparity::on_apply_clicked(){
             this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
             if((this->IO_SADWindowSize = ui->slider_windowSize->value())%2==0)
             this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
-            filtered_disp = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
          }else{
             this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
             this->IO_SADWindowSize = ui->slider_windowSize->value();
             this->IO_preFilterCap =  ui->slider_preFilterCap->value();
             this->IO_P1= ui->slider_P1->value();
             this->IO_P2 = ui->slider_P2->value();
-            filtered_disp = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
 
          }
-        img1 = mat_to_qimage(filtered_disp);
+        imgQ = mat_to_qimage(filtered_disp);
     }else{
 
     if(ui->checkBox->isChecked()){
@@ -86,7 +86,7 @@ void Disparity::on_apply_clicked(){
             this->IO_SADWindowSize = ui->slider_windowSize->value();
         this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value() * 16; //this parameters had to be a multiple of 16
 
-        img1 = mat_to_qimage(img->sbm(IO_numberOfDisparities, IO_SADWindowSize));
+        im1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
 
     }else{
 
@@ -109,7 +109,7 @@ void Disparity::on_apply_clicked(){
         /*  END PARAMETERS DISPARITY MAP    */
 
         //Generate the disparity map
-        img1 = mat_to_qimage(img->disparity_map_SGBM(IO_minDisparity,
+        im1 =img->disparity_map_SGBM(IO_minDisparity,
                                                      IO_numberOfDisparities,
                                                      IO_SADWindowSize,
                                                      IO_P1,
@@ -120,12 +120,11 @@ void Disparity::on_apply_clicked(){
                                                      IO_speckleWindowSize,
                                                      IO_speckleRange,
                                                      IO_full_scale
-                                                     )
-                             );
+                                                     );
 
     }
   }
-    QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    QImage img2 = mat_to_qimage(im1).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
 
     //Colorize the disparity map if the dedicated checkbox is checked
     if(ui->checkbox_colorize->isChecked()){
@@ -313,3 +312,23 @@ void Disparity::on_filter_clicked()
     }
 
 }
+
+void Disparity::on_depth_map_clicked()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+    cv::Mat dImg(img->rectifiedImage(*img, inFile.toStdString()));
+    im1 = dImg;
+    on_apply_clicked();
+    cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
+    Mat depth_map = img->depthMap(im1,Q);
+    cvtColor(depth_map,depth_map,CV_BGR2GRAY);
+    imshow("depthmap",depth_map);
+}
+

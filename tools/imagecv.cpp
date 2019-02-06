@@ -80,7 +80,7 @@ bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 QImage imagecv::mat_to_qimage(Mat const& src) {
     Mat temp;  // make the same cv::Mat than src
     if(src.channels()==1)
-        cvtColor(src,temp,CV_GRAY2BGR);
+       cvtColor(src,temp,CV_GRAY2RGB);
     else if(src.channels()==3)
         cvtColor(src,temp,CV_BGR2RGB);
     else
