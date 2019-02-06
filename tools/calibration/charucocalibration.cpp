@@ -18,10 +18,6 @@ CharucoCalibration::CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines, i
     int const& squareX = board_size.width;
     int const& squareY = board_size.height;
     board = aruco::CharucoBoard::create(squareX, squareY, 0.02, 0.01, dictionary);
-
-    //    Mat boardImage;
-    //    board->draw(imgs.at(currentImg).size(), boardImage, 10, 1);
-    //    imshow("test board", boardImage);
 }
 
 CharucoCalibration::~CharucoCalibration()
@@ -29,6 +25,7 @@ CharucoCalibration::~CharucoCalibration()
     delete charucoIdsTab;
     delete charucoCornersTab;
 }
+
 
 void CharucoCalibration::setNextImgIndex(const size_t &newIndex)
 {
@@ -50,6 +47,9 @@ void CharucoCalibration::setImagePoints(std::vector<std::vector<Point2f> > &char
     *this->charucoCornersTab = charuCorners;
 }
 
+/**
+ * @brief CharucoCalibration::prepareCalibration get the charuco corners and id as a first step for the calibration
+ */
 void CharucoCalibration::prepareCalibration()
 {
     size_t nb_image = imgs->size();
@@ -61,7 +61,6 @@ void CharucoCalibration::prepareCalibration()
     while(im < nb_image){
         currentImg =  im%nb_image;
 
-        //TODO debugging
         if(find_charuco_corners(charucoCorners, charucoIds)){
             charucoCornersTab->push_back(charucoCorners);
             charucoIdsTab->push_back(charucoIds);
@@ -78,13 +77,16 @@ void CharucoCalibration::prepareCalibration()
 
     }
 
-
-
     std::cout << "charuco corners: " << charucoCornersTab->size() << std::endl;
     std::cout << "charuco ids: " << charucoIdsTab->size() << std::endl;
-
 }
 
+/**
+ * @brief CharucoCalibration::find_charuco_corners Find the charuco corners of an image and save it into pointers
+ * @param charucoCorners the pointer that will get the result of the list of charuco corners
+ * @param charucoIds the pointer that will store the result of the different charuco id
+ * @return true if the search has succeed, else false
+ */
 bool CharucoCalibration::find_charuco_corners(std::vector<Point2f> &charucoCorners, std::vector<int> &charucoIds)
 {
     Mat &img = imgs->at(currentImg);
@@ -121,6 +123,13 @@ bool CharucoCalibration::find_corners()
     return find_charuco_corners(charucoCorners, charucoIds);
 }
 
+/**
+ * @brief CharucoCalibration::calibrate
+ * Calibrate the image set using charuco calibration.\n
+ * The clearCalib() call doesnt clear the image set because the boolean parameters is not set to true.\n
+ * But its cleaning the corners and ids list got from before to prevent duplication, incorrect value from\n
+ * before tests, ...
+ */
 void CharucoCalibration::calibrate()
 {
     clearCalib();

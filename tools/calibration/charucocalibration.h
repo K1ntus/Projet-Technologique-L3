@@ -17,9 +17,28 @@ public:
     std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
     void setImagePoints(std::vector<std::vector<cv::Point2f>>& imagePoints);
     void clearCalib(bool clearSet = false);
+
+    /**
+     * @brief CharucoCalibration::prepareCalibration get the charuco corners and id as a first step for the calibration
+     */
     void prepareCalibration();
     bool find_corners();
+
+    /**
+     * @brief CharucoCalibration::find_charuco_corners Find the charuco corners of an image and save it into pointers
+     * @param charucoCorners the pointer that will get the result of the list of charuco corners
+     * @param charucoIds the pointer that will store the result of the different charuco id
+     * @return true if the search has succeed, else false
+     */
     bool find_charuco_corners(std::vector<cv::Point2f>&charucoCorners, std::vector<int>&charucoIds);
+
+    /**
+     * @brief CharucoCalibration::calibrate
+     * Calibrate the image set using charuco calibration.\n
+     * The clearCalib() call doesnt clear the image set because the boolean parameters is not set to true.\n
+     * But its cleaning the corners and ids list got from before to prevent duplication, incorrect value from\n
+     * before tests, ...
+     */
     void calibrate();
 
 private:
