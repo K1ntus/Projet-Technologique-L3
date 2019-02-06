@@ -1,7 +1,6 @@
 #include "disparity.h"
 
 using namespace cv;
-//using namespace cv::ximgproc;
 using namespace std;
 using namespace imagecv;
 
@@ -61,6 +60,25 @@ void Disparity::on_apply_clicked(){
     }
 
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
+    if(ui->filter->isChecked()){
+        Mat filtered_disp;
+        if(ui->checkBox->isChecked()){
+            this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
+            if((this->IO_SADWindowSize = ui->slider_windowSize->value())%2==0)
+            this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
+            filtered_disp = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+         }else{
+             this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
+            this->IO_SADWindowSize = ui->slider_windowSize->value();
+            this->IO_preFilterCap =  ui->slider_preFilterCap->value();
+            this->IO_P1= ui->slider_P1->value();
+            this->IO_P2 = ui->slider_P2->value();
+            filtered_disp = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+
+         }
+        img1 = mat_to_qimage(filtered_disp);
+    }else{
+
     if(ui->checkBox->isChecked()){
         if((this->IO_SADWindowSize = ui->slider_windowSize->value())%2==0)
             this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
@@ -106,6 +124,7 @@ void Disparity::on_apply_clicked(){
                              );
 
     }
+  }
     QImage img2 = img1.scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
 
     //Colorize the disparity map if the dedicated checkbox is checked
@@ -157,13 +176,6 @@ void Disparity::on_reset_image_clicked() {
 }
 
 
-void Disparity::on_post_filtering_clicked(){
-    qDebug("Not yet implemented");
-    if(!img)
-        displayImage(img->disparity_post_filtering());
-
-}
-
 /**
  * @brief Load an cv::mat img, display it in the right panel and finally split it then save them in two pointers
  * @param img the stereo image to manage, split and display
@@ -186,6 +198,8 @@ void Disparity::on_checkBox_clicked(){
         ui->slider_speckleWindowSize->setEnabled(false);
         ui->slider_speckleRange->setEnabled(false);
         ui->slider_disp12MaxDiff->setEnabled(false);
+        ui->slider_P1->setEnabled(false);
+        ui->slider_P2->setEnabled(false);
     }else{
         ui->slider_preFilterCap->setEnabled(true);
         ui->slider_minDisparity->setEnabled(true);
@@ -193,6 +207,10 @@ void Disparity::on_checkBox_clicked(){
         ui->slider_speckleWindowSize->setEnabled(true);
         ui->slider_speckleRange->setEnabled(true);
         ui->slider_disp12MaxDiff->setEnabled(true);
+        if(ui->filter->isChecked()){
+            ui->slider_P1->setEnabled(true);
+            ui->slider_P2->setEnabled(true);
+        }
     }
 }
 
@@ -207,7 +225,7 @@ void Disparity::displayImage(Mat const& image){
 }
 
 /**
- * @brief Disparity::on_Sobel_clicked apply the Sobel filter on the disparity map to display its contours
+ * @brief Disparity::on_Sobel_clicked applies the Sobel filter on the disparity map to display its contours
  */
 void Disparity::on_Sobel_clicked()
 {
@@ -217,10 +235,14 @@ void Disparity::on_Sobel_clicked()
     }
     Mat sobel, img1;
 
-    if(ui->checkBox->isChecked()){
-        img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
-        sobel = ImgCv::contour_sobel(img1);
-    }else {
+    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
+        img1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+    else if (ui->checkBox->isChecked())
+             img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
+
+    else if (ui->filter->isChecked())
+        img1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+    else {
         img1 = img->disparity_map_SGBM(IO_minDisparity,
                                        IO_numberOfDisparities,
                                        IO_SADWindowSize,
@@ -233,13 +255,14 @@ void Disparity::on_Sobel_clicked()
                                        IO_speckleRange,
                                        IO_full_scale
                                        );
-        sobel = ImgCv::contour_sobel(img1);
+
     }
+    sobel = ImgCv::contour_sobel(img1);
     imagecv::displayImage(*ui->image_loaded, sobel);
 
 }
 /**
- * @brief Disparity::on_Laplace_clicked apply the Laplacian filter on the disparity map to display its contours
+ * @brief Disparity::on_Laplace_clicked applies the Laplacian filter on the disparity map to display its contours
  */
 
 void Disparity::on_Laplace_clicked()
@@ -248,11 +271,15 @@ void Disparity::on_Laplace_clicked()
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
+
     Mat laplace, img1;
-    if(ui->checkBox->isChecked()){
+    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
+        img1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+    else if(ui->checkBox->isChecked())
         img1 = img->sbm(IO_numberOfDisparities, IO_SADWindowSize);
-        laplace = ImgCv::contour_laplace(img1);
-    }else {
+    else if (ui->filter->isChecked())
+        img1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+    else {
         img1 = img->disparity_map_SGBM(IO_minDisparity,
                                        IO_numberOfDisparities,
                                        IO_SADWindowSize,
@@ -265,11 +292,24 @@ void Disparity::on_Laplace_clicked()
                                        IO_speckleRange,
                                        IO_full_scale
                                        );
-        laplace = ImgCv::contour_laplace(img1);
+
     }
+
+    laplace = ImgCv::contour_laplace(img1);
     imagecv::displayImage(*ui->image_loaded, laplace);
 
-
-
+}
+/**
+ * @brief enable or disable parameters when the checkbox "post_filtered" is not checked.
+ */
+void Disparity::on_filter_clicked()
+{
+    if (ui->filter->isChecked()&& !(ui->checkBox->isChecked())){
+        ui->slider_P1->setEnabled(true);
+        ui->slider_P2->setEnabled(true);
+    }else {
+        ui->slider_P1->setEnabled(false);
+        ui->slider_P2->setEnabled(false);
+    }
 
 }

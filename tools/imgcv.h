@@ -9,12 +9,12 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/utility.hpp>
-
 #include <iostream>
 // uncomment for common project
 #include "tools/calibration/intrinsicparameters.h"
 //#include "opencv2/ximgproc.hpp"
 //#include "opencv2/ximgproc/disparity_filter.hpp"
+
 
 class ImgCv : public cv::Mat
 {
@@ -51,9 +51,9 @@ public:
     cv::Mat static contour_laplace(cv::Mat const&);
 
     /**
-     * @brief Convert an image following the laplace algorithm
-     * @return The parameters converted with laplace algorithm
-     */
+    * @brief Convert an image following the laplace algorithm
+    * @return The parameters converted with laplace algorithm
+    */
     cv::Mat contour_laplace() const;
 
     /** static version of the method
@@ -63,16 +63,11 @@ public:
      */
     cv::Mat static contour_sobel(cv::Mat const& img);
 
-    cv::Mat contour_sobel() const;
-
-
-    /** Static version
-     * @brief Display a disparity map using sbm parameters
-     * @param img_left the left point of view of a scene
-     * @param img_right the right point of view of a scene
-     * @return The disparity map using sbm
+    /**
+     * @brief convert an image following the sobel algorithm
+     * @return The parameters converted with sobel algorithm
      */
-    cv::Mat sbm(cv::Mat const&, cv::Mat const&, cv::Mat const&, size_t const& = 144, size_t const& = 9);
+    cv::Mat contour_sobel() const;
 
     /**
      * @brief Display a disparity map using sbm parameters
@@ -90,7 +85,24 @@ public:
                                size_t const&, size_t const&, size_t const&,
                                size_t const&, int const&) const;
 
-    cv::Mat &disparity_post_filtering();
+    /**
+     * @brief disparity_post_filtering
+     * @return the post_filtered disparity map using SBM
+     */
+    cv::Mat disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize);
+
+    /**
+     * @brief disparity_post_filtering
+     * @return the post_filtered disparity map using SGBM
+     */
+    cv::Mat disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2);
+    /**
+     * @brief depthMap :  computes the depth map
+     * @param disparityMap
+     * @param dispToDepthMatrix
+     * @return the depth map
+     */
+    cv::Mat depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
 
     ImgCv rectifiedImage(ImgCv &distortedImage, IntrinsicParameters const&paramL
                          , IntrinsicParameters const&paramR,
@@ -101,7 +113,6 @@ public:
                          cv::Mat const&R, cv::Mat const&T) const;
 
     ImgCv rectifiedImage(ImgCv &distortedImage, std::string const& outFile) const;
-    cv::Mat depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
 
 
 private:

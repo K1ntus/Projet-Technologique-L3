@@ -37,7 +37,6 @@ public:
     int IO_disp12MaxDif;
     unsigned int IO_P1;
     unsigned int IO_P2;
-
     int IO_full_scale;
 
 
@@ -46,11 +45,12 @@ private slots:
     void on_loadImage_clicked();
     void on_apply_clicked();
     void on_reset_image_clicked();
-    void on_post_filtering_clicked();
     void on_checkBox_clicked();
     void displayImage(cv::Mat const&);
     void on_Sobel_clicked();
     void on_Laplace_clicked();
+
+    void on_filter_clicked();
 
 private:
     Ui::Disparity *ui;
