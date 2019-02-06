@@ -28,8 +28,7 @@ MainWindow::~MainWindow() {
 
 }
 
-
-/**         Interface Interaction           **/
+/*         Interface Interaction           */
 
 /**
  * @brief MainWindow::on_actionA_propos_triggered open a little popup window displaying few informations about this project

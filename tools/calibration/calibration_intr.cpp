@@ -46,7 +46,7 @@ std::vector<Mat> &Calibration_intr::getSet() const
 }
 
 /**
- * @brief Calibration_intr::setNextImgIndex update the indec of the img vector
+ * @brief Calibration_intr::setNextImgIndex update the index of the img vector
  * @param newIndex the new position in the vector
  */
 void Calibration_intr::setNextImgIndex(size_t const& newIndex)
@@ -92,10 +92,18 @@ void Calibration_intr::setIntrinsincParameters(IntrinsicParameters &intrinsicPar
 
 }
 
+/**
+ * @brief Calibration_intr::get_rvecs
+ * @return the rotation vector
+ */
 std::vector<cv::Mat>& Calibration_intr::get_rvecs() const{
     return *rvecs;
 }
 
+/**
+ * @brief Calibration_intr::get_tvecs
+ * @return the translation vector
+ */
 std::vector<cv::Mat>& Calibration_intr::get_tvecs() const{
     return *tvecs;
 }

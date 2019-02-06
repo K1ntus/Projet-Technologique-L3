@@ -6,9 +6,7 @@
 #include <opencv2/opencv.hpp>
 
 // Qt
-
 #include <QWidget>
-#include <time.h>
 #include <QImage>
 #include <QtGui>
 #include <QLabel>
@@ -16,7 +14,11 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include <time.h>
+
 #include "tools/imgcv.h"
+
+
 
 using namespace std;
 
