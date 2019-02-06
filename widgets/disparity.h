@@ -49,10 +49,9 @@ private slots:
     void displayImage(cv::Mat const&);
     void on_Sobel_clicked();
     void on_Laplace_clicked();
-
     void on_filter_clicked();
-
-    void on_depth_map_clicked();
+    void on_video_clicked();
+    void on_depthMap_clicked();
 
 private:
     Ui::Disparity *ui;

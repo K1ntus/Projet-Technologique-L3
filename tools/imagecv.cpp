@@ -114,9 +114,11 @@ Mat imagecv::qimage_to_mat(const QImage& src) {
     return result;
 }
 
-
-
-
+/**
+ * @brief imagecv::displayImage display a mat image into a qt frame
+ * @param frame The qt frame where you want to display the image
+ * @param image the image to display
+ */
 void imagecv::displayImage(QLabel &frame, const Mat &image)
 {
 

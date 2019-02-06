@@ -3,6 +3,12 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * @brief ChessboardCalibration::ChessboardCalibration Class that calibrate a set of images using the chessboard pattern
+ * @param imgs vector with the set of images to calibrate
+ * @param nLines number of lines to find in the chessboard
+ * @param nCols number of columns to find in the chessboard
+ */
 ChessboardCalibration::ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLines, int nCols):
     Calibration_intr(imgs, nLines, nCols),
      image_points(nullptr),
@@ -34,12 +40,19 @@ std::vector<std::vector<Point2f> > &ChessboardCalibration::getImagePoints() cons
     return *image_points;
 }
 
+/**
+ * @brief ChessboardCalibration::setImagePoints Clear the images point of the current class, and set the new one linked to the image
+ * @param imagePoints the image points to set in the image
+ */
 void ChessboardCalibration::setImagePoints(std::vector<std::vector<Point2f> > &imagePoints)
 {
     this->image_points->clear();
     *this->image_points = imagePoints;
 }
 
+/**
+ * @brief ChessboardCalibration::prepareCalibration get the chessboard corners and object point as a first step for the calibration
+ */
 void ChessboardCalibration::prepareCalibration()
 {
     int &nb_lines(board_size.height), &nb_columns(board_size.width),
@@ -97,6 +110,13 @@ bool ChessboardCalibration::find_chessboard_corners(std::vector<cv::Point2f>& co
     return found;
 }
 
+/**
+ * @brief ChessboardCalibration::calibrate
+ * Calibrate the image set using the chessboard pattern.\n
+ * The clearCalib() call doesnt clear the image set because the boolean parameters is not set to true.\n
+ * But its cleaning the corners and ids list got from before to prevent duplication, incorrect value from\n
+ * before tests, ...
+ */
 void ChessboardCalibration::calibrate(){
 
     clearCalib();
@@ -115,6 +135,10 @@ void ChessboardCalibration::calibrate(){
     intrParam->setDistCoeffsMatrix(dist_coeffs);
 }
 
+/**
+ * @brief ChessboardCalibration::clearCalib clear the calibration, if set to true, the image vector will also be cleaned
+ * @param clearSet set it to true to also clear the image vector. Default is set to false.
+ */
 void ChessboardCalibration::clearCalib(bool clearSet)
 {
     super::clearCalib(clearSet);

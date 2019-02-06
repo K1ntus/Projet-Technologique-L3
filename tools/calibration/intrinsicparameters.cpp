@@ -2,6 +2,9 @@
 using namespace std;
 using namespace cv;
 
+/**
+ * @brief IntrinsicParameters::IntrinsicParameters Create an instance of this class with default camera matrix value
+ */
 IntrinsicParameters::IntrinsicParameters() :
     camera_matrix(nullptr),
     dist_coeffs(nullptr)
@@ -12,6 +15,11 @@ IntrinsicParameters::IntrinsicParameters() :
     dist_coeffs = new Mat;
 }
 
+/**
+ * @brief IntrinsicParameters::IntrinsicParameters Create an instance of this class with specific camera matrix value
+ * @param new_camera_matrix The camera matrix value to use
+ * @param dist_coeffs_mat The distorsion matrix value to use
+ */
 IntrinsicParameters::IntrinsicParameters(cv::Mat& new_camera_matrix, cv::Mat& dist_coeffs_mat) :
     camera_matrix(nullptr),
     dist_coeffs(nullptr)
@@ -23,26 +31,44 @@ IntrinsicParameters::IntrinsicParameters(cv::Mat& new_camera_matrix, cv::Mat& di
 
 }
 
+/**
+ * @brief IntrinsicParameters::~IntrinsicParameters delete the instance of this class, and the pointers linked to it
+ */
 IntrinsicParameters::~IntrinsicParameters()
 {
     delete camera_matrix;
     delete dist_coeffs;
 }
 
-
+/**
+ * @brief IntrinsicParameters::getCameraMatrix
+ * @return the camera matrix
+ */
 Mat& IntrinsicParameters::getCameraMatrix() const{
     return *camera_matrix;
 }
 
+/**
+ * @brief IntrinsicParameters::getDistCoeffs
+ * @return the distorsion coeff matrix
+ */
 Mat& IntrinsicParameters::getDistCoeffs() const{
     return *dist_coeffs;
 }
 
+/**
+ * @brief IntrinsicParameters::setCameraMatrix set the camera matrix
+ * @param camera_matrix the new camera matrix
+ */
 void IntrinsicParameters::setCameraMatrix(Mat &camera_matrix)
 {
     camera_matrix.copyTo(*this->camera_matrix);
 }
 
+/**
+ * @brief IntrinsicParameters::setDistCoeffsMatrix set the distorsion coeffs matrix
+ * @param dist_coeffs_mat the distorsion coeffs matrix to use
+ */
 void IntrinsicParameters::setDistCoeffsMatrix(Mat &dist_coeffs_mat)
 {
     dist_coeffs_mat.copyTo(*this->dist_coeffs);

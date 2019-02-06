@@ -20,8 +20,6 @@ ImgCv::ImgCv(const Mat &img, bool is_stereo) :Mat(img), stereo(is_stereo)
 
 ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : Mat(), stereo(is_stereo)
 {
-
-
     // put the left and right image side by side
     int leftWidth = imgL.size().width;
     int rightWidth = imgR.size().width;
@@ -211,7 +209,6 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
  * @return the filtered disparity map
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
-
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL().clone();
@@ -238,10 +235,14 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 }
 /**
  * @brief ImgCv::disparity_post_filtering: applies a filter on a disparity map compute with SGBM
+ * @param IO_numberOfDisparities
+ * @param IO_SADWindowSize
+ * @param IO_preFilterCap
+ * @param IO_P1
+ * @param IO_P2
  * @return the disparity map post_filtered
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
-
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL().clone();
@@ -274,6 +275,17 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &pa
                           paramR.getDistCoeffs(), paramR.getCameraMatrix(), R, T);
 }
 
+/**
+ * @brief ImgCv::rectifiedImage
+ * @param distortedImage the image to undistort
+ * @param dist_coeffsL left parameters of the camera to undistort the pict
+ * @param camera_matrixL left parameters of the camera to undistort the pict
+ * @param dist_coeffsR right parameters of the camera to undistort the pict
+ * @param camera_matrixR right parameters of the camera to undistort the pict
+ * @param R rotation parameters of the camera to undistort the pict
+ * @param T translation parameters of the camera to undistort the pict
+ * @return the rectified image
+ */
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
                             cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
                             cv::Mat const&R, cv::Mat const&T) const
@@ -300,7 +312,6 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
     cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
     cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
 
-
     cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
     cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
 
@@ -318,6 +329,12 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
     return rectifiedImg;
 }
 
+/**
+ * @brief ImgCv::rectifiedImage
+ * @param distortedImage the image to undistort
+ * @param outFile the output file with the parameters to undistort
+ * @return the rectified image
+ */
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile) const
 {
     ImgCv rectifiedImg;
@@ -367,25 +384,26 @@ Mat ImgCv::getDispToDepthMat(const std::string &outFile)
 
 /**
  * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
- * @param disparityMap
- * @param dispToDepthMatrix
+ * @param disparityMap Tje dosparity map
+ * @param dispToDepthMatrix The matrix containing the intrinsec and extrinsec parameters of the camera
  * @return the depth map
  */
 Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 {
     Mat depthMapImage;
-    reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix);
+    reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
     return depthMapImage;
 
 }
 /**
  * @brief ImgCv::isStereo : Check if
- * @return
+ * @return the stereo boolean value
  */
 bool ImgCv::isStereo() const
 {
     return stereo;
 }
+
 /**
  * @brief ImgCv::getImg : Clone an image and recover it.
  * @return a clone of the image loaded
@@ -394,6 +412,7 @@ Mat ImgCv::getImg() const
 {
     return this->clone();
 }
+
 /**
  * @brief ImgCv::getImgL : Get the left side of a stereo image
  * @return  the left image
@@ -403,6 +422,7 @@ Mat ImgCv::getImgL() const
     Range rows(0, this->rows), columns(0, this->cols >> 1);
     return this->operator()(rows, columns);
 }
+
 /**
  * @brief ImgCv::getImgR : Get the right side of an image
  * @return the right image
@@ -413,14 +433,22 @@ Mat ImgCv::getImgR() const
     return this->operator()(rows, columns);
 }
 
-Mat ImgCv::getDisparityMap(){
-
-   return sbm(((this->size().width >> 3) + 15) & -16 , 15);
+/**
+ * @brief ImgCv::getDisparityMap
+ * @return  the disparity map
+ */
+Mat ImgCv::getDisparityMap()
+{
+    return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
 
+/**
+ * @brief ImgCv::getDepthMap
+ * @param TProjectionMat The matrix containing the intrinsec and extrinsec parameters of the camera
+ * @return the depth map
+ */
 Mat ImgCv::getDepthMap(Mat &TProjectionMat)
 {
-
     return depthMap(getDisparityMap(), TProjectionMat);
 }
 

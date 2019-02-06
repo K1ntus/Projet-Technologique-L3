@@ -13,8 +13,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<cv::Mat> &imgsL, std::vec
     switch (calibrationMode) {
 
     case CHARUCO:
-                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+//                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+//                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
 
     default:
@@ -58,8 +58,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
 
     switch (calibrationMode) {
     case CHARUCO:
-                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+//                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+//                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     default:
         calibLeft = new ChessboardCalibration(imgsL, nLines, nCols);
