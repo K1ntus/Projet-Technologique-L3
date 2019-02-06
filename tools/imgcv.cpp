@@ -1,7 +1,7 @@
 #include "imgcv.h"
 
 using namespace cv;
-//using namespace cv::ximgproc;
+using namespace cv::ximgproc;
 
 ImgCv::ImgCv():
     Mat(),
@@ -180,7 +180,8 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
                 IO_full_scale
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
-    disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
+//    disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
+    disp.convertTo(disp, CV_8U, 255/(IO_numberOfDisparities*16.));
     bitwise_not(disp, disp);
     return disp;
 }
@@ -199,7 +200,8 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
-    dst.convertTo(dst,CV_8U,1,0);
+//    dst.convertTo(dst,CV_8U,1,0);
+    dst.convertTo(dst, CV_8U, 255/(IO_numberOfDisparities*16.));
     bitwise_not(dst, dst);
     return dst;
 }
@@ -209,7 +211,7 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
  * @return the filtered disparity map
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
-   /*
+
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5);//reduce the image's dimensions
@@ -234,14 +236,13 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     cv::bitwise_not(final_disparity_map, final_disparity_map);// reverse black & white colors
     return final_disparity_map;
 
-    */
 }
 /**
  * @brief ImgCv::disparity_post_filtering: applies a filter on a disparity map compute with SGBM
  * @return the disparity map post_filtered
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
-/*
+
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
 
@@ -268,7 +269,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 5.0);
     cv::bitwise_not(final_disparity_map, final_disparity_map); // reverse black and white
     return final_disparity_map;
-*/
+
 }
 
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T) const
@@ -352,6 +353,21 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile) c
 
 }
 
+Mat ImgCv::getDispToDepthMat(const std::string &outFile)
+{
+    cv::Mat dispToDepthMat;
+    FileStorage fs(outFile, FileStorage::READ);
+    if(fs.isOpened()){
+
+        fs["dispToDepthMatrix"] >> dispToDepthMat;
+
+        fs.release();
+
+    }else
+        std::cout << "Error: Couldn't open file. \nin: Imgcv::rectifiedImage" << std::endl;
+    return dispToDepthMat;
+}
+
 /**
  * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
  * @param disparityMap
@@ -402,7 +418,7 @@ Mat ImgCv::getImgR() const
 
 Mat ImgCv::getDisparityMap()
 {
-    return sbm(16 , 15);
+    return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
 
 Mat ImgCv::getDepthMap(Mat &TProjectionMat)

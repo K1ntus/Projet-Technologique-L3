@@ -140,13 +140,13 @@ void MainWindow::on_videoTest_clicked()
         if(capR.isOpened()){
             std::cout << "video opened" << std::endl;
 
-            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
             FileStorage fs(fileName2.toStdString(), FileStorage::READ);
 
             if(fs.isOpened()){
-                cv::Mat imgVidL, imgVidR, Q;
+                cv::Mat displayedImg, imgVidL, imgVidR, Q;
                 fs["dispToDepthMatrix"] >> Q;
-                int key = ' ';
+                int key = ' ', prevKey = key;
                 if(!capL.grab() || !capR.grab()) return;
 
                 double framerate = capL.get(CV_CAP_PROP_FPS);
@@ -155,30 +155,36 @@ void MainWindow::on_videoTest_clicked()
                     if(key == 'p'){
 
                         std::cout << "pause" << std::endl;
-
-                        key = waitKey((int) framerate);
-                        if(key == 'p')
-                            key = ' ';
-                        else
-                            key = 'p';
-
+                        prevKey = key;
                     }else{
                         capL.retrieve(imgVidL);
                         capR.retrieve(imgVidR);
                         img->setImg(imgVidL, imgVidR);
 
-                        ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(img->getDepthMap(Q))));
+                        if(key == 'l')
+                            displayedImg = img->getImgL();
+                        else if(key == 'r')
+                            displayedImg = img->getImgR();
+                        if(key == 'd')
+                            displayedImg = img->getDepthMap(Q);
+                        else if(key == 's')
+                            displayedImg = img->getDisparityMap();
+                        else
+                            displayedImg = *img;
 
-                        imshow("video test", *img);
-                        std::cout << "next frame" << std::endl;
+                        imagecv::displayImage(*ui->backgroundLabel, displayedImg);
 
-                        key = waitKey((int) framerate);
+                        imshow("video test", displayedImg);
+                        std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+                        prevKey = key;
+
                         if(!capL.grab() || !capR.grab())
-                            key = 'q';
-
+                            prevKey = 'q';
                     }
-                    ;
 
+                    key = waitKey((int) framerate);
+                    if(key == 255)
+                        key = prevKey;
                 }
 
             }
@@ -281,4 +287,55 @@ void MainWindow::on_action2_image_triggered()
         QMessageBox::warning(this, tr("Application"),
                              tr("Cannot read file\n please select a new file "));
     }
+}
+
+void MainWindow::on_actiondisparity_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+    imagecv::displayImage(*ui->backgroundLabel, img->getDisparityMap());
+}
+
+void MainWindow::on_actiondepthMap_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+    cv::Mat dImg(img->rectifiedImage(*img, inFile.toStdString()));
+
+    cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
+    imagecv::displayImage(*ui->backgroundLabel, img->getDepthMap(Q));
+}
+
+void MainWindow::on_actionQImage_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+
+    clock_t start, end;
+    start = clock();
+    QImage image = mat_to_qimage(*img);
+
+    end = clock();
+    double delta = (end-start);
+    QString str = "result of speed test: " + QString::number((delta/CLOCKS_PER_SEC));
+    statusBar()->showMessage(str);
+
+    imagecv::displayImage(*ui->backgroundLabel, *img);
+
 }

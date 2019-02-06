@@ -188,9 +188,12 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-        //        calib = new CharucoCalibration(imageSet);
+                calib = new CharucoCalibration(imageSet);
+                currentCalibMode = CalibrationMode::CHARUCO;
     }else{
         calib = new ChessboardCalibration(imageSet);
+        currentCalibMode = CalibrationMode::CHESSBOARD;
+
     }
 }
 
@@ -232,7 +235,7 @@ void Calibration_widget::on_stereoCalibration_clicked()
                 }
 
                 delete calib;
-                calib = new PT_StereoCalibration(imagesL, imagesR);
+                calib = new PT_StereoCalibration(imagesL, imagesR, 6, 9, currentCalibMode);
                 ui->undistortedButton->setEnabled(true);
                 enableFeatures(true);
                 int nbImg = calib->getSet().size();
