@@ -4,6 +4,12 @@ using namespace std;
 using namespace cv;
 using namespace cv::aruco;
 
+/**
+ * @brief CharucoCalibration::CharucoCalibration Class managing the charuco calibration
+ * @param imgs vector of image to calibrate
+ * @param nLines number of lines from the charuco chessboard to find
+ * @param nCols number of columns from the charuco chessboard to find
+ */
 CharucoCalibration::CharucoCalibration(std::vector<cv::Mat> &imgs, int nLines, int nCols):
     Calibration_intr(imgs, nLines, nCols),
     charucoCornersTab(nullptr),
@@ -69,12 +75,9 @@ void CharucoCalibration::prepareCalibration()
 
             if(nb_success >= nb_image)
                 break;
-        }
-        else if(im > (nb_image << 2))
-            return;
-
-        im++;
-
+            } else if(im > (nb_image << 2))
+                return;
+            im++;
     }
 
     std::cout << "charuco corners: " << charucoCornersTab->size() << std::endl;
@@ -105,7 +108,7 @@ bool CharucoCalibration::find_charuco_corners(std::vector<Point2f> &charucoCorne
 
         aruco::interpolateCornersCharuco(markerCorners, markerIds, img, board, charucoCorners, charucoIds);
 
-        if(charucoIds.size() > 0){
+        if(charucoIds.size() > 4){
             std::cout << "charuco corners: " << markerCorners.size() << std::endl;
             std::cout << "charuco ids: " << markerIds.size() << std::endl;
             aruco::drawDetectedCornersCharuco(*gray_image, charucoCorners, charucoIds, cv::Scalar(255, 0, 0));
@@ -125,7 +128,7 @@ bool CharucoCalibration::find_corners()
 
 /**
  * @brief CharucoCalibration::calibrate
- * Calibrate the image set using charuco calibration.\n
+ * Calibrate the image set using charuco pattern.\n
  * The clearCalib() call doesnt clear the image set because the boolean parameters is not set to true.\n
  * But its cleaning the corners and ids list got from before to prevent duplication, incorrect value from\n
  * before tests, ...
@@ -145,14 +148,32 @@ void CharucoCalibration::calibrate()
     camera_matrix.ptr<float>(0)[0] = 1;
     camera_matrix.ptr<float>(1)[1] = 1;
 
-    double repError = calibrateCameraCharuco(*charucoCornersTab, *charucoIdsTab, board, imgSize, camera_matrix, dist_coeffs, *rvecs, *tvecs,0,  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON));
+    try{
+        double repError = calibrateCameraCharuco(*charucoCornersTab,
+                                                 *charucoIdsTab,
+                                                 board,
+                                                 imgSize,
+                                                 camera_matrix,
+                                                 dist_coeffs,
+                                                 *rvecs,
+                                                 *tvecs,
+                                                 0,
+                                                 TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, DBL_EPSILON)
+        );
+
+        std::cout << "The error percent of this charuco calibration is of:" << repError << "\%" << std::endl;
+    } catch(cv::Exception){
+        std::cout << "Charuco Calibration error" << std::endl;
+    }
 
     intrParam->setCameraMatrix(camera_matrix);
     intrParam->setDistCoeffsMatrix(dist_coeffs);
-
-
 }
 
+/**
+ * @brief CharucoCalibration::clearCalib clear the calibration, if set to true, the image vector will also be cleaned
+ * @param clearSet set it to true to also clear the image vector. Default is set to false.
+ */
 void CharucoCalibration::clearCalib(bool clearSet)
 {
     super::clearCalib(clearSet);

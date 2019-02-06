@@ -16,6 +16,11 @@ public:
 
     std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
     void setImagePoints(std::vector<std::vector<cv::Point2f>>& imagePoints);
+
+    /**
+     * @brief CharucoCalibration::clearCalib clear the calibration, if set to true, the image vector will also be cleaned
+     * @param clearSet set it to true to also clear the image vector. Default is set to false.
+     */
     void clearCalib(bool clearSet = false);
 
     /**
