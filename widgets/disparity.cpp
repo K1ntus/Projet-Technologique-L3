@@ -67,6 +67,7 @@ void Disparity::on_apply_clicked(){
                 this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
             im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
         }else{
+
             this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
             this->IO_SADWindowSize = ui->slider_windowSize->value();
             this->IO_preFilterCap =  ui->slider_preFilterCap->value();
@@ -359,7 +360,6 @@ void Disparity::on_video_clicked()
                     //                        else
                     //                            displayedImg = *img;
 
-                    //                        on_apply_clicked();
 
                     on_apply_clicked();
                     imshow("video test", *img);

@@ -4,6 +4,12 @@ using namespace std;
 using namespace cv;
 using namespace imagecv;
 
+/**
+ * @brief Calibration_widget::Calibration_widget Create the calibration class and ui
+ * @param calibration the calibration mode wanted (if null, a default one will be choose)
+ * @param CalibMode The calibration mode wanted, that could be the stereo one, charuco or chessboard
+ * @param parent the parent widget (most likely to be the main window, but could be any qt widget)
+ */
 Calibration_widget::Calibration_widget(PT_ICalibration *calibration, CalibrationMode CalibMode, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Calibration_widget),
@@ -28,6 +34,11 @@ Calibration_widget::~Calibration_widget()
     delete calib;
 }
 
+/**
+ * @brief Calibration_widget::on_undistortedButton_clicked is summoned when the linked button is pressed.
+ * This function launch the calibration on distorted pictures from the fish eye effects and\n
+ * undistorted the whole set using the intrinsic parameters of the camera
+ */
 void Calibration_widget::on_undistortedButton_clicked()
 {
     if(!calib->hasIntrinsicParameters())
@@ -38,6 +49,9 @@ void Calibration_widget::on_undistortedButton_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_chesscorners_clicked Detect the chessboard corners of an image set
+ */
 void Calibration_widget::on_chesscorners_clicked()
 {
     currentMode = CHESSBOARD_CORNERS;
@@ -45,6 +59,10 @@ void Calibration_widget::on_chesscorners_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::display_image Display the current image of the set on screen
+ * @param displayerMode
+ */
 void Calibration_widget::display_image(DisplayerMode const&displayerMode){
     Mat *imagePtr(nullptr);
 
@@ -74,6 +92,17 @@ void Calibration_widget::display_image(DisplayerMode const&displayerMode){
     ui->currentImage->setNum((int)calib->getCurrentImgIndex()+1);
 }
 
+/**
+ * @brief Calibration_widget::enableFeatures enable or disable some specific features.
+ * @param isEnabled
+ *
+ * This function enable some features that could only be available\n
+ * when an image set has been loaded, like:\n
+ * + Display the original image\n
+ * + Display the chesscorners that has been discovered\n
+ * + Go to the previous image\n
+ * + Go to the next image\n
+ */
 void Calibration_widget::enableFeatures(bool isEnabled)
 {
     ui->originalImage->setEnabled(isEnabled);
@@ -82,6 +111,9 @@ void Calibration_widget::enableFeatures(bool isEnabled)
     ui->nextImage->setEnabled(isEnabled);
 }
 
+/**
+ * @brief Calibration_widget::on_newImageSet_clicked load a new set of image to test
+ */
 void Calibration_widget::on_newImageSet_clicked()
 {
     QStringList filePath = QFileDialog::getOpenFileNames(
@@ -110,6 +142,9 @@ void Calibration_widget::on_newImageSet_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_nextImage_clicked Go to the next image
+ */
 void Calibration_widget::on_nextImage_clicked()
 {
     size_t const& incr = calib->getCurrentImgIndex();
@@ -121,6 +156,9 @@ void Calibration_widget::on_nextImage_clicked()
         display_image(currentMode);
 }
 
+/**
+ * @brief Calibration_widget::on_prevImage_clicked Go back to the previous image
+ */
 void Calibration_widget::on_prevImage_clicked()
 {
     size_t const& decr = calib->getCurrentImgIndex();
@@ -131,9 +169,13 @@ void Calibration_widget::on_prevImage_clicked()
         display_image(currentMode);
 }
 
+/**
+ * @brief Calibration_widget::on_save_clicked Save the intrinsic or extrinsic parameters depending of the detection.
+ * If the detection mode is 'chessboard' or 'charuco', only the intrinsic parameters are saved.\n
+ * If the detection mode is using a camera stream, the intrinsic AND extrinsic parameters are saved.\n
+ */
 void Calibration_widget::on_save_clicked()
 {
-
     if( calib == nullptr || !calib->hasIntrinsicParameters()){
         QMessageBox::warning(this, tr("Error while saving file"), tr("no calibration to save."));
         return;
@@ -147,6 +189,9 @@ void Calibration_widget::on_save_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_loadCalib_clicked load a calibration file containing the intrinsic nor extrinsic parameters of the camera.
+ */
 void Calibration_widget::on_loadCalib_clicked()
 {
 
@@ -162,12 +207,18 @@ void Calibration_widget::on_loadCalib_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_originalImage_clicked go back to the 'original' (ie. without calibration) image of the set
+ */
 void Calibration_widget::on_originalImage_clicked()
 {
     currentMode = ORIGINAL;
     display_image(ORIGINAL);
 }
 
+/**
+ * @brief Calibration_widget::on_calibration_clicked Calibrate the image set, depending of the checkbox mode clicked
+ */
 void Calibration_widget::on_calibration_clicked()
 {
     if(calib == nullptr){
@@ -181,6 +232,9 @@ void Calibration_widget::on_calibration_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_CharucoCalib_clicked if enabled, the detection mode will use the charuco method
+ */
 void Calibration_widget::on_CharucoCalib_clicked()
 {
     vector<cv::Mat> imageSet;
@@ -188,8 +242,8 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-//                calib = new CharucoCalibration(imageSet);
-//                currentCalibMode = CalibrationMode::CHARUCO;
+                calib = new CharucoCalibration(imageSet);
+                currentCalibMode = CalibrationMode::CHARUCO;
     }else{
         calib = new ChessboardCalibration(imageSet);
         currentCalibMode = CalibrationMode::CHESSBOARD;
@@ -197,6 +251,9 @@ void Calibration_widget::on_CharucoCalib_clicked()
     }
 }
 
+/**
+ * @brief Calibration_widget::on_stereoCalibration_clicked this function will calibrate a set of pairs images
+ */
 void Calibration_widget::on_stereoCalibration_clicked()
 {
 
@@ -252,21 +309,35 @@ void Calibration_widget::on_stereoCalibration_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_Quit_clicked delete the calibration ui
+ */
 void Calibration_widget::on_Quit_clicked()
 {
     delete this;
 }
 
+/**
+ * @brief Calibration_widget::on_ImageSetFromVideo_clicked Load a pair of stereo image from directory and launch it.
+ * When used, a popup video will open, displaying the video while running.\n
+ * You have access to multiple commands:\n
+ * + 'p' : pause the video\n
+ * + 'q' : close the video\n
+ * + 'v' : save an image of the video to test for the calibration\n
+ *
+ * To have enough image for calibration, you need at least 10 images. If you don't have enough of them,\n
+ * The calibration will be impossible
+ */
 void Calibration_widget::on_ImageSetFromVideo_clicked()
 {
-    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Select a video"), "resources/", this->tr("Video Files (*.mp4)"));
     std::cout << fileName2.toStdString() << std::endl;
     cv::VideoCapture cap(fileName2.toStdString());
     if(cap.isOpened()){
         vector<ImgCv> stereoImgTab;
 
-        std::cout << "video opend" << std::endl;
-        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Sélectionnez une image"), "resources/", this->tr("Video Files (*.mp4)"));
+        std::cout << "video opened" << std::endl;
+        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Select a video"), "resources/", this->tr("Video Files (*.mp4)"));
         std::cout << fileName2.toStdString() << std::endl;
         cv::VideoCapture capR(fileName2.toStdString());
         if(capR.isOpened()){
@@ -341,11 +412,24 @@ void Calibration_widget::on_ImageSetFromVideo_clicked()
 
 }
 
+/**
+ * @brief Calibration_widget::on_saveSet_clicked Save the image (more likely to be distorted) set into directories.
+ * Depending of the mode (ie. stereo or single),\n
+ * This function will save the stereo image set into two directories.\n
+ * The first (resp. the second) directory selection popup is for the left (resp. right) image set.\n
+ * \n
+ * If that is just a single image, you will have to only chose one directory to save this set.
+ * \n
+ * The image are saved with the format jpg because of his smaller size, but we are losing few informations\n
+ * because of this compression. Depending of the robot settings, png could be a better choice\n
+ * \n
+ *
+ */
 void Calibration_widget::on_saveSet_clicked()
 {
     if(currentCalibMode == CalibrationMode::STEREO){
-        QString dirPathL = QFileDialog::getExistingDirectory(this, tr("choose the left dir to save the left images"));
-        QString dirPathR = QFileDialog::getExistingDirectory(this, tr("choose the left dir to save the right images"));
+        QString dirPathL = QFileDialog::getExistingDirectory(this, tr("choose the directory that will contain the left images set"));
+        QString dirPathR = QFileDialog::getExistingDirectory(this, tr("choose the directory that will contain the right images set"));
 
         if(!dirPathL.isEmpty() && !dirPathR.isEmpty()){
             vector<Mat> &calibSet = calib->getSet();
@@ -388,11 +472,24 @@ void Calibration_widget::on_saveSet_clicked()
     }
 }
 
+/**
+ * @brief Calibration_widget::on_saveUndistorted_clicked Save the undistorted image set into directories.
+ * Depending of the mode (ie. stereo or single),\n
+ * This function will save the stereo image set into two directories.\n
+ * The first (resp. the second) directory selection popup is for the left (resp. right) image set.\n
+ * \n
+ * If that is just a single image, you will have to only chose one directory to save this set.
+ * \n
+ * The image are saved with the format jpg because of his smaller size, but we are losing few informations\n
+ * because of this compression. Depending of the robot settings, png could be a better choice\n
+ * \n
+ *
+ */
 void Calibration_widget::on_saveUndistorted_clicked()
 {
     if(currentCalibMode == CalibrationMode::STEREO){
-        QString dirPathL = QFileDialog::getExistingDirectory(this, tr("choose the left dir to save the left images"));
-        QString dirPathR = QFileDialog::getExistingDirectory(this, tr("choose the left dir to save the right images"));
+        QString dirPathL = QFileDialog::getExistingDirectory(this, tr("choose the directory that will contain the left images set"));
+        QString dirPathR = QFileDialog::getExistingDirectory(this, tr("choose the directory that will contain the right images set"));
 
         if(!dirPathL.isEmpty() && !dirPathR.isEmpty()){
             vector<Mat> &calibSet = calib->getSet();

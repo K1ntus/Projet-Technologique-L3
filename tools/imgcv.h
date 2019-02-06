@@ -12,8 +12,8 @@
 #include <iostream>
 // uncomment for common project
 #include "tools/calibration/intrinsicparameters.h"
-//#include "opencv2/ximgproc.hpp"
-//#include "opencv2/ximgproc/disparity_filter.hpp"
+#include "opencv2/ximgproc.hpp"
+#include "opencv2/ximgproc/disparity_filter.hpp"
 
 
 class ImgCv : public cv::Mat
@@ -29,13 +29,35 @@ public:
     bool isStereo() const;
 
     cv::Mat getImg() const;
-    cv::Mat getImgL() const;
-    cv::Mat getImgR() const;
-    cv::Mat getDisparityMap();
-    cv::Mat getDepthMap(cv::Mat &TProjectionMat);
-    void setImg(cv::Mat const&, bool);
 
+    /**
+     * @brief ImgCv::getImgL : Get the left side of a stereo image
+     * @return  the left image
+     */
+    cv::Mat getImgL() const;
+
+    /**
+     * @brief ImgCv::getImgR : Get the right side of an image
+     * @return the right image
+     */
+    cv::Mat getImgR() const;
+
+    /**
+     * @brief ImgCv::getDisparityMap
+     * @return  the disparity map
+     */
+    cv::Mat getDisparityMap();
+
+    /**
+     * @brief ImgCv::getDepthMap
+     * @param TProjectionMat The matrix containing the intrinsec and extrinsec parameters of the camera
+     * @return the depth map
+     */
+    cv::Mat getDepthMap(cv::Mat &TProjectionMat);
+
+    void setImg(cv::Mat const&, bool);
     void setImg(cv::Mat const&imgL, cv::Mat const&imgR);
+
     /**
      * @brief 'Cut' an image in two new image of width/2
      * @param cv::Mat Image that will be splitted in two
@@ -96,10 +118,11 @@ public:
      * @return the post_filtered disparity map using SGBM
      */
     cv::Mat disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2);
+
     /**
-     * @brief depthMap :  computes the depth map
-     * @param disparityMap
-     * @param dispToDepthMatrix
+     * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
+     * @param disparityMap Tje dosparity map
+     * @param dispToDepthMatrix The matrix containing the intrinsec and extrinsec parameters of the camera
      * @return the depth map
      */
     cv::Mat depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
@@ -108,10 +131,27 @@ public:
                          , IntrinsicParameters const&paramR,
                          cv::Mat const&R, cv::Mat const&T) const;
 
+    /**
+     * @brief ImgCv::rectifiedImage
+     * @param distortedImage the image to undistort
+     * @param dist_coeffsL left parameters of the camera to undistort the pict
+     * @param camera_matrixL left parameters of the camera to undistort the pict
+     * @param dist_coeffsR right parameters of the camera to undistort the pict
+     * @param camera_matrixR right parameters of the camera to undistort the pict
+     * @param R rotation parameters of the camera to undistort the pict
+     * @param T translation parameters of the camera to undistort the pict
+     * @return the rectified image
+     */
     ImgCv rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
                          cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
                          cv::Mat const&R, cv::Mat const&T) const;
 
+    /**
+     * @brief ImgCv::rectifiedImage
+     * @param distortedImage the image to undistort
+     * @param outFile the output file with the parameters to undistort
+     * @return the rectified image
+     */
     ImgCv rectifiedImage(ImgCv &distortedImage, std::string const& outFile) const;
 
     cv::Mat static getDispToDepthMat(std::string const& outFile);
