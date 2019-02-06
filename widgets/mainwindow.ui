@@ -227,12 +227,12 @@
   </action>
   <action name="action1_image">
    <property name="text">
-    <string>&amp;1 image</string>
+    <string>&amp;1 Une image</string>
    </property>
   </action>
   <action name="action2_image">
    <property name="text">
-    <string>&amp;2 image</string>
+    <string>&amp;2 Deux images</string>
    </property>
   </action>
   <action name="actiondisparity">
