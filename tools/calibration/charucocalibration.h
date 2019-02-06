@@ -15,7 +15,7 @@ public:
     void setNextImgIndex(size_t const& newIndex);
 
     std::vector<std::vector<cv::Point2f>>& getImagePoints() const;
-
+    void setImagePoints(std::vector<std::vector<cv::Point2f>>& imagePoints);
     void clearCalib(bool clearSet = false);
     void prepareCalibration();
     bool find_corners();

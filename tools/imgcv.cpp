@@ -214,8 +214,8 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
-    cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5);//reduce the image's dimensions
-    cv::resize(getImgR(),right_for_matching,Size(),0.5,0.5);
+    left_for_matching= getImgL().clone();
+    right_for_matching = getImgR().clone();
 
     Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
     Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
@@ -245,10 +245,8 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
-
-    cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5); //reduce the image's dimensions
-    cv::resize(getImgR(),right_for_matching,Size(),0.5,0.5);
-
+    left_for_matching= getImgL().clone();
+    right_for_matching = getImgR().clone();
     Ptr <StereoSGBM> matcher_left = StereoSGBM::create(0,IO_numberOfDisparities,IO_SADWindowSize); // use SBM to create a matcher
 
     matcher_left->setPreFilterCap(IO_preFilterCap);
@@ -444,7 +442,6 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
     const int& leftWidth = imgL.cols;
     const int& rightWidth = imgR.cols;
     Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
-
     res.adjustROI(0, 0, 0, -rightWidth);
     imgL.copyTo(res);
 
@@ -466,7 +463,7 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
 void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right){
     int width= img.cols >> 1 ;
     int x_right= width +img.cols%2; //First width position for the right image
-
+    std::cout<<x_right<<std::endl;
     // check if the ptr is already in use
     img.adjustROI(0,0, 0, -x_right);
     img.copyTo(img_left);

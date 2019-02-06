@@ -68,7 +68,7 @@ void Disparity::on_apply_clicked(){
             this->IO_SADWindowSize = ui->slider_windowSize->value()+1;
             filtered_disp = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
          }else{
-             this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
+            this->IO_numberOfDisparities = ui->slider_numberOfDisparities->value()*16;
             this->IO_SADWindowSize = ui->slider_windowSize->value();
             this->IO_preFilterCap =  ui->slider_preFilterCap->value();
             this->IO_P1= ui->slider_P1->value();

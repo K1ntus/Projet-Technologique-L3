@@ -658,19 +658,19 @@
     <number>1</number>
    </property>
    <property name="maximum">
-    <number>20</number>
+    <number>10</number>
    </property>
    <property name="singleStep">
     <number>9</number>
    </property>
    <property name="pageStep">
-    <number>6</number>
+    <number>1</number>
    </property>
    <property name="value">
-    <number>5</number>
+    <number>2</number>
    </property>
    <property name="sliderPosition">
-    <number>5</number>
+    <number>2</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>

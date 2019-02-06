@@ -7,7 +7,12 @@
 class Calibration_intr : public PT_ICalibration
 {
 public:
-
+    /**
+     * @brief Calibration_intr
+     * @param imgs
+     * @param nLines
+     * @param nCols
+     */
     Calibration_intr(std::vector<cv::Mat> &imgs, int nLines = 6, int nCols = 9);
     virtual ~Calibration_intr();
 

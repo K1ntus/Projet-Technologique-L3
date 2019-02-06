@@ -44,6 +44,12 @@ std::vector<std::vector<Point2f> > &CharucoCalibration::getImagePoints() const
     return *charucoCornersTab;
 }
 
+void CharucoCalibration::setImagePoints(std::vector<std::vector<Point2f> > &charuCorners )
+{
+    this->charucoCornersTab->clear();
+    *this->charucoCornersTab = charuCorners;
+}
+
 void CharucoCalibration::prepareCalibration()
 {
     size_t nb_image = imgs->size();
