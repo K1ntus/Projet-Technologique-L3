@@ -184,7 +184,88 @@ Mat& ImgCv::disparity_post_filtering() {
     return *this;
 }
 
-Mat ImgCv::depthMap(cv::Mat &disparityMap, Mat &dispToDepthMatrix)
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T) const
+{
+    return rectifiedImage(distortedImage, paramL.getDistCoeffs(), paramL.getCameraMatrix(),
+                          paramR.getDistCoeffs(), paramR.getCameraMatrix(), R, T);
+}
+
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
+                            cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
+                            cv::Mat const&R, cv::Mat const&T) const
+{
+    if(!distortedImage.isStereo())
+        std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
+
+    ImgCv rectifiedImg;
+
+    cv::Mat imgLrectified, imgRrectified,
+            rotL, rotR, projL, projR, dispToDepthMat;
+    cv::Mat const &imgL = distortedImage.getImgL();
+    cv::Mat const &imgR = distortedImage.getImgR();
+
+    cv::Rect roi1, roi2;
+    cv::Size imgSize(imgL.size());
+    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
+                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
+                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
+
+
+    cv::Mat map11, map12, map21, map22;
+    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
+    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
+
+
+    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
+    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+
+
+    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
+                   cvRound(roi1.width), cvRound(roi1.height));
+
+
+
+    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
+                   cvRound(roi2.width), cvRound(roi2.height));
+
+    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
+
+return rectifiedImg;
+}
+
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile) const
+{
+    ImgCv rectifiedImg;
+
+    if(!distortedImage.isStereo())
+        std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
+    FileStorage fs(outFile, FileStorage::READ);
+    if(fs.isOpened()){
+        cv::Mat imgLrectified, imgRrectified,
+                dist_coeffsL, camera_matrixL,
+                dist_coeffsR, camera_matrixR,
+                R, T, rotL, rotR, projL, projR, dispToDepthMat;
+
+        fs["cameraMatrixLeft"] >> camera_matrixL;
+        fs["distCoefficientsMatrixLeft"] >> dist_coeffsL;
+        fs["cameraMatrixRight"] >> camera_matrixR;
+        fs["distCoefficientsMatrixRight"] >> dist_coeffsR;
+        fs["rotationMatrix"] >> R;
+        fs["translationMatrix"] >> T;
+
+        fs.release();
+
+        rectifiedImg = rectifiedImage(distortedImage, dist_coeffsL, camera_matrixL,
+                                      dist_coeffsR, camera_matrixR,
+                                      R, T);
+    }else
+        std::cout << "Error: Couldn't open file. \nin: Imgcv::rectifiedImage" << std::endl;
+
+    return rectifiedImg;
+
+}
+
+Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 {
     Mat depthMapImage;
     reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix);
@@ -212,6 +293,17 @@ Mat ImgCv::getImgR() const
 {
     Range rows(0, this->rows), columns((this->cols & 1) ? (this->cols >> 1) + this->cols % 2 : this->cols >> 1, this->cols);
     return this->operator()(rows, columns);
+}
+
+Mat ImgCv::getDisparityMap()
+{
+    return sbm(16 , 15);
+}
+
+Mat ImgCv::getDepthMap(Mat &TProjectionMat)
+{
+
+    return depthMap(getDisparityMap(), TProjectionMat);
 }
 
 /**

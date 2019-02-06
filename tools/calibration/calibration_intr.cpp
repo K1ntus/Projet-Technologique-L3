@@ -4,16 +4,22 @@ using namespace std;
 using namespace cv;
 
 Calibration_intr::Calibration_intr(std::vector<cv::Mat> &imgs, int nLines, int nCols):
-    PT_ICalibration (nLines, nCols)
+    PT_ICalibration (nLines, nCols),
+    imgs(nullptr), intrParam(nullptr),
+    rvecs(nullptr), tvecs(nullptr)
 {
     this->imgs = new std::vector<cv::Mat>(imgs);
     intrParam = new IntrinsicParameters();
+    rvecs = new std::vector<cv::Mat>;
+    tvecs = new std::vector<cv::Mat>;
 
 }
 
 Calibration_intr::~Calibration_intr(){
     delete imgs;
     delete intrParam;
+    delete rvecs;
+    delete tvecs;
 
 }
 
@@ -62,9 +68,19 @@ void Calibration_intr::setIntrinsincParameters(IntrinsicParameters &intrinsicPar
 
 }
 
+std::vector<cv::Mat>& Calibration_intr::get_rvecs() const{
+    return *rvecs;
+}
+
+std::vector<cv::Mat>& Calibration_intr::get_tvecs() const{
+    return *tvecs;
+}
+
 void Calibration_intr::clearCalib(bool clearSet)
 {
     super::clearCalib(clearSet);
+    rvecs->clear();
+    tvecs->clear();
     if(clearSet)
         imgs->clear();
 }

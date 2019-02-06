@@ -125,8 +125,9 @@ void Disparity::on_apply_clicked(){
  * @brief Open a gui to select an image when you push the load button
  */
 void Disparity::on_loadImage_clicked(){
-    if(load_file(*this, *img, true)){
+    if(load_file(*this, *img)){
         QMessageBox::information(this, "Open image", "Image loaded");
+        img->setImg(*img, true);
         displayImage(img->getImg());
 
 

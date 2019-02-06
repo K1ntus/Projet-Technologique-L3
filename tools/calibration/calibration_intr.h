@@ -23,6 +23,10 @@ public:
     bool hasIntrinsicParameters() const;
     IntrinsicParameters& getIntrinsicParameters() const;
     void setIntrinsincParameters(IntrinsicParameters &intrinsicParam);
+
+    std::vector<cv::Mat>& get_rvecs() const;
+    std::vector<cv::Mat>& get_tvecs() const;
+
     virtual void clearCalib(bool clearSet = false);
     virtual void prepareCalibration() = 0;
     virtual bool find_corners() = 0;
@@ -33,8 +37,12 @@ public:
 
 protected:
     std::vector<cv::Mat> *imgs;
+
     // intrinseque parameters
     IntrinsicParameters *intrParam;
+    // extrinseques
+    std::vector<cv::Mat>* rvecs;
+    std::vector<cv::Mat>* tvecs;
 
 private:
     typedef PT_ICalibration super;

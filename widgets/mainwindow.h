@@ -46,13 +46,15 @@ private:
 private slots:
     void on_actionA_propos_triggered();
     void on_actionQuitter_triggered();
-    void on_actionOuvrir_triggered();
     void on_button_disparity_clicked();
     void on_button_sobel_clicked();
     void on_button_laplace_clicked();
     void on_calibrate_clicked();
     void on_videoTest_clicked();
     void on_actionCv_Mat_triggered();
+    void on_actionOuvrir_image_triggered();
+    void on_action1_image_triggered();
+    void on_action2_image_triggered();
 };
 
 #endif // MAINWINDOW_H

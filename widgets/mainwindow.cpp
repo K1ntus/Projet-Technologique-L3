@@ -50,26 +50,6 @@ void MainWindow::on_actionQuitter_triggered() {
     exit(EXIT_SUCCESS);
 }
 
-/**
- * @brief MainWindow::on_actionOuvrir_triggered triggered when the open button is pressed.
- * \n
- * Open a file dialog to load an image that will be bufferized for later modification,\n
- * filters applies, ...\n
- * \n
- * The loaded image is displayed to the left of the application main menu.
- */
-void MainWindow::on_actionOuvrir_triggered() {
-    if(load_file(*this, *img)){
-        QMessageBox::information(this, "Open image", "Image loaded");
-        imagecv::displayImage(*ui->backgroundLabel, *img);  //Display the original image
-
-        statusBar()->showMessage(tr("file loaded"), 2500);
-    }
-    else{
-        QMessageBox::warning(this, tr("Application"),
-                             tr("Cannot read file\n please select a new file "));
-    }
-}
 
 /**
  * @brief MainWindow::on_button_disparity_clicked triggered when the disparity button is pressed. \n
@@ -152,71 +132,60 @@ void MainWindow::on_videoTest_clicked()
     const string& fileLeft(fileName2.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
-        vector<ImgCv> stereoImgTab;
 
-        std::cout << "video opend" << std::endl;
         fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
         std::cout << fileName2.toStdString() << std::endl;
         const string& fileRight(fileName2.toStdString());
         cv::VideoCapture capR(fileRight);
         if(capR.isOpened()){
-            cv::Mat imgVidL, imgVidR;
-            int key = ' ';
-            if(!capL.grab() || !capR.grab()) return;
+            std::cout << "video opened" << std::endl;
 
-            double framerate = capL.get(CV_CAP_PROP_FPS);
-            while(key != 'q'){
+            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+            FileStorage fs(fileName2.toStdString(), FileStorage::READ);
 
-                if(key == 'p'){
+            if(fs.isOpened()){
+                cv::Mat imgVidL, imgVidR, Q;
+                fs["dispToDepthMatrix"] >> Q;
+                int key = ' ';
+                if(!capL.grab() || !capR.grab()) return;
 
-                    std::cout << "pause" << std::endl;
+                double framerate = capL.get(CV_CAP_PROP_FPS);
+                while(key != 'q'){
 
-                    key = waitKey((int) framerate);
-                    if(key == 'p')
-                        key = ' ';
-                    else if(key == 'v'){
-                        std::cout << "saved" << std::endl;
+                    if(key == 'p'){
 
-                        stereoImgTab.push_back(img->getImg());
-                        if(stereoImgTab.size() >= 30)
+                        std::cout << "pause" << std::endl;
+
+                        key = waitKey((int) framerate);
+                        if(key == 'p')
+                            key = ' ';
+                        else
+                            key = 'p';
+
+                    }else{
+                        capL.retrieve(imgVidL);
+                        capR.retrieve(imgVidR);
+                        img->setImg(imgVidL, imgVidR);
+
+                        ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(img->getDepthMap(Q))));
+
+                        imshow("video test", *img);
+                        std::cout << "next frame" << std::endl;
+
+                        key = waitKey((int) framerate);
+                        if(!capL.grab() || !capR.grab())
                             key = 'q';
-                    }else
-                        key = 'p';
 
-                }else{
-                    capL.retrieve(imgVidL);
-                    capR.retrieve(imgVidR);
-                    img->setImg(imgVidL, imgVidR);
-
-                    ui->backgroundLabel->setPixmap(QPixmap::fromImage(mat_to_qimage(*img)));
-
-                    imshow("video test", *img);
-                    std::cout << "next frame" << std::endl;
-
-                    if(key == 'v'){
-                        std::cout << "saved" << std::endl;
-
-                        stereoImgTab.push_back(img->getImg());
-                        key = 'q';
                     }
-                    key = waitKey((int) framerate);
-                    if(!capL.grab() || !capR.grab())
-                        key = 'q';
+                    ;
 
                 }
-                if(stereoImgTab.size() >= 30)
-                    key = 'q';
 
             }
-
         }
         capR.release();
         destroyWindow("video test");
-        if(!stereoImgTab.empty()){
-            delete calib_widget;
-            calib_widget = new Calibration_widget(new PT_StereoCalibration(stereoImgTab));
-            calib_widget->show();
-        }
+
     }else
         std::cout << "file empty" << std::endl;
     capL.release();
@@ -245,4 +214,71 @@ void MainWindow::on_actionCv_Mat_triggered()
     statusBar()->showMessage(str);
 
     imshow("cv image", *img);
+}
+
+/**
+ * @brief MainWindow::on_actionOuvrir_triggered triggered when the open button is pressed.
+ * \n
+ * Open a file dialog to load an image that will be bufferized for later modification,\n
+ * filters applies, ...\n
+ * \n
+ * The loaded image is displayed to the left of the application main menu.
+ */
+void MainWindow::on_actionOuvrir_image_triggered()
+{
+    if(load_file(*this, *img)){
+        QMessageBox::information(this, "Open image", "Image loaded");
+        imagecv::displayImage(*ui->backgroundLabel, *img);  //Display the original image
+
+        statusBar()->showMessage(tr("file loaded"), 2500);
+    }
+    else{
+        QMessageBox::warning(this, tr("Application"),
+                             tr("Cannot read file\n please select a new file "));
+    }
+}
+
+/**
+ * @brief MainWindow::on_actionOuvrir_triggered triggered when the open button is pressed.
+ * \n
+ * Open a file dialog to load an image that will be bufferized for later modification,\n
+ * filters applies, ...\n
+ * \n
+ * The loaded image is displayed to the left of the application main menu.
+ */
+void MainWindow::on_action1_image_triggered()
+{
+    if(load_file(*this, *img)){
+        QMessageBox::information(this, "Open image", "Image loaded");
+        img->setImg(*img, true);
+        imagecv::displayImage(*ui->backgroundLabel, *img);  //Display the original image
+
+        statusBar()->showMessage(tr("file loaded"), 2500);
+    }
+    else{
+        QMessageBox::warning(this, tr("Application"),
+                             tr("Cannot read file\n please select a new file "));
+    }
+}
+
+/**
+ * @brief MainWindow::on_actionOuvrir_triggered triggered when the open button is pressed.
+ * \n
+ * Open a file dialog to load an image that will be bufferized for later modification,\n
+ * filters applies, ...\n
+ * \n
+ * The loaded image is displayed to the left of the application main menu.
+ */
+void MainWindow::on_action2_image_triggered()
+{
+    if(load_file(*this, *img, true)){
+        QMessageBox::information(this, "Open images", "Image loaded");
+        imagecv::displayImage(*ui->backgroundLabel, *img);  //Display the original image
+
+        statusBar()->showMessage(tr("file loaded"), 2500);
+    }
+    else{
+        QMessageBox::warning(this, tr("Application"),
+                             tr("Cannot read file\n please select a new file "));
+    }
 }

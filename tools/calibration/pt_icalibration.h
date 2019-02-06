@@ -25,9 +25,6 @@ public:
 
     virtual bool hasIntrinsicParameters() const = 0;
 
-    std::vector<cv::Mat>& get_rvecs() const;
-    std::vector<cv::Mat>& get_tvecs() const;
-
     virtual void clearCalib(bool clearSet = false);
     virtual void prepareCalibration() = 0;
     virtual bool find_corners() = 0;
@@ -42,10 +39,6 @@ protected:
     cv::Size board_size;
 
     cv::Mat* gray_image;
-
-    // extrinseques
-    std::vector<cv::Mat>* rvecs;
-    std::vector<cv::Mat>* tvecs;
 
 };
 

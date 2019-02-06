@@ -9,7 +9,8 @@
 
 enum CalibrationMode{
     CHARUCO,
-    CHESSBOARD
+    CHESSBOARD,
+    STEREO
 };
 
 class PT_StereoCalibration : public PT_ICalibration
@@ -21,6 +22,8 @@ public:
                          CalibrationMode calibrationMode = CHESSBOARD);
     PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int nLines = 6, int nCols = 9,
                          CalibrationMode calibrationMode = CHESSBOARD);
+    PT_StereoCalibration( std::string const& calibFilename);
+
     ~PT_StereoCalibration();
 
     void newImageSet(std::vector<cv::Mat> const& imagesSetLR);
@@ -40,6 +43,7 @@ public:
     bool saveCalibration(std::string const &outFile) const;
     bool runCalibration(std::string const &inFile);
 
+    void displayRectifiedImage();
     cv::Mat undistorted_image() const;
 private:
 
@@ -50,6 +54,8 @@ private:
     Calibration_intr *calibLeft;
     Calibration_intr *calibRight;
     ImgCv *stereoImg;
+    cv::Mat *R, *T,
+    *essentialMatrix, *fundamentalMatrix;
 };
 
 #endif // PT_STEREOCALIBRATION_H

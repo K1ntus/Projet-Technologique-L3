@@ -7,6 +7,7 @@ class ChessboardCalibration : public Calibration_intr
 {
 
 public:
+
     ChessboardCalibration(std::vector<cv::Mat> &imgs, int nLines = 6, int nCols = 9);
     ~ChessboardCalibration();
 

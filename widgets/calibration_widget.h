@@ -30,7 +30,7 @@ class Calibration_widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit Calibration_widget(PT_ICalibration *calibration = nullptr, QWidget *parent = nullptr);
+    explicit Calibration_widget(PT_ICalibration *calibration = nullptr, CalibrationMode CalibMode = CalibrationMode::CHESSBOARD, QWidget *parent = nullptr);
     ~Calibration_widget();
 
     void display_image(DisplayerMode const&displayerMode);
@@ -38,6 +38,7 @@ public:
 private:
     Ui::Calibration_widget *ui;
     PT_ICalibration* calib;
+    CalibrationMode currentCalibMode;
     DisplayerMode currentMode;
     void enableFeatures(bool isEnabled =false);
 
@@ -56,6 +57,8 @@ private slots:
     void on_stereoCalibration_clicked();
     void on_Quit_clicked();
     void on_ImageSetFromVideo_clicked();
+    void on_saveSet_clicked();
+    void on_saveUndistorted_clicked();
 };
 
 #endif // CALIBRATION_WIDGET_H

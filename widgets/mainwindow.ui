@@ -21,7 +21,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
-    <item alignment="Qt::AlignLeft">
+    <item>
      <widget class="QGroupBox" name="controlMenu">
       <property name="minimumSize">
        <size>
@@ -117,7 +117,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../image.qrc">:/resources/background.jpg</pixmap>
+       <pixmap>:/resources/background.jpg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -145,8 +145,22 @@
     <property name="title">
      <string>Fic&amp;hier</string>
     </property>
+    <widget class="QMenu" name="menu_Ouvrir">
+     <property name="title">
+      <string>&amp;Ouvrir</string>
+     </property>
+     <widget class="QMenu" name="menu_stereo_image">
+      <property name="title">
+       <string>&amp;stereo image</string>
+      </property>
+      <addaction name="action1_image"/>
+      <addaction name="action2_image"/>
+     </widget>
+     <addaction name="actionOuvrir_image"/>
+     <addaction name="menu_stereo_image"/>
+    </widget>
+    <addaction name="menu_Ouvrir"/>
     <addaction name="separator"/>
-    <addaction name="actionOuvrir"/>
     <addaction name="actionQuitter"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
@@ -174,11 +188,6 @@
     <string>&amp;A propos</string>
    </property>
   </action>
-  <action name="actionOuvrir">
-   <property name="text">
-    <string>&amp;Ouvrir</string>
-   </property>
-  </action>
   <action name="actionQuitter">
    <property name="text">
     <string>&amp;Quitter</string>
@@ -204,10 +213,23 @@
     <string>&amp;Orbs</string>
    </property>
   </action>
+  <action name="actionOuvrir_image">
+   <property name="text">
+    <string>&amp;image</string>
+   </property>
+  </action>
+  <action name="action1_image">
+   <property name="text">
+    <string>1 image</string>
+   </property>
+  </action>
+  <action name="action2_image">
+   <property name="text">
+    <string>2 image</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="../image.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

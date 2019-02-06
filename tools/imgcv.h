@@ -12,6 +12,7 @@
 
 #include <iostream>
 // uncomment for common project
+#include "tools/calibration/intrinsicparameters.h"
 //#include "opencv2/ximgproc.hpp"
 //#include "opencv2/ximgproc/disparity_filter.hpp"
 
@@ -30,7 +31,8 @@ public:
     cv::Mat getImg() const;
     cv::Mat getImgL() const;
     cv::Mat getImgR() const;
-
+    cv::Mat getDisparityMap();
+    cv::Mat getDepthMap(cv::Mat &TProjectionMat);
     void setImg(cv::Mat const&, bool);
 
     void setImg(cv::Mat const&imgL, cv::Mat const&imgR);
@@ -90,7 +92,16 @@ public:
 
     cv::Mat &disparity_post_filtering();
 
-    cv::Mat depthMap(cv::Mat &disparityMap, cv::Mat &dispToDepthMatrix);
+    ImgCv rectifiedImage(ImgCv &distortedImage, IntrinsicParameters const&paramL
+                         , IntrinsicParameters const&paramR,
+                         cv::Mat const&R, cv::Mat const&T) const;
+
+    ImgCv rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
+                         cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
+                         cv::Mat const&R, cv::Mat const&T) const;
+
+    ImgCv rectifiedImage(ImgCv &distortedImage, std::string const& outFile) const;
+    cv::Mat depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
 
 
 private:

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1001</width>
+    <width>1008</width>
     <height>514</height>
    </rect>
   </property>
@@ -89,7 +89,17 @@
        <item>
         <widget class="QPushButton" name="ImageSetFromVideo">
          <property name="text">
-          <string>new image set from video</string>
+          <string>new image sets from video</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveSet">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>save set</string>
          </property>
         </widget>
        </item>
@@ -113,7 +123,7 @@
        <item>
         <widget class="QPushButton" name="stereoCalibration">
          <property name="text">
-          <string>stereo calibration</string>
+          <string>stereo calibration sets</string>
          </property>
         </widget>
        </item>
@@ -127,6 +137,13 @@
          </property>
          <property name="text">
           <string>Charuco calibration</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="saveUndistorted">
+         <property name="text">
+          <string>save undistorted set</string>
          </property>
         </widget>
        </item>

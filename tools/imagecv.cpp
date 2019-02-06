@@ -50,22 +50,25 @@ QString imagecv::speed_test(function_call_3_arg func, cv::Mat const& args, cv::M
 bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 
     QString fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), thisWidget.tr("resources/"), thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
-    QFile file(fileName);
 
-    qDebug(" *** Loading file *** ");
-
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {    //Check file validity/readable/...
-        QMessageBox::warning(&thisWidget, thisWidget.tr("Application"),
-                             thisWidget.tr("Cannot read file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName), file.errorString()));
-        return false;
-    }
-    else if(!fileName.isEmpty()){
+    if(!fileName.isEmpty()){
         Mat image = imread(fileName.toStdString());
+        if(stereo){
+            fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), thisWidget.tr("resources/"), thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
+           if(!fileName.isEmpty()){
+               Mat imageRight = imread(fileName.toStdString());
+
+               img.setImg(image, imageRight);
+               return true;
+           }else
+               std::cout << "Error : couldn't open second file.\nin: imagecv::load_file" << std::endl;
+        }
         img.setImg(image, stereo);
         return true;
 
-    }
+    }else
+        std::cout << "Error : couldn't open file.\nin: imagecv::load_file" << std::endl;
+
     return false;
 }
 
@@ -117,7 +120,6 @@ Mat imagecv::qimage_to_mat(const QImage& src) {
 void imagecv::displayImage(QLabel &frame, const Mat &image)
 {
 
-//    frame.setMaximumSize(width, height);
     frame.setPixmap(QPixmap::fromImage(
                         mat_to_qimage(image).scaled(frame.width(),frame.height(), Qt::KeepAspectRatio))  //Convert the new cv::mat to QImage
                     ); //Display the original image

@@ -103,15 +103,68 @@ bool IntrinsicParameters::readIntrStereoCalibration(string const &filename, Intr
     return false;
 }
 
+bool IntrinsicParameters::readIntrCalibration(const string &filename, Mat &cameraMat, Mat &distCoeffs)
+{
+    FileStorage in(filename, FileStorage::READ);
+    if(in.isOpened()){
+
+        in["cameraMatrixLeft"] >> cameraMat;
+        in["distCoefficientsMatrixRight"] >> distCoeffs;
+
+        in["cameraMatrixRight"] >> cameraMat;
+        in["distCoefficientsMatrixRight"] >> distCoeffs;
+
+         in.release();
+
+        return true;
+
+    }else
+        cout << "error while opening file stream" << endl;
+    return false;
+}
+
+bool IntrinsicParameters::readIntrStereoCalibration(const string &filename, Mat &cameraMatL, Mat &distCoeffsL, Mat &cameraMatR, Mat &distCoeffsR)
+{
+    FileStorage in(filename, FileStorage::READ);
+    if(in.isOpened()){
+
+        Mat cameraMat, distCoeffs;
+
+        in["cameraMatrixLeft"] >> cameraMatL;
+        in["distCoefficientsMatrixRight"] >> distCoeffsL;
+
+
+        in["cameraMatrixRight"] >> cameraMatR;
+        in["distCoefficientsMatrixRight"] >> distCoeffsR;
+
+       in.release();
+
+        return true;
+
+    }else
+        cout << "error while opening file stream" << endl;
+    return false;
+}
+
 bool IntrinsicParameters::printIntrCalibration(string const &filename, IntrinsicParameters const &intrinsicParamToPrint)
+{
+    return printIntrCalibration(filename, intrinsicParamToPrint.getCameraMatrix(), intrinsicParamToPrint.getDistCoeffs());
+}
+
+bool IntrinsicParameters::printIntrStereoCalibration(string const &filename, IntrinsicParameters const &intrinsicParamLeftToPrint, IntrinsicParameters const &intrinsicParamRightToPrint)
+{
+    return printIntrStereoCalibration(filename, intrinsicParamLeftToPrint.getCameraMatrix(), intrinsicParamLeftToPrint.getDistCoeffs(),
+                                      intrinsicParamRightToPrint.getCameraMatrix(), intrinsicParamRightToPrint.getDistCoeffs());
+
+}
+
+bool IntrinsicParameters::printIntrCalibration(const string &filename, Mat &cameraMat, Mat &distCoeffs)
 {
     FileStorage out(filename, FileStorage::WRITE);
     if(out.isOpened()){
-        Mat &dist_coeffs = intrinsicParamToPrint.getDistCoeffs();
-        Mat &camera_matrix = intrinsicParamToPrint.getCameraMatrix();
 
-        out << "cameraMatrix" << camera_matrix;
-        out << "distCoefficientsMatrix" << dist_coeffs;
+        out << "cameraMatrix" << cameraMat;
+        out << "distCoefficientsMatrix" << distCoeffs;
 
         out.release();
         return true;
@@ -122,21 +175,17 @@ bool IntrinsicParameters::printIntrCalibration(string const &filename, Intrinsic
     return false;
 }
 
-bool IntrinsicParameters::printIntrStereoCalibration(string const &filename, IntrinsicParameters const &intrinsicParamLeftToPrint, IntrinsicParameters const &intrinsicParamRightToPrint)
+bool IntrinsicParameters::printIntrStereoCalibration(const string &filename, Mat &cameraMatL, Mat &distCoeffsL, Mat &cameraMatR, Mat &distCoeffsR)
 {
     FileStorage out(filename, FileStorage::WRITE);
     if(out.isOpened()){
-        Mat &dist_coeffsL = intrinsicParamLeftToPrint.getDistCoeffs();
-        Mat &camera_matrixL = intrinsicParamLeftToPrint.getCameraMatrix();
 
-        out << "cameraMatrixLeft" << camera_matrixL;
-        out << "distCoefficientsMatrixLeft" << dist_coeffsL;
+        out << "cameraMatrixLeft" << cameraMatL;
+        out << "distCoefficientsMatrixLeft" << distCoeffsL;
 
-        Mat &dist_coeffsR = intrinsicParamRightToPrint.getDistCoeffs();
-        Mat &camera_matrixR = intrinsicParamRightToPrint.getCameraMatrix();
 
-        out << "cameraMatrixRight" << camera_matrixR;
-        out << "distCoefficientsMatrixRight" << dist_coeffsR;
+        out << "cameraMatrixRight" << cameraMatR;
+        out << "distCoefficientsMatrixRight" << distCoeffsR;
 
         out.release();
         return true;
@@ -145,5 +194,4 @@ bool IntrinsicParameters::printIntrStereoCalibration(string const &filename, Int
     else
         cout << "error while opening file stream" << endl;
     return false;
-
 }
