@@ -144,7 +144,7 @@
      <x>0</x>
      <y>0</y>
      <width>786</width>
-     <height>26</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -184,8 +184,6 @@
     <addaction name="actionQImage"/>
     <addaction name="actionCv_Mat"/>
     <addaction name="separator"/>
-    <addaction name="actiondisparity"/>
-    <addaction name="actiondepthMap"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuAbout"/>
@@ -229,27 +227,27 @@
   </action>
   <action name="action1_image">
    <property name="text">
-    <string>1 image</string>
+    <string>&amp;1 image</string>
    </property>
   </action>
   <action name="action2_image">
    <property name="text">
-    <string>2 image</string>
+    <string>&amp;2 image</string>
    </property>
   </action>
   <action name="actiondisparity">
    <property name="text">
-    <string>disparityMap</string>
+    <string>&amp;disparityMap</string>
    </property>
   </action>
   <action name="actiondepthMap">
    <property name="text">
-    <string>depthMap</string>
+    <string>d&amp;epthMap</string>
    </property>
   </action>
   <action name="actionQImage">
    <property name="text">
-    <string>QImage</string>
+    <string>&amp;QImage</string>
    </property>
   </action>
  </widget>

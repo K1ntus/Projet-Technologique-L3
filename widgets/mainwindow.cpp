@@ -288,33 +288,6 @@ void MainWindow::on_action2_image_triggered()
     }
 }
 
-void MainWindow::on_actiondisparity_triggered()
-{
-    if(img->getImg().empty()){
-        qDebug("[INFO] Load a stereo file before");
-        if(!load_file(*this, *img, true)){
-            qDebug("[ERROR] No images loaded");
-            return;
-        }
-    }
-    imagecv::displayImage(*ui->backgroundLabel, img->getDisparityMap());
-}
-
-void MainWindow::on_actiondepthMap_triggered()
-{
-    if(img->getImg().empty()){
-        qDebug("[INFO] Load a stereo file before");
-        if(!load_file(*this, *img, true)){
-            qDebug("[ERROR] No images loaded");
-            return;
-        }
-    }
-    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
-    cv::Mat dImg(img->rectifiedImage(*img, inFile.toStdString()));
-
-    cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
-    imagecv::displayImage(*ui->backgroundLabel, img->getDepthMap(Q));
-}
 
 void MainWindow::on_actionQImage_triggered()
 {
