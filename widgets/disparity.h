@@ -52,9 +52,13 @@ private slots:
 
     void on_filter_clicked();
 
+    void on_video_clicked();
+
+    void on_depthMap_clicked();
+
 private:
     Ui::Disparity *ui;
-
+    cv::Mat im1;
     ImgCv *img;
     int width ;
     int height;

@@ -1,7 +1,7 @@
 #include "imgcv.h"
 
 using namespace cv;
-using namespace cv::ximgproc;
+//using namespace cv::ximgproc;
 
 ImgCv::ImgCv():
     Mat(),
@@ -211,7 +211,7 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
  * @return the filtered disparity map
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
-
+/*
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     cv::resize(getImgL(),left_for_matching,Size(),0.5,0.5);//reduce the image's dimensions
@@ -235,6 +235,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 6.0);// permits to visualize the disparity map
     cv::bitwise_not(final_disparity_map, final_disparity_map);// reverse black & white colors
     return final_disparity_map;
+    */
 
 }
 /**
@@ -242,7 +243,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
  * @return the disparity map post_filtered
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
-
+/*
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
 
@@ -269,7 +270,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 5.0);
     cv::bitwise_not(final_disparity_map, final_disparity_map); // reverse black and white
     return final_disparity_map;
-
+*/
 }
 
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T) const
@@ -302,7 +303,6 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
     cv::Mat map11, map12, map21, map22;
     cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
     cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
-
 
     cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
     cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
@@ -377,7 +377,7 @@ Mat ImgCv::getDispToDepthMat(const std::string &outFile)
 Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 {
     Mat depthMapImage;
-    reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix);
+    reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
     return depthMapImage;
 
 }

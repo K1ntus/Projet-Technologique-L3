@@ -12,8 +12,8 @@
 #include <iostream>
 // uncomment for common project
 #include "tools/calibration/intrinsicparameters.h"
-#include "opencv2/ximgproc.hpp"
-#include "opencv2/ximgproc/disparity_filter.hpp"
+//#include "opencv2/ximgproc.hpp"
+//#include "opencv2/ximgproc/disparity_filter.hpp"
 
 
 class ImgCv : public cv::Mat

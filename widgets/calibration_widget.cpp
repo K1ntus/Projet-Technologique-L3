@@ -188,8 +188,8 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-                calib = new CharucoCalibration(imageSet);
-                currentCalibMode = CalibrationMode::CHARUCO;
+//                calib = new CharucoCalibration(imageSet);
+//                currentCalibMode = CalibrationMode::CHARUCO;
     }else{
         calib = new ChessboardCalibration(imageSet);
         currentCalibMode = CalibrationMode::CHESSBOARD;
