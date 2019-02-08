@@ -230,6 +230,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
+    bitwise_not(final_disparity_map,final_disparity_map);
     return final_disparity_map;
 
 }
@@ -265,6 +266,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
+    bitwise_not(final_disparity_map,final_disparity_map);
     return final_disparity_map;
 
 }
@@ -459,8 +461,10 @@ Mat ImgCv::getDepthMap(Mat &TProjectionMat)
  * @param isStereo check if the image is stereo
  */
 void ImgCv::setImg(const Mat &img, bool isStereo){
+
     img.copyTo(*this);
     stereo = isStereo;
+
 }
 
 void ImgCv::setImg(const Mat &imgL, const Mat &imgR)

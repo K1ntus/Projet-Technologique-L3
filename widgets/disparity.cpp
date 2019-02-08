@@ -183,9 +183,7 @@ void Disparity::on_reset_image_clicked() {
  * @param img the stereo image to manage, split and display
  */
 void Disparity::set_img_mat(ImgCv &img){
-    delete this->img;
-    this->img = nullptr;
-    this->img = &img;
+    this->img->setImg(img, true);
     displayImage(this->img->getImg());
 }
 
@@ -392,7 +390,7 @@ void Disparity::on_video_clicked()
 
 void Disparity::on_depthMap_clicked()
 {
-
+    Mat img1;
     if(img->getImg().empty()){
         qDebug("[INFO] Load a stereo file before");
         if(!load_file(*this, *img, true)){
@@ -405,8 +403,10 @@ void Disparity::on_depthMap_clicked()
         im1 = img->rectifiedImage(*img, inFile.toStdString());
         on_apply_clicked();
         cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
-        Mat depth_map = img->depthMap(im1,Q);
+        bitwise_not(im1,img1);
+        Mat depth_map = img->depthMap(img1,Q);
         cvtColor(depth_map,depth_map,CV_BGR2GRAY);
+        namedWindow("depthmap");
         imshow("depthmap",depth_map);
     }
 }

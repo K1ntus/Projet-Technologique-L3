@@ -197,6 +197,9 @@ void Calibration_widget::on_loadCalib_clicked()
 
     QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
 
+    if(inFile.isEmpty())
+        return;
+
     if(calib->runCalibration(inFile.toStdString())){
         ui->undistortedButton->setEnabled(true);
         enableFeatures(true);
@@ -331,6 +334,10 @@ void Calibration_widget::on_Quit_clicked()
 void Calibration_widget::on_ImageSetFromVideo_clicked()
 {
     QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Select a video"), "resources/", this->tr("Video Files (*.mp4)"));
+    if(fileName2.isEmpty()){
+        cout << "couldn't open left video" << endl;
+        return;
+    }
     std::cout << fileName2.toStdString() << std::endl;
     cv::VideoCapture cap(fileName2.toStdString());
     if(cap.isOpened()){
@@ -338,6 +345,10 @@ void Calibration_widget::on_ImageSetFromVideo_clicked()
 
         std::cout << "video opened" << std::endl;
         fileName2 = QFileDialog::getOpenFileName(this, this->tr("Select a video"), "resources/", this->tr("Video Files (*.mp4)"));
+        if(fileName2.isEmpty()){
+            cout << "couldn't open right video" << endl;
+            return;
+        }
         std::cout << fileName2.toStdString() << std::endl;
         cv::VideoCapture capR(fileName2.toStdString());
         if(capR.isOpened()){
