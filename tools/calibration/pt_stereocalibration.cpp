@@ -263,8 +263,8 @@ void PT_StereoCalibration::calibrate()
     vector<vector<cv::Point2f>> imagePointsL;
     vector<vector<cv::Point2f>> imagePointsR;
     cv::Size imgSize(calibLeft->get_image_origin().size());
-    int &nb_lines(board_size.height), &nb_columns(board_size.width),
-            squareSize = 2;
+    int &nb_lines(board_size.height), &nb_columns(board_size.width);
+    double squareSize = 0.02;
 
     cv::Mat grayL, grayR, imgL, imgR;
     for (size_t i(0); i < imgs->size(); i++) {

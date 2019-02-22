@@ -432,6 +432,9 @@
    <bool>true</bool>
   </property>
   <widget class="QPlainTextEdit" name="plainTextEdit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -440,14 +443,38 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
+   </property>
+   <property name="tabChangesFocus">
+    <bool>false</bool>
+   </property>
+   <property name="undoRedoEnabled">
+    <bool>true</bool>
+   </property>
+   <property name="lineWrapMode">
+    <enum>QPlainTextEdit::WidgetWidth</enum>
+   </property>
    <property name="readOnly">
     <bool>true</bool>
    </property>
    <property name="plainText">
     <string>Matching block size</string>
    </property>
+   <property name="overwriteMode">
+    <bool>false</bool>
+   </property>
+   <property name="backgroundVisible">
+    <bool>true</bool>
+   </property>
+   <property name="centerOnScroll">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -464,6 +491,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_3">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -480,6 +510,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_4">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -496,6 +529,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_5">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -512,6 +548,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_6">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -528,6 +567,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_7">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -544,6 +586,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_8">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -560,6 +605,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_9">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -577,7 +625,7 @@
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_10">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -596,22 +644,21 @@
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_11">
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>470</y>
+     <y>480</y>
      <width>281</width>
-     <height>51</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="readOnly">
     <bool>true</bool>
    </property>
    <property name="plainText">
-    <string>Smoothness
-/!\ Had to be bigger than the previous one</string>
+    <string>Treshold filter</string>
    </property>
   </widget>
   <widget class="QSlider" name="slider_windowSize">
@@ -627,13 +674,13 @@
     <number>5</number>
    </property>
    <property name="maximum">
-    <number>15</number>
+    <number>149</number>
    </property>
    <property name="singleStep">
     <number>1</number>
    </property>
    <property name="pageStep">
-    <number>10</number>
+    <number>1</number>
    </property>
    <property name="value">
     <number>9</number>
@@ -655,22 +702,22 @@
     </rect>
    </property>
    <property name="minimum">
-    <number>1</number>
+    <number>16</number>
    </property>
    <property name="maximum">
-    <number>10</number>
+    <number>500</number>
    </property>
    <property name="singleStep">
-    <number>9</number>
+    <number>1</number>
    </property>
    <property name="pageStep">
     <number>1</number>
    </property>
    <property name="value">
-    <number>2</number>
+    <number>32</number>
    </property>
    <property name="sliderPosition">
-    <number>2</number>
+    <number>32</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -678,7 +725,7 @@
   </widget>
   <widget class="QSlider" name="slider_preFilterCap">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -688,8 +735,11 @@
      <height>16</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
    <property name="maximum">
-    <number>250</number>
+    <number>62</number>
    </property>
    <property name="value">
     <number>50</number>
@@ -700,7 +750,7 @@
   </widget>
   <widget class="QSlider" name="slider_minDisparity">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -716,6 +766,9 @@
    <property name="maximum">
     <number>100</number>
    </property>
+   <property name="pageStep">
+    <number>1</number>
+   </property>
    <property name="value">
     <number>5</number>
    </property>
@@ -725,7 +778,7 @@
   </widget>
   <widget class="QSlider" name="slider_uniquenessRatio">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -735,8 +788,14 @@
      <height>16</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>5</number>
+   </property>
    <property name="maximum">
-    <number>20</number>
+    <number>100</number>
+   </property>
+   <property name="pageStep">
+    <number>1</number>
    </property>
    <property name="value">
     <number>5</number>
@@ -747,7 +806,7 @@
   </widget>
   <widget class="QSlider" name="slider_speckleWindowSize">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -757,13 +816,25 @@
      <height>16</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>0</number>
+   </property>
+   <property name="maximum">
+    <number>200</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="sliderPosition">
+    <number>0</number>
+   </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
   <widget class="QSlider" name="slider_speckleRange">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -772,6 +843,15 @@
      <width>211</width>
      <height>16</height>
     </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>16</number>
+   </property>
+   <property name="pageStep">
+    <number>1</number>
    </property>
    <property name="value">
     <number>8</number>
@@ -782,7 +862,7 @@
   </widget>
   <widget class="QSlider" name="slider_disp12MaxDiff">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -796,7 +876,10 @@
     <bool>false</bool>
    </property>
    <property name="minimum">
-    <number>-100</number>
+    <number>-1</number>
+   </property>
+   <property name="maximum">
+    <number>200</number>
    </property>
    <property name="value">
     <number>-1</number>
@@ -805,9 +888,9 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QSlider" name="slider_P1">
+  <widget class="QSlider" name="slider_textureTreshold">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -821,26 +904,13 @@
     <bool>false</bool>
    </property>
    <property name="maximum">
-    <number>2000</number>
+    <number>500</number>
    </property>
    <property name="value">
-    <number>864</number>
+    <number>5</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="apply">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>560</y>
-     <width>83</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Appliquer</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkbox_fullScale">
@@ -1277,24 +1347,27 @@
   <widget class="QPushButton" name="loadImage">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>560</y>
-     <width>151</width>
+     <width>131</width>
      <height>28</height>
     </rect>
    </property>
    <property name="text">
-    <string>load image</string>
+    <string>load one image</string>
    </property>
   </widget>
   <widget class="QLabel" name="image_loaded">
    <property name="geometry">
     <rect>
-     <x>630</x>
-     <y>29</y>
-     <width>541</width>
-     <height>421</height>
+     <x>570</x>
+     <y>20</y>
+     <width>561</width>
+     <height>481</height>
     </rect>
+   </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
    </property>
    <property name="text">
     <string/>
@@ -1766,10 +1839,10 @@
   <widget class="QPushButton" name="Sobel">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>600</x>
      <y>560</y>
      <width>71</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <property name="text">
@@ -1779,10 +1852,10 @@
   <widget class="QPushButton" name="Laplace">
    <property name="geometry">
     <rect>
-     <x>430</x>
+     <x>490</x>
      <y>560</y>
      <width>81</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <property name="text">
@@ -1790,6 +1863,9 @@
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_12">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -1799,12 +1875,12 @@
     </rect>
    </property>
    <property name="plainText">
-    <string>P1</string>
+    <string>Texture Treshold</string>
    </property>
   </widget>
-  <widget class="QSlider" name="slider_P2">
+  <widget class="QSlider" name="slider_treshold_Filter">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -1815,16 +1891,19 @@
     </rect>
    </property>
    <property name="minimum">
-    <number>500</number>
+    <number>0</number>
    </property>
    <property name="maximum">
-    <number>10000</number>
+    <number>255</number>
    </property>
    <property name="singleStep">
     <number>50</number>
    </property>
+   <property name="value">
+    <number>50</number>
+   </property>
    <property name="sliderPosition">
-    <number>8000</number>
+    <number>50</number>
    </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
@@ -1843,14 +1922,13 @@
     <string>Post-filtered</string>
    </property>
   </widget>
-
   <widget class="QPushButton" name="video">
    <property name="geometry">
     <rect>
-     <x>650</x>
+     <x>700</x>
      <y>560</y>
      <width>91</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <property name="text">
@@ -1860,14 +1938,232 @@
   <widget class="QPushButton" name="depthMap">
    <property name="geometry">
     <rect>
-     <x>762</x>
-     <y>558</y>
+     <x>810</x>
+     <y>560</y>
      <width>91</width>
-     <height>20</height>
+     <height>28</height>
     </rect>
    </property>
    <property name="text">
     <string>depth map</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="load_two_images">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>560</y>
+     <width>131</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Load two images</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_windowSize">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>20</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>5</number>
+   </property>
+   <property name="maximum">
+    <number>150</number>
+   </property>
+   <property name="value">
+    <number>9</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_numberOfDisparities">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>60</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>16</number>
+   </property>
+   <property name="maximum">
+    <number>500</number>
+   </property>
+   <property name="value">
+    <number>32</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_prefilterCap">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>100</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>62</number>
+   </property>
+   <property name="value">
+    <number>50</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_minDisparity">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>140</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>5</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_uniquenessRatio">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>180</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>5</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_speckleWindowSize">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>220</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>200</number>
+   </property>
+   <property name="value">
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_speckleRange">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>260</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>16</number>
+   </property>
+   <property name="value">
+    <number>8</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_disp12MaxDiff">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>300</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-1</number>
+   </property>
+   <property name="maximum">
+    <number>200</number>
+   </property>
+   <property name="value">
+    <number>-1</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_textureTreshlod">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>430</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>500</number>
+   </property>
+   <property name="value">
+    <number>10</number>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBox_tresholdFilter">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>480</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>255</number>
+   </property>
+   <property name="value">
+    <number>100</number>
    </property>
   </widget>
  </widget>

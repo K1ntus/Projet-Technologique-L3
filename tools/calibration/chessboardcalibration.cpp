@@ -56,7 +56,7 @@ void ChessboardCalibration::setImagePoints(std::vector<std::vector<Point2f> > &i
 void ChessboardCalibration::prepareCalibration()
 {
     int &nb_lines(board_size.height), &nb_columns(board_size.width),
-            squareSize = 2;
+            squareSize = 0.02;
 
     // 3D coordinates of chessboard points
 

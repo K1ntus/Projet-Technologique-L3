@@ -198,8 +198,35 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
-    dst.convertTo(dst, CV_8U);
+    normalize(dst, dst, 0, 255, CV_MINMAX, CV_8U);
+   // dst.convertTo(dst, CV_8UC1);
     bitwise_not(dst, dst);
+    return dst;
+}
+Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
+               const int &IO_disp12MaxDif,const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio,
+               const size_t &IO_speckleWindowSize,const size_t &IO_speckleRange, const size_t & IO_textureTreshold, const size_t &IO_tresholdFilter) const
+{
+    Mat imgL, imgR;
+    Mat dst;
+    cvtColor(getImgL(), imgL,CV_BGR2GRAY);
+    cvtColor(getImgR(),imgR,CV_BGR2GRAY);
+
+    Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
+
+    matcher->setPreFilterCap(IO_preFilterCap);
+    matcher->setMinDisparity(IO_minDisparity);
+    matcher->setDisp12MaxDiff(IO_disp12MaxDif);
+    matcher->setUniquenessRatio(IO_uniquenessRatio);
+    matcher->setSpeckleWindowSize(IO_speckleWindowSize);
+    matcher->setSpeckleRange(IO_speckleRange);
+    matcher->setTextureThreshold(IO_textureTreshold);
+    matcher-> setNumDisparities(IO_numberOfDisparities);
+
+    matcher->compute(imgL,imgR,dst);
+    normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
+    threshold(dst,dst,IO_tresholdFilter,255,THRESH_TOZERO);
+
     return dst;
 }
 
@@ -220,7 +247,6 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
     cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
-
     matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
@@ -230,7 +256,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
-    bitwise_not(final_disparity_map,final_disparity_map);
+    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
     return final_disparity_map;
 
 }
@@ -266,7 +292,8 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
-    bitwise_not(final_disparity_map,final_disparity_map);
+     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+   // bitwise_not(final_disparity_map,final_disparity_map);
     return final_disparity_map;
 
 }

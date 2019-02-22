@@ -97,6 +97,9 @@ public:
      */
     cv::Mat sbm(size_t const& IO_numberOfDisparities= 144, size_t const& IO_SADWindowSize= 9) const;
 
+    cv::Mat sbm(size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
+                   const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
+                   const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter) const;
     /**
      * @brief Generate the disparity map from two cv::mat pointer of a stereo image
      * &param size_t
