@@ -65,7 +65,6 @@ void MainWindow::on_button_disparity_clicked(){
         parametersWindow->set_img_mat(*img);
     }
     parametersWindow->show();
-
 }
 
 /**

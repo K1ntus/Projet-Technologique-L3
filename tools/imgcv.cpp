@@ -466,8 +466,7 @@ Mat ImgCv::getImgR() const
  * @brief ImgCv::getDisparityMap
  * @return  the disparity map
  */
-Mat ImgCv::getDisparityMap()
-{
+Mat ImgCv::getDisparityMap(){
     return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
 
@@ -476,8 +475,7 @@ Mat ImgCv::getDisparityMap()
  * @param TProjectionMat The matrix containing the intrinsec and extrinsec parameters of the camera
  * @return the depth map
  */
-Mat ImgCv::getDepthMap(Mat &TProjectionMat)
-{
+Mat ImgCv::getDepthMap(Mat &TProjectionMat){
     return depthMap(getDisparityMap(), TProjectionMat);
 }
 
@@ -488,10 +486,8 @@ Mat ImgCv::getDepthMap(Mat &TProjectionMat)
  * @param isStereo check if the image is stereo
  */
 void ImgCv::setImg(const Mat &img, bool isStereo){
-
     img.copyTo(*this);
     stereo = isStereo;
-
 }
 
 void ImgCv::setImg(const Mat &imgL, const Mat &imgR)

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT      += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -53,7 +53,9 @@ SOURCES += main.cpp\
     tools/calibration/chessboardcalibration.cpp \
     tools/calibration/charucocalibration.cpp \
     tools/calibration/pt_stereocalibration.cpp \
-    tools/calibration/pt_icalibration.cpp
+    tools/calibration/pt_icalibration.cpp \
+    network/server.cpp \
+    network/tcp_thread.cpp
 
 HEADERS  += widgets/mainwindow.h \
     widgets/disparity.h \
@@ -65,7 +67,9 @@ HEADERS  += widgets/mainwindow.h \
     tools/calibration/chessboardcalibration.h \
     tools/calibration/charucocalibration.h \
     tools/calibration/pt_stereocalibration.h \
-    tools/calibration/pt_icalibration.h
+    tools/calibration/pt_icalibration.h \
+    network/server.h \
+    network/tcp_thread.h
 
 FORMS    += widgets/mainwindow.ui \
     widgets/disparity.ui \

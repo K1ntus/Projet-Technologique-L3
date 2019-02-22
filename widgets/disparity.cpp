@@ -155,7 +155,6 @@ void Disparity::on_loadImage_clicked(){
  * @brief Reset the sgbm parameters to default values (arbitrary fixed, as the more "commons")
  */
 void Disparity::on_reset_image_clicked() {
-
     displayImage(img->getImg());
 }
 

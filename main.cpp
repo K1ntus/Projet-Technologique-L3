@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include "widgets/mainwindow.h"
+#include "network/server.h"
 
 int main(int argc, char *argv[]) {
 
@@ -9,6 +10,10 @@ int main(int argc, char *argv[]) {
     app.setApplicationName("Application sans nom");
 
     MainWindow mainWin;
+
+    Server tcp_server;
+    tcp_server.StartServer();
+
 #if defined(Q_OS_SYMBIAN)
     mainWin.showMaximized();
 #else
