@@ -1,6 +1,5 @@
 #include "server.h"
 
-//https://www.bogotobogo.com/cplusplus/sockets_server_client_QT.php
 //doc: https://doc.qt.io/qt-5/qtnetwork-programming.html
 
 //test connection with
@@ -18,6 +17,9 @@ Server::Server(QObject *parent) :
 
 }
 
+/**
+ * @brief Server::StartServer Start the TCP server. Currently using localhost and the port define in the header
+ */
 void Server::StartServer()
 {
     /*
@@ -35,6 +37,7 @@ void Server::StartServer()
         qDebug() << "\n *** Listening... ***";
     }
 }
+
 
 //void Server::incomingConnection(int socketDescriptor)     //Old Qt's signature, if that crash in the cremin use this one
 void Server::incomingConnection(qintptr socketDescriptor)   //Use this for the newer version of QT
