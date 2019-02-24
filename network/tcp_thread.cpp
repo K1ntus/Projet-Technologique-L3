@@ -31,9 +31,8 @@ void TCP_Thread::run()
 
 void TCP_Thread::readyRead()
 {
-    receive_raw_stereo_image();
-
-    send_depth_map(parametersWindow->get_img_mat()->getImg());
+    if(receive_raw_stereo_image())
+        send_depth_map(parametersWindow->get_img_mat()->getImg());
 
 }
 
@@ -61,19 +60,24 @@ void TCP_Thread::send_depth_map(cv::Mat depth_map){
 
 }
 
-void TCP_Thread::receive_raw_stereo_image(){
+bool TCP_Thread::receive_raw_stereo_image(){
     QByteArray data_received;
-    while (socket->waitForReadyRead(1000))
+    while (socket->waitForReadyRead(3000))
         data_received += socket->readAll();
-
 
     //qDebug() << "\n\n" << socketDescriptor << " Data in: " << data_received;
 
-    QImage received_image_qimg = QImage::fromData(data_received, "PNG");
+    QImage received_image_qimg = QImage::fromData(data_received, "JPG");    //Crash si l'image est dans un autre format (ie. la fille en rouge qui est en png)
+
+    if(received_image_qimg.isNull()){
+        qDebug("Image is null");
+        return false;
+    }
 
     cv::Mat received_image = imagecv::qimage_to_mat(received_image_qimg);
 
     qDebug("Image well received.");
+
     /*
     if(!received_image.empty())
     {
@@ -91,6 +95,8 @@ void TCP_Thread::receive_raw_stereo_image(){
     socket->write(data_received);
     data_received.clear();
     qDebug("Disparity map loaded");
+
+    return true;
 }
 
 

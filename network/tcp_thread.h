@@ -43,7 +43,7 @@ private:
 
     QByteArray mat_to_qByteArray(cv::Mat image);
 
-    void receive_raw_stereo_image();
+    bool receive_raw_stereo_image();
     void send_depth_map(cv::Mat depth_map);
 
 };
