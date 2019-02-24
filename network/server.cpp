@@ -36,7 +36,7 @@ void Server::StartServer()
     }
 }
 
-//void Server::incomingConnection(int socketDescriptor)     //Old Qt's signature
+//void Server::incomingConnection(int socketDescriptor)     //Old Qt's signature, if that crash in the cremin use this one
 void Server::incomingConnection(qintptr socketDescriptor)   //Use this for the newer version of QT
 {
     qDebug() << socketDescriptor << " A Client is Connecting...";

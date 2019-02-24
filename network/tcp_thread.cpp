@@ -38,32 +38,26 @@ void TCP_Thread::readyRead()
     //qDebug() << "\n\n" << socketDescriptor << " Data in: " << data_received;
 
     QImage received_image_qimg = QImage::fromData(data_received, "PNG");
-    //received_image_qimg.loadFromData(data_received.data());
 
     cv::Mat received_image = imagecv::qimage_to_mat(received_image_qimg);
-    //cv::Mat received_image = cv::Mat(IMG_HEIGHT, IMG_WIDTH-1, CV_8, data_received.data());
 
     qDebug("Image well received.");
+    /*
     if(!received_image.empty())
     {
-      // Display it on an OpenCV window
-      //imshow("DISPLAY", received_image);
+       Display it on an OpenCV window
+      imshow("Raw Received Image", received_image);
     }
+    */
 
     cv::Mat left_view, right_view;
     ImgCv::split(received_image, left_view, right_view);
-
     ImgCv image_to_analyze = ImgCv(left_view, right_view);
-    //ImgCv image_to_analyze;
-    //image_to_analyze.setImg(received_image, true);
 
     parametersWindow->set_img_mat(image_to_analyze);
 
     data_received.clear();
-    //socket->write(data_received);
-
     qDebug("Disparity map loaded");
-    //Send back the depth map generated
 
 }
 
