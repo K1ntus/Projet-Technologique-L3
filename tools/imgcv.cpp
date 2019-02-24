@@ -16,7 +16,9 @@ ImgCv::ImgCv(std::string filePath, bool is_stereo) :  Mat(), stereo(is_stereo)
 }
 
 ImgCv::ImgCv(const Mat &img, bool is_stereo) :Mat(img), stereo(is_stereo)
-{}
+{
+
+}
 
 ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : Mat(), stereo(is_stereo)
 {
@@ -35,7 +37,9 @@ ImgCv::ImgCv(const Mat &imgL, const Mat &imgR, bool is_stereo) : Mat(), stereo(i
 }
 
 ImgCv::~ImgCv()
-{}
+{
+
+}
 
 /**
  * @brief ImgCv::contour_laplace :  Calculate the Laplacian filter to draw picture's countours

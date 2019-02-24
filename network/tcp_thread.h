@@ -1,6 +1,8 @@
 #ifndef TCP_THREAD_H
 #define TCP_THREAD_H
 
+#include <iostream>
+
 #include <QThread>
 #include <QTcpSocket>
 #include <QDebug>
@@ -14,15 +16,18 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/utility.hpp>
 
-#include <iostream>
+#include "widgets/disparity.h"
 
+#define IMG_WIDTH 1024
+#define IMG_HEIGHT 562
 typedef unsigned char byte;
 
 class TCP_Thread : public QThread
 {
     Q_OBJECT
 public:
-    explicit TCP_Thread(int iID, QObject *parent = 0);
+    explicit TCP_Thread(int iID, QObject *parent = 0x0);
+    Disparity * parametersWindow;
     void run();
 
 signals:
@@ -32,8 +37,6 @@ public slots:
     void readyRead();
     void disconnected();
 
-public slots:
-
 private:
     QTcpSocket *socket;
     int socketDescriptor;
@@ -42,6 +45,7 @@ private:
     cv::Mat bytes_to_mat(byte * img_data, int width, int height);
 
     void send_depth_map(cv::Mat depth_map);
+
 };
 
 #endif // TCP_THREAD_H

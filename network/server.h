@@ -6,9 +6,8 @@
 #include <QTcpServer>
 #include <QDebug>
 #include "tcp_thread.h"
-#include "widgets/disparity.h"
 
-#define PORT_NUMBER 57575
+#define PORT_NUMBER 25556
 
 class Server : public QTcpServer
 {
@@ -22,8 +21,8 @@ signals:
 public slots:
 
 protected:
-    //Disparity * parametersWindow;
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(qintptr socketDescriptor);  //New version Qt's signature
+    //void incomingConnection(int socketDescriptor)     //Old Qt's signature
 
 };
 #endif // SERVER_H

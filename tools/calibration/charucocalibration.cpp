@@ -96,7 +96,7 @@ bool CharucoCalibration::find_charuco_corners(std::vector<Point2f> &charucoCorne
     vector<int> markerIds;
     vector<vector<Point2f>> markerCorners;
     Ptr<aruco::DetectorParameters> params = new DetectorParameters;
-    params->doCornerRefinement = false;
+    //params->doCornerRefinement = false;
 
     // detection of the corners
     aruco::detectMarkers(img, board->dictionary, markerCorners, markerIds, params);

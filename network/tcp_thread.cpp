@@ -4,6 +4,7 @@ TCP_Thread::TCP_Thread(int ID, QObject *parent) :
     QThread(parent)
 {
     this->socketDescriptor = ID;
+    parametersWindow = new Disparity();
 }
 
 void TCP_Thread::run()
@@ -22,19 +23,48 @@ void TCP_Thread::run()
 
     qDebug() << socketDescriptor << " Client connected";
 
+    parametersWindow->show();
+
     // make this thread a loop
     exec();
 }
 
 void TCP_Thread::readyRead()
 {
-    QByteArray data_received = socket->readAll();
+    QByteArray data_received;
+    while (socket->waitForReadyRead(1000))
+        data_received += socket->readAll();
 
-    qDebug() << socketDescriptor << " Data in: " << data_received;
+    //qDebug() << "\n\n" << socketDescriptor << " Data in: " << data_received;
 
-    //cv::Mat received_image = bytes_to_mat(data_received,)
+    QImage received_image_qimg = QImage::fromData(data_received, "PNG");
+    //received_image_qimg.loadFromData(data_received.data());
 
-    socket->write(data_received); //Send back the depth map generated
+    cv::Mat received_image = imagecv::qimage_to_mat(received_image_qimg);
+    //cv::Mat received_image = cv::Mat(IMG_HEIGHT, IMG_WIDTH-1, CV_8, data_received.data());
+
+    qDebug("Image well received.");
+    if(!received_image.empty())
+    {
+      // Display it on an OpenCV window
+      //imshow("DISPLAY", received_image);
+    }
+
+    cv::Mat left_view, right_view;
+    ImgCv::split(received_image, left_view, right_view);
+
+    ImgCv image_to_analyze = ImgCv(left_view, right_view);
+    //ImgCv image_to_analyze;
+    //image_to_analyze.setImg(received_image, true);
+
+    parametersWindow->set_img_mat(image_to_analyze);
+
+    data_received.clear();
+    //socket->write(data_received);
+
+    qDebug("Disparity map loaded");
+    //Send back the depth map generated
+
 }
 
 cv::Mat TCP_Thread::bytes_to_mat(byte * img_data, int width, int height){
@@ -67,5 +97,6 @@ void TCP_Thread::disconnected()
 {
     qDebug() << socketDescriptor << " Disconnected";
     socket->deleteLater();
+    parametersWindow->hide();
     exit(0);
 }
