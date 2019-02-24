@@ -41,9 +41,9 @@ private:
     QTcpSocket *socket;
     int socketDescriptor;
 
-    byte* mat_to_bytes(cv::Mat image);
-    cv::Mat bytes_to_mat(byte * img_data, int width, int height);
+    QByteArray mat_to_qByteArray(cv::Mat image);
 
+    void receive_raw_stereo_image();
     void send_depth_map(cv::Mat depth_map);
 
 };

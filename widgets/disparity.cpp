@@ -167,6 +167,9 @@ void Disparity::set_img_mat(ImgCv &img){
     this->img->setImg(img, true);
     displayImage(this->img->getImg());
 }
+ImgCv * Disparity::get_img_mat(){
+    return this->img;
+}
 
 
 /**

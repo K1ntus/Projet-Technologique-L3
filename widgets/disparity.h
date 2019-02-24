@@ -25,6 +25,7 @@ public:
     explicit Disparity(QWidget *parent = nullptr);
     ~Disparity();
     void set_img_mat(ImgCv &img);
+    ImgCv * get_img_mat();
     void displayDisparityMap();
 
 

@@ -31,9 +31,41 @@ void TCP_Thread::run()
 
 void TCP_Thread::readyRead()
 {
+    receive_raw_stereo_image();
+
+    send_depth_map(parametersWindow->get_img_mat()->getImg());
+
+}
+
+QByteArray TCP_Thread::mat_to_qByteArray(cv::Mat image){
+    std::vector<uint8_t> buffer;
+    cv::imencode(".png", image, buffer);
+    QByteArray byteArray = QByteArray::fromRawData((const char*)buffer.data(), buffer.size());
+    QString base64Image(byteArray.toBase64());
+
+    return byteArray;
+}
+
+void TCP_Thread::send_depth_map(cv::Mat depth_map){
+    socket->write("DEPTH_MAP");
+    qDebug() << "Sending the depth map message to the client: " << socketDescriptor;
+
+    //QByteArray data_ack = socket->readAll();
+    //if(data_ack == "ready"){
+        qDebug() << socketDescriptor << "Ready to upload the depth map ";
+
+        socket->write(mat_to_qByteArray(depth_map)); //Send back the depth map generated
+
+        socket->write("DEPTH MAP SENT");
+    //}
+
+}
+
+void TCP_Thread::receive_raw_stereo_image(){
     QByteArray data_received;
     while (socket->waitForReadyRead(1000))
         data_received += socket->readAll();
+
 
     //qDebug() << "\n\n" << socketDescriptor << " Data in: " << data_received;
 
@@ -56,36 +88,11 @@ void TCP_Thread::readyRead()
 
     parametersWindow->set_img_mat(image_to_analyze);
 
+    socket->write(data_received);
     data_received.clear();
     qDebug("Disparity map loaded");
-
 }
 
-cv::Mat TCP_Thread::bytes_to_mat(byte * img_data, int width, int height){
-    cv::Mat image = cv::Mat(height, width, CV_8UC3, img_data).clone(); // make a copy
-    return image;
-}
-
-byte* TCP_Thread::mat_to_bytes(cv::Mat image){
-    int size = image.total() * image.elemSize();
-    byte * bytes = new byte[size];  // you will have to delete[] that later
-    std::memcpy(bytes,image.data,size * sizeof(byte));
-    return bytes;
-}
-
-void TCP_Thread::send_depth_map(cv::Mat depth_map){
-    qDebug() << "Sending the depth map message to the client: " << socketDescriptor;
-
-    socket->write("dpt_map");
-    QByteArray data_ack = socket->readAll();
-    if(data_ack == "ready"){
-        qDebug() << socketDescriptor << "Ready to download the depth map ";
-
-        //socket->write(mat_to_bytes(depth_map)); //Send back the depth map generated
-
-    }
-
-}
 
 void TCP_Thread::disconnected()
 {
