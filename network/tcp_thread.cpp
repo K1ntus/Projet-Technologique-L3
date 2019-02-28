@@ -4,7 +4,7 @@ TCP_Thread::TCP_Thread(int ID, QObject *parent) :
     QThread(parent)
 {
     this->socketDescriptor = ID;
-    parametersWindow = new Disparity();
+    //parametersWindow = new Disparity();
 }
 
 /**
@@ -26,7 +26,7 @@ void TCP_Thread::run()
 
     qDebug() << socketDescriptor << " Client connected";
 
-    parametersWindow->show();
+    //parametersWindow->show();
 
     // make this thread a loop
     exec();
@@ -34,8 +34,9 @@ void TCP_Thread::run()
 
 void TCP_Thread::readyRead()
 {
-    if(receive_raw_stereo_image())
-        send_depth_map(parametersWindow->get_img_mat()->getImg());
+    receive_raw_stereo_image();
+    //if(receive_raw_stereo_image())
+    //    send_depth_map(parametersWindow->get_img_mat()->getImg());
 }
 
 /**
@@ -89,7 +90,10 @@ bool TCP_Thread::receive_raw_stereo_image(){
         return false;
     }
 
+    emit send_raw_images(received_image_qimg);
+
     cv::Mat received_image = imagecv::qimage_to_mat(received_image_qimg);
+    cv::imshow("Received image", received_image);
 
     qDebug("Image well received.");
 
@@ -105,7 +109,7 @@ bool TCP_Thread::receive_raw_stereo_image(){
     ImgCv::split(received_image, left_view, right_view);
     ImgCv image_to_analyze = ImgCv(left_view, right_view);
 
-    parametersWindow->set_img_mat(image_to_analyze);
+    //parametersWindow->set_img_mat(image_to_analyze);
 
     socket->write(data_received);
     data_received.clear();
@@ -122,6 +126,6 @@ void TCP_Thread::disconnected()
 {
     qDebug() << socketDescriptor << " Disconnected";
     socket->deleteLater();
-    parametersWindow->hide();
+    //parametersWindow->hide();
     exit(0);
 }

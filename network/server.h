@@ -19,10 +19,14 @@ public:
 signals:
 
 public slots:
+    void received_pair_image(QImage received_image);
 
 protected:
-    void incomingConnection(qintptr socketDescriptor);  //New version Qt's signature
-    //void incomingConnection(int socketDescriptor)     //Old Qt's signature
+    //void incomingConnection(qintptr socketDescriptor);  //New version Qt's signature
+    void incomingConnection(int socketDescriptor);     //Old Qt's signature
+
+private:
+    Disparity * parametersWindow;
 
 };
 #endif // SERVER_H

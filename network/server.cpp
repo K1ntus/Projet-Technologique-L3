@@ -12,9 +12,9 @@
  * @param parent
  */
 Server::Server(QObject *parent) :
-    QTcpServer(parent)
+    QTcpServer(parent),
+    parametersWindow(nullptr)
 {
-
 }
 
 /**
@@ -39,12 +39,28 @@ void Server::StartServer()
 }
 
 
-//void Server::incomingConnection(int socketDescriptor)     //Old Qt's signature, if that crash in the cremin use this one
-void Server::incomingConnection(qintptr socketDescriptor)   //Use this for the newer version of QT
+void Server::incomingConnection(int socketDescriptor)     //Old Qt's signature, if that crash in the cremin use this one
+//void Server::incomingConnection(qintptr socketDescriptor)   //Use this for the newer version of QT
 {
+    parametersWindow = new Disparity();
+    parametersWindow->show();
     qDebug() << socketDescriptor << " A Client is Connecting...";
     TCP_Thread *thread = new TCP_Thread(socketDescriptor, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-    thread->start();
+    connect(thread, SIGNAL(send_raw_images(QImage)), this, SLOT(received_pair_image(QImage)));
+    thread->run();
+}
+
+void Server::received_pair_image(QImage received_image){
+
+    qDebug ("Received signal for new pair images !");
+
+    cv::Mat left_view, right_view;
+    cv::Mat received_image_cv = imagecv::qimage_to_mat(received_image);
+
+    ImgCv::split(received_image_cv, left_view, right_view);
+    ImgCv image_to_analyze = ImgCv(left_view, right_view);
+
+    parametersWindow->set_img_mat(image_to_analyze);
 
 }

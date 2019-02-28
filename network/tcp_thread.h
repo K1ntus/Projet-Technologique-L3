@@ -32,6 +32,7 @@ public:
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
+    void send_raw_images(QImage img);
 
 public slots:
     void readyRead();

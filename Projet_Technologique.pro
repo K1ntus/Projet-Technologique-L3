@@ -9,11 +9,11 @@ QT      += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # add open CV
-#unix {
-#    message(" * Using Settings For Unix * ")
-#    CONFIG += link_pkgconfig
-#    PKGCONFIG += opencv
-#}
+unix {
+    message(" * Using Settings For Unix * ")
+    CONFIG += link_pkgconfig
+    PKGCONFIG += opencv
+}
 
 # uncomment when at home
 #CONFIG += c++11
@@ -30,9 +30,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_calib3d320.dll
 #LIBS += C:/Users/meryl/source/opencv-3.2/build/bin/libopencv_videoio320.dll
 
-INCLUDEPATH += /usr/local/lib64
+#INCLUDEPATH += /usr/local/lib64
 #LIBS += `pkg-config --libs opencv`
-LIBS += -L/usr/local/lib64 -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib -lopencv_dnn_objdetect -lopencv_dpm -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_line_descriptor -lopencv_optflow -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_surface_matching -lopencv_tracking -lopencv_datasets -lopencv_text -lopencv_dnn -lopencv_plot -lopencv_xfeatures2d -lopencv_shape -lopencv_ml -lopencv_ximgproc -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_flann -lopencv_xphoto -lopencv_photo -lopencv_imgproc -lopencv_core
+#LIBS += -L/usr/local/lib64 -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_ccalib -lopencv_dnn_objdetect -lopencv_dpm -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_line_descriptor -lopencv_optflow -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_surface_matching -lopencv_tracking -lopencv_datasets -lopencv_text -lopencv_dnn -lopencv_plot -lopencv_xfeatures2d -lopencv_shape -lopencv_ml -lopencv_ximgproc -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_flann -lopencv_xphoto -lopencv_photo -lopencv_imgproc -lopencv_core
 
 #LIBS += libopencv_core.so.3.4.5
 #LIBS += libopencv_aruco.so
