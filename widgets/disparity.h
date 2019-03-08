@@ -16,6 +16,10 @@
 namespace Ui {
 class Disparity;
 }
+enum DispDisplayerMode{
+    NORMAL,
+    DISPARITY
+};
 
 class Disparity : public QWidget
 {
@@ -83,6 +87,7 @@ private slots:
     void on_slider_treshold_Filter_valueChanged(int value);
 
 private:
+    DispDisplayerMode displayMode;
     Ui::Disparity *ui;
     cv::Mat im1;
     ImgCv *img;

@@ -14,7 +14,8 @@ Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Disparity),
     im1(),
-    img(nullptr)
+    img(nullptr),
+    displayMode(DispDisplayerMode::NORMAL)
 {
     ui->setupUi(this);
 
@@ -64,6 +65,7 @@ void Disparity::displayDisparityMap(){
         return;
     }
 
+    displayMode = DispDisplayerMode::DISPARITY;
 
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
@@ -155,6 +157,7 @@ void Disparity::on_loadImage_clicked(){
  * @brief Reset the sgbm parameters to default values (arbitrary fixed, as the more "commons")
  */
 void Disparity::on_reset_image_clicked() {
+    displayMode = DispDisplayerMode::NORMAL;
     displayImage(img->getImg());
 }
 
@@ -177,9 +180,13 @@ ImgCv * Disparity::get_img_mat(){
  * @param image image to be displayed
  */
 void Disparity::displayImage(Mat const& image){
-    ui->image_loaded->setMaximumSize(width, height);
-    ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));
-    ui->image_loaded->adjustSize();
+    if (displayMode == DispDisplayerMode::NORMAL) {
+        ui->image_loaded->setMaximumSize(width, height);
+        ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));
+        ui->image_loaded->adjustSize();
+    }else
+        displayDisparityMap();
+
 }
 
 /**
