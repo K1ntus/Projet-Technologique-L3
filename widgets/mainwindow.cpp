@@ -126,12 +126,15 @@ void MainWindow::on_calibrate_clicked() {
 void MainWindow::on_videoTest_clicked()
 {
     QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+    if(fileName2.isEmpty()) return;
     std::cout << fileName2.toStdString() << std::endl;
     const string& fileLeft(fileName2.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
 
         fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+        if(fileName2.isEmpty()) return;
+
         std::cout << fileName2.toStdString() << std::endl;
         const string& fileRight(fileName2.toStdString());
         cv::VideoCapture capR(fileRight);
@@ -139,6 +142,8 @@ void MainWindow::on_videoTest_clicked()
             std::cout << "video opened" << std::endl;
 
             fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+            if(fileName2.isEmpty()) return;
+
             FileStorage fs(fileName2.toStdString(), FileStorage::READ);
 
             if(fs.isOpened()){
@@ -308,5 +313,38 @@ void MainWindow::on_actionQImage_triggered()
     statusBar()->showMessage(str);
 
     imagecv::displayImage(*ui->backgroundLabel, *img);
+
+}
+
+void MainWindow::on_actionrecitify_image_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+    if(fileName2.isEmpty()) return;
+
+    string const &outFile(fileName2.toStdString());
+    cv::Mat const &imgRectified = img->rectifiedImage(*img, outFile);
+
+    img->setImg(imgRectified, true);
+    imagecv::displayImage(*ui->backgroundLabel, *img);
+
+}
+
+void MainWindow::on_actionEnregistrer_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+
+    }
+    QString fileName2 = QFileDialog::getSaveFileName(this, this->tr("Save file"), this->tr("./resources/"), this->tr("Images Files (*.jpg *.jpeg *.png)"));
+    if(fileName2.isEmpty()) return;
+
+    imwrite(fileName2.toStdString(), *img);
 
 }

@@ -376,6 +376,11 @@ void Disparity::on_depthMap_clicked()
 
         cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
         Mat depth_map = img->depthMap(im1,Q), dst;
+        FileStorage fs(inFile.toStdString(), FileStorage::APPEND);
+        if(fs.isOpened()){
+            fs << "depthMap" << depth_map;
+            fs.release();
+        }
         minMaxLoc(depth_map,&min, &max);
         depth_map.convertTo(dst, CV_8U,255.0/max,255);
         cvtColor(dst,dst,cv::COLOR_BGR2GRAY);

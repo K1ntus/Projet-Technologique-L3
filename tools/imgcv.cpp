@@ -424,8 +424,18 @@ Mat ImgCv::getDispToDepthMat(const std::string &outFile)
 Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 {
     Mat depthMapImage;
+    cv::Vec3f floatPoint;
     reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
-    return depthMapImage;
+
+
+    Mat depthMap(depthMapImage.rows, depthMapImage.cols, depthMapImage.type());
+    for(size_t i(0); i < depthMapImage.rows; i++){
+        for(size_t j(0); j < depthMapImage.cols; j++){
+            floatPoint = depthMapImage.at<Vec3f>(i)[j];
+            depthMap.at<float>(i, j) = -floatPoint[2];
+        }
+    }
+    return depthMap;
 
 }
 /**

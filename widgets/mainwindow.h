@@ -56,6 +56,8 @@ private slots:
     void on_action1_image_triggered();
     void on_action2_image_triggered();
     void on_actionQImage_triggered();
+    void on_actionrecitify_image_triggered();
+    void on_actionEnregistrer_triggered();
 };
 
 #endif // MAINWINDOW_H
