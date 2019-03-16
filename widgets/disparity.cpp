@@ -12,10 +12,13 @@ using namespace imagecv;
  */
 Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
+    displayMode(DispDisplayerMode::NORMAL),
     ui(new Ui::Disparity),
-    im1(),
+    dispMap(),
     img(nullptr),
-    displayMode(DispDisplayerMode::NORMAL)
+    imgtoDisplay(),
+    calibFilePath()
+
 {
     ui->setupUi(this);
 
@@ -52,7 +55,7 @@ Disparity::~Disparity(){
  * @brief Apply the disparity map parameters when the button got pressed and display it to the right
  * \n
  * When the apply button is triggered, a disparity map will be generated and displayed depending of the parameters\n
- * using the differents checkbox and sliders.\n
+ * using the differents sbm and sliders.\n
  * \n
  * If no image has been loaded, the program just display an error.\n
  * \n
@@ -60,41 +63,41 @@ Disparity::~Disparity(){
  */
 void Disparity::displayDisparityMap(){
 
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
 
     displayMode = DispDisplayerMode::DISPARITY;
-
+    cv::Mat const &imgR(imgtoDisplay.getImgR());
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
-        if(ui->checkBox->isChecked()){
-            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+        if(ui->sbm->isChecked()){
+                        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
 
         }else{
-            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+                        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
 
         }
     }else{
 
-        if(ui->checkBox->isChecked()){
-            im1 = img->sbm(IO_minDisparity,
-                           IO_numberOfDisparities,
-                           IO_SADWindowSize,
-                           IO_disp12MaxDif,
-                           IO_preFilterCap,
-                           IO_uniquenessRatio,
-                           IO_speckleWindowSize,
-                           IO_speckleRange,
-                           IO_textureTreshold,
-                           IO_tresholdFilter
-                           );
+        if(ui->sbm->isChecked()){
+            dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                       IO_numberOfDisparities,
+                                       IO_SADWindowSize,
+                                       IO_disp12MaxDif,
+                                       IO_preFilterCap,
+                                       IO_uniquenessRatio,
+                                       IO_speckleWindowSize,
+                                       IO_speckleRange,
+                                       IO_textureTreshold,
+                                       IO_tresholdFilter
+                                       );
 
         }else{
 
-            this->IO_P1 = 8* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
-            this->IO_P2 = 32* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
+            this->IO_P1 = 8* imgR.channels() * IO_SADWindowSize * IO_SADWindowSize;
+            this->IO_P2 = 32* imgR.channels() * IO_SADWindowSize * IO_SADWindowSize;
 
             if(ui->checkbox_fullScale->isChecked()) //Consume a lot of process time
                 this->IO_full_scale = StereoSGBM::MODE_HH;
@@ -103,26 +106,26 @@ void Disparity::displayDisparityMap(){
             /*  END PARAMETERS DISPARITY MAP    */
 
             //Generate the disparity map
-            im1 =img->disparity_map_SGBM(IO_minDisparity,
-                                         IO_numberOfDisparities,
-                                         IO_SADWindowSize,
-                                         IO_P1,
-                                         IO_P2,
-                                         IO_disp12MaxDif,
-                                         IO_preFilterCap,
-                                         IO_uniquenessRatio,
-                                         IO_speckleWindowSize,
-                                         IO_speckleRange,
-                                         IO_full_scale
-                                         );
+            dispMap =imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                     IO_numberOfDisparities,
+                                                     IO_SADWindowSize,
+                                                     IO_P1,
+                                                     IO_P2,
+                                                     IO_disp12MaxDif,
+                                                     IO_preFilterCap,
+                                                     IO_uniquenessRatio,
+                                                     IO_speckleWindowSize,
+                                                     IO_speckleRange,
+                                                     IO_full_scale
+                                                     );
 
 
         }
     }
 
-    QImage img2 = mat_to_qimage(im1).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    QImage img2 = mat_to_qimage(dispMap).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
 
-    //Colorize the disparity map if the dedicated checkbox is checked
+    //Colorize the disparity map if the dedicated sbm is checked
     if(ui->checkbox_colorize->isChecked()){
         // Apply the colormap:
         Mat cm_img0;
@@ -140,14 +143,16 @@ void Disparity::displayDisparityMap(){
  */
 void Disparity::on_loadImage_clicked(){
     if(load_file(*this, *img)){
+        ui->sbm->setCheckState(Qt::CheckState::Unchecked);
 
         QMessageBox::information(this, "Open image", "Image loaded");
         img->setImg(*img, true);
-        displayImage(img->getImg());
+        imgtoDisplay.setImg(img->getImg(), true);
+        displayImage(imgtoDisplay);
 
         qDebug(" *** Image file correctly loaded *** ");
     }
-    if(img->getImg().empty()){
+    if(img->empty()){
         qDebug("[ERROR] No images loaded");
         return;
     }
@@ -158,7 +163,9 @@ void Disparity::on_loadImage_clicked(){
  */
 void Disparity::on_reset_image_clicked() {
     displayMode = DispDisplayerMode::NORMAL;
-    displayImage(img->getImg());
+    ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+    imgtoDisplay.setImg(img->getImg(), true);
+    displayImage(imgtoDisplay);
 }
 
 
@@ -168,10 +175,13 @@ void Disparity::on_reset_image_clicked() {
  */
 void Disparity::set_img_mat(ImgCv &img){
     this->img->setImg(img, true);
-    displayImage(this->img->getImg());
+    ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+    imgtoDisplay.setImg(this->img->getImg(), true);
+    displayImage(imgtoDisplay);
 }
+
 ImgCv * Disparity::get_img_mat(){
-    return this->img;
+    return &imgtoDisplay;
 }
 
 
@@ -194,42 +204,42 @@ void Disparity::displayImage(Mat const& image){
  */
 void Disparity::on_Sobel_clicked()
 {
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
     Mat sobel;
-    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
-        im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
-    else if (ui->checkBox->isChecked()){
-        im1 = img->sbm(IO_minDisparity,
-                       IO_numberOfDisparities,
-                       IO_SADWindowSize,
-                       IO_disp12MaxDif,
-                       IO_preFilterCap,
-                       IO_uniquenessRatio,
-                       IO_speckleWindowSize,
-                       IO_speckleRange,
-                       IO_textureTreshold,
-                       IO_tresholdFilter);
+    if(ui->sbm->isChecked()&& ui->filter->isChecked())
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+    else if (ui->sbm->isChecked()){
+        dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                   IO_numberOfDisparities,
+                                   IO_SADWindowSize,
+                                   IO_disp12MaxDif,
+                                   IO_preFilterCap,
+                                   IO_uniquenessRatio,
+                                   IO_speckleWindowSize,
+                                   IO_speckleRange,
+                                   IO_textureTreshold,
+                                   IO_tresholdFilter);
     }else if (ui->filter->isChecked())
-        im1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
     else {
-        im1 = img->disparity_map_SGBM(IO_minDisparity,
-                                      IO_numberOfDisparities,
-                                      IO_SADWindowSize,
-                                      IO_P1,
-                                      IO_P2,
-                                      IO_disp12MaxDif,
-                                      IO_preFilterCap,
-                                      IO_uniquenessRatio,
-                                      IO_speckleWindowSize,
-                                      IO_speckleRange,
-                                      IO_full_scale
-                                      );
+        dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                  IO_numberOfDisparities,
+                                                  IO_SADWindowSize,
+                                                  IO_P1,
+                                                  IO_P2,
+                                                  IO_disp12MaxDif,
+                                                  IO_preFilterCap,
+                                                  IO_uniquenessRatio,
+                                                  IO_speckleWindowSize,
+                                                  IO_speckleRange,
+                                                  IO_full_scale
+                                                  );
 
     }
-    sobel = ImgCv::contour_sobel(im1);
+    sobel = ImgCv::contour_sobel(dispMap);
     imagecv::displayImage(*ui->image_loaded, sobel);
 
 }
@@ -240,44 +250,44 @@ void Disparity::on_Sobel_clicked()
 
 void Disparity::on_Laplace_clicked()
 {
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
 
     Mat laplace;
-    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
-        im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
-    else if(ui->checkBox->isChecked())
-        im1 = img->sbm(IO_minDisparity,
-                       IO_numberOfDisparities,
-                       IO_SADWindowSize,
-                       IO_disp12MaxDif,
-                       IO_preFilterCap,
-                       IO_uniquenessRatio,
-                       IO_speckleWindowSize,
-                       IO_speckleRange,
-                       IO_textureTreshold,
-                       IO_tresholdFilter);
+    if(ui->sbm->isChecked()&& ui->filter->isChecked())
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+    else if(ui->sbm->isChecked())
+        dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                   IO_numberOfDisparities,
+                                   IO_SADWindowSize,
+                                   IO_disp12MaxDif,
+                                   IO_preFilterCap,
+                                   IO_uniquenessRatio,
+                                   IO_speckleWindowSize,
+                                   IO_speckleRange,
+                                   IO_textureTreshold,
+                                   IO_tresholdFilter);
     else if (ui->filter->isChecked())
-        im1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
     else {
-        im1 = img->disparity_map_SGBM(IO_minDisparity,
-                                      IO_numberOfDisparities,
-                                      IO_SADWindowSize,
-                                      IO_P1,
-                                      IO_P2,
-                                      IO_disp12MaxDif,
-                                      IO_preFilterCap,
-                                      IO_uniquenessRatio,
-                                      IO_speckleWindowSize,
-                                      IO_speckleRange,
-                                      IO_full_scale
-                                      );
+        dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                  IO_numberOfDisparities,
+                                                  IO_SADWindowSize,
+                                                  IO_P1,
+                                                  IO_P2,
+                                                  IO_disp12MaxDif,
+                                                  IO_preFilterCap,
+                                                  IO_uniquenessRatio,
+                                                  IO_speckleWindowSize,
+                                                  IO_speckleRange,
+                                                  IO_full_scale
+                                                  );
 
     }
 
-    laplace = ImgCv::contour_laplace(im1);
+    laplace = ImgCv::contour_laplace(dispMap);
     imagecv::displayImage(*ui->image_loaded, laplace);
 
 }
@@ -286,24 +296,35 @@ void Disparity::on_Laplace_clicked()
 void Disparity::on_video_clicked()
 {
     QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+    if(fileName2.isEmpty()) return;
     std::cout << fileName2.toStdString() << std::endl;
+
     const string& fileLeft(fileName2.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
 
         fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+        if(fileName2.isEmpty()) return;
+
         std::cout << fileName2.toStdString() << std::endl;
         const string& fileRight(fileName2.toStdString());
         cv::VideoCapture capR(fileRight);
         if(capR.isOpened()){
             std::cout << "video opened" << std::endl;
 
-            //            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-            //            FileStorage fs(fileName2.toStdString(), FileStorage::READ);
+            if(calibFilePath.empty()){
+                qDebug("[INFO] Load a calibration file before");
 
-            //            if(fs.isOpened()){
-            cv::Mat displayedImg, imgVidL, imgVidR, Q;
-            //                fs["dispToDepthMatrix"] >> Q;
+                QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+                if(!inFile.isEmpty()){
+                    calibFilePath = inFile.toStdString();
+                    on_depthMap_clicked();
+                }
+                else{
+                    qDebug("[ERROR] No calibration file loaded");
+                }
+            }
+            cv::Mat displayedImg, imgVidL, imgVidR, Q(imgtoDisplay.getDispToDepthMat(calibFilePath));
             int key = ' ', prevKey = key;
             if(!capL.grab() || !capR.grab()) return;
 
@@ -317,22 +338,27 @@ void Disparity::on_video_clicked()
                 }else{
                     capL.retrieve(imgVidL);
                     capR.retrieve(imgVidR);
-                    img->setImg(imgVidL, imgVidR);
+                    imgtoDisplay.setImg(imgVidL, imgVidR);
+                    if(!calibFilePath.empty())
+                        imgtoDisplay.setImg(ImgCv::rectifiedImage(imgtoDisplay, calibFilePath), true);
+                    if(key == 's'){
+                        displayDisparityMap();
+                    }else{
+                        displayMode = DispDisplayerMode::NORMAL;
+                        if(key == 'l')
+                            displayedImg = imgtoDisplay.getImgL();
+                        else if(key == 'r')
+                            displayedImg = imgtoDisplay.getImgR();
+                        if(key == 'd' && !Q.empty()){
+                            displayDisparityMap();
+                            displayedImg = ImgCv::depthMap(dispMap, Q);
+                        }else
+                            displayedImg = imgtoDisplay;
 
-                    //                        if(key == 'l')
-                    //                            displayedImg = img->getImgL();
-                    //                        else if(key == 'r')
-                    //                            displayedImg = img->getImgR();
-                    //                        if(key == 'd')
-                    //                            displayedImg = img->getDepthMap(Q);
-                    //                        else if(key == 's')
-                    //                            displayedImg = img->getDisparityMap();
-                    //                        else
-                    //                            displayedImg = *img;
 
-
-                    displayDisparityMap();
-                    imshow("video test", *img);
+                        displayImage(displayedImg);
+                    }
+                    imshow("video test", displayedImg);
 
                     std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
 
@@ -347,7 +373,6 @@ void Disparity::on_video_clicked()
                     key = prevKey;
             }
 
-            //            }
         }
         capR.release();
         destroyWindow("video test");
@@ -361,30 +386,36 @@ void Disparity::on_video_clicked()
  */
 void Disparity::on_depthMap_clicked()
 {
-    if(img->getImg().empty()){
+    if(imgtoDisplay.empty()){
         qDebug("[INFO] Load a stereo file before");
         if(!load_file(*this, *img, true)){
             qDebug("[ERROR] No images loaded");
             return;
         }
+        imgtoDisplay = img->getImg();
     }
-    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
-    if(!inFile.isEmpty()){
-        double min, max;
-        im1 = img->rectifiedImage(*img, inFile.toStdString());
+    if(calibFilePath.empty()){
+        qDebug("[INFO] Load a calibration file before");
+
+        QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+        if(!inFile.isEmpty()){
+            calibFilePath = inFile.toStdString();
+            on_depthMap_clicked();
+        }
+        else{
+            qDebug("[ERROR] No calibration file loaded");
+            return;
+        }
+    }
+    else{
+        imgtoDisplay.setImg(ImgCv::rectifiedImage(*img, calibFilePath), true);
         displayDisparityMap();
 
-        cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
-        Mat depth_map = img->depthMap(im1,Q), dst;
-        FileStorage fs(inFile.toStdString(), FileStorage::APPEND);
-        if(fs.isOpened()){
-            fs << "depthMap" << depth_map;
-            fs.release();
-        }
-        minMaxLoc(depth_map,&min, &max);
-        depth_map.convertTo(dst, CV_8U,255.0/max,255);
-        cvtColor(dst,dst,cv::COLOR_BGR2GRAY);
-        imshow("depth_map", dst);
+        cv::Mat Q = ImgCv::getDispToDepthMat(calibFilePath);
+        Mat depth_map = ImgCv::depthMap(dispMap,Q), dst;
+        imshow("depth_map", depth_map);
+        displayMode = DispDisplayerMode::NORMAL;
+        displayImage(depth_map);
 
     }
 }
@@ -394,15 +425,15 @@ void Disparity::on_depthMap_clicked()
  */
 void Disparity::on_slider_windowSize_valueChanged(int value)
 {
-      if(value%2==0){
-         value +=1;
-         ui->slider_windowSize->setValue(value);
-         ui->spinBox_windowSize->setValue(value);
-         this->IO_SADWindowSize = value;
-      }else{
-         this->IO_SADWindowSize = value;
-         ui->spinBox_windowSize->setValue(value);
-      }
+    if(value%2==0){
+        value +=1;
+        ui->slider_windowSize->setValue(value);
+        ui->spinBox_windowSize->setValue(value);
+        this->IO_SADWindowSize = value;
+    }else{
+        this->IO_SADWindowSize = value;
+        ui->spinBox_windowSize->setValue(value);
+    }
     displayDisparityMap();
 }
 /**
@@ -416,7 +447,7 @@ void Disparity::on_slider_numberOfDisparities_valueChanged(int value)
         value -= a;
         this->IO_numberOfDisparities = value;
 
-   }else{
+    }else{
         this->IO_numberOfDisparities=ui->slider_numberOfDisparities->value();
 
     }
@@ -429,11 +460,11 @@ void Disparity::on_slider_numberOfDisparities_valueChanged(int value)
  */
 void Disparity::on_slider_preFilterCap_valueChanged(int value)
 {
-    if(ui->checkBox->isChecked()&& value>=63){
+    if(ui->sbm->isChecked()&& value>=63){
         qDebug("prefilterCap must be within 1...63");
         value -= (value-63);
         this->IO_preFilterCap= value;
-    }else if(ui->checkBox->isChecked() && value<=1){
+    }else if(ui->sbm->isChecked() && value<=1){
         value +=1;
         this->IO_preFilterCap=value;
 
@@ -527,23 +558,60 @@ void Disparity::on_load_two_images_clicked()
 {
     if(load_file(*this, *img, true)){
         QMessageBox::information(this, "Open the first image", "Image loaded");
+        ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+        imgtoDisplay.setImg(img->getImg(), true);
     }
 
     else{
-       qDebug("Impossible to load files");
+        qDebug("Impossible to load files");
     }
-    displayImage(img->getImg());
+    displayImage(imgtoDisplay);
 }
 
 /**
- * @brief Disparity::on_checkBox_clicked
+ * @brief Disparity::on_sbm_clicked
  */
-void Disparity::on_checkBox_clicked()
+void Disparity::on_sbm_clicked()
 {
-    if (ui->checkBox->isChecked())
+    if (ui->sbm->isChecked())
         displayDisparityMap();
     else
         displayDisparityMap();
 }
 
 
+
+void Disparity::on_rectified_clicked()
+{
+    if(img->empty() || img->getImgR().empty()){
+        qDebug("[ERROR] Please, load a stereo image first");
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
+        return;
+    }
+
+    if(calibFilePath.empty()){
+        qDebug("[ERROR] Please, load a calibration first");
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
+        return;
+    }
+
+    if (ui->rectified->isChecked()){
+        imgtoDisplay.setImg(ImgCv::rectifiedImage(*img, calibFilePath),true);
+    }
+    else
+        imgtoDisplay.setImg(img->getImg(), true);
+
+    displayImage(imgtoDisplay);
+}
+
+void Disparity::on_calib_clicked()
+{
+
+    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+    if(!inFile.isEmpty()){
+        calibFilePath = inFile.toStdString();
+    }
+    else{
+        qDebug("[ERROR] No calibration file loaded");
+    }
+}

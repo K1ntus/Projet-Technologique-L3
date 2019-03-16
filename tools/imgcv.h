@@ -55,7 +55,7 @@ public:
      */
     cv::Mat getDepthMap(cv::Mat &TProjectionMat);
 
-    void setImg(cv::Mat const&, bool);
+    void setImg(cv::Mat const&img, bool isStereo);
     void setImg(cv::Mat const&imgL, cv::Mat const&imgR);
 
     /**
@@ -63,7 +63,7 @@ public:
      * @param cv::Mat Image that will be splitted in two
      * @return nothing but store the result in two pointers
      */
-    void static split(cv::Mat &, cv::Mat&, cv::Mat&);
+    void static split(cv::Mat &img, cv::Mat&imgL, cv::Mat&imgR);
 
     /** static version of the method
      * @brief Convert an image following the laplace algorithm
@@ -128,11 +128,11 @@ public:
      * @param dispToDepthMatrix The matrix containing the intrinsec and extrinsec parameters of the camera
      * @return the depth map
      */
-    cv::Mat depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
+    cv::Mat static depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
 
-    ImgCv rectifiedImage(ImgCv &distortedImage, IntrinsicParameters const&paramL
+    ImgCv static rectifiedImage(ImgCv &distortedImage, IntrinsicParameters const&paramL
                          , IntrinsicParameters const&paramR,
-                         cv::Mat const&R, cv::Mat const&T) const;
+                         cv::Mat const&R, cv::Mat const&T);
 
     /**
      * @brief ImgCv::rectifiedImage
@@ -145,9 +145,9 @@ public:
      * @param T translation parameters of the camera to undistort the pict
      * @return the rectified image
      */
-    ImgCv rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
+    ImgCv static rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
                          cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
-                         cv::Mat const&R, cv::Mat const&T) const;
+                         cv::Mat const&R, cv::Mat const&T);
 
     /**
      * @brief ImgCv::rectifiedImage
@@ -155,7 +155,7 @@ public:
      * @param outFile the output file with the parameters to undistort
      * @return the rectified image
      */
-    ImgCv rectifiedImage(ImgCv &distortedImage, std::string const& outFile) const;
+    ImgCv static rectifiedImage(ImgCv &distortedImage, std::string const& outFile);
 
     cv::Mat static getDispToDepthMat(std::string const& outFile);
 

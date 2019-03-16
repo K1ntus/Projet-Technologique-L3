@@ -182,9 +182,7 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
                 IO_full_scale
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
-//    disp.convertTo(disp,CV_8U,1,0);     //Convert the disparity map to a good format and make him convertible to qimage
-    disp.convertTo(disp, CV_8U, 255/(IO_numberOfDisparities*16.));
-    bitwise_not(disp, disp);
+    normalize(disp, disp, 0, 255, NORM_MINMAX, CV_8U);
     return disp;
 }
 /**
@@ -203,8 +201,7 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
     matcher->compute(imgL,imgR,dst);
     normalize(dst, dst, 0, 255, CV_MINMAX, CV_8U);
-   // dst.convertTo(dst, CV_8UC1);
-    bitwise_not(dst, dst);
+
     return dst;
 }
 Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
@@ -302,7 +299,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
 
 }
 
-ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T) const
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T)
 {
     return rectifiedImage(distortedImage, paramL.getDistCoeffs(), paramL.getCameraMatrix(),
                           paramR.getDistCoeffs(), paramR.getCameraMatrix(), R, T);
@@ -321,7 +318,7 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &pa
  */
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
                             cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR,
-                            cv::Mat const&R, cv::Mat const&T) const
+                            cv::Mat const&R, cv::Mat const&T)
 {
     if(!distortedImage.isStereo())
         std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
@@ -337,7 +334,7 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
     cv::Size imgSize(imgL.size());
     cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
                       imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
-                      0, -1, imgSize, &roi1, &roi2);
+                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
 
 
     cv::Mat map11, map12, map21, map22;
@@ -368,7 +365,7 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
  * @param outFile the output file with the parameters to undistort
  * @return the rectified image
  */
-ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile) const
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile)
 {
     ImgCv rectifiedImg;
 
@@ -428,13 +425,15 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
     reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
 
 
-    Mat depthMap(depthMapImage.rows, depthMapImage.cols, depthMapImage.type());
+    Mat depthMap(depthMapImage.rows, depthMapImage.cols, CV_32F);
     for(size_t i(0); i < depthMapImage.rows; i++){
         for(size_t j(0); j < depthMapImage.cols; j++){
-            floatPoint = depthMapImage.at<Vec3f>(i)[j];
-            depthMap.at<float>(i, j) = -floatPoint[2];
+            floatPoint = depthMapImage.at<Vec3f>(i,j);
+            depthMap.at<float>(i, j) = floatPoint[2];
         }
     }
+    normalize(depthMap, depthMap, 0, 255, NORM_MINMAX, CV_32F);
+
     return depthMap;
 
 }
@@ -528,16 +527,16 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
  * @param img_left left splitted image
  * @param img_right right splitted image
  */
-void ImgCv::split(Mat &img, Mat &img_left, Mat &img_right){
+void ImgCv::split(Mat &img, Mat &imgL, Mat &imgR){
     int width= img.cols >> 1 ;
     int x_right= width +img.cols%2; //First width position for the right image
     std::cout<<x_right<<std::endl;
     // check if the ptr is already in use
     img.adjustROI(0,0, 0, -x_right);
-    img.copyTo(img_left);
+    img.copyTo(imgL);
 
     img.adjustROI(0,0, -x_right, x_right);
-    img.copyTo(img_right);
+    img.copyTo(imgR);
 
     img.adjustROI(0,0, x_right, 0);
 }

@@ -329,7 +329,7 @@ void MainWindow::on_actionrecitify_image_triggered()
     if(fileName2.isEmpty()) return;
 
     string const &outFile(fileName2.toStdString());
-    cv::Mat const &imgRectified = img->rectifiedImage(*img, outFile);
+    cv::Mat const &imgRectified = ImgCv::rectifiedImage(*img, outFile);
 
     img->setImg(imgRectified, true);
     imagecv::displayImage(*ui->backgroundLabel, *img);

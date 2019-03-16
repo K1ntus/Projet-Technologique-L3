@@ -1344,19 +1344,6 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QPushButton" name="loadImage">
-   <property name="geometry">
-    <rect>
-     <x>170</x>
-     <y>560</y>
-     <width>131</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>load one image</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="image_loaded">
    <property name="geometry">
     <rect>
@@ -1379,20 +1366,7 @@
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="reset_image">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>560</y>
-     <width>91</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Reset</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox">
+  <widget class="QCheckBox" name="sbm">
    <property name="geometry">
     <rect>
      <x>320</x>
@@ -1836,32 +1810,6 @@
     <string>Activer</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="Sobel">
-   <property name="geometry">
-    <rect>
-     <x>600</x>
-     <y>560</y>
-     <width>71</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Sobel</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="Laplace">
-   <property name="geometry">
-    <rect>
-     <x>490</x>
-     <y>560</y>
-     <width>81</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Laplace</string>
-   </property>
-  </widget>
   <widget class="QPlainTextEdit" name="plainTextEdit_12">
    <property name="enabled">
     <bool>false</bool>
@@ -1920,45 +1868,6 @@
    </property>
    <property name="text">
     <string>Post-filtered</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="video">
-   <property name="geometry">
-    <rect>
-     <x>700</x>
-     <y>560</y>
-     <width>91</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>load video</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="depthMap">
-   <property name="geometry">
-    <rect>
-     <x>810</x>
-     <y>560</y>
-     <width>91</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>depth map</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="load_two_images">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
-     <y>560</y>
-     <width>131</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Load two images</string>
    </property>
   </widget>
   <widget class="QSpinBox" name="spinBox_windowSize">
@@ -2164,6 +2073,87 @@
    </property>
    <property name="value">
     <number>100</number>
+   </property>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>549</y>
+     <width>836</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="reset_image">
+      <property name="text">
+       <string>Reset</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="loadImage">
+      <property name="text">
+       <string>load one image</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="load_two_images">
+      <property name="text">
+       <string>Load two images</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="video">
+      <property name="text">
+       <string>load video</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="calib">
+      <property name="text">
+       <string>load calibration file</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="Laplace">
+      <property name="text">
+       <string>Laplace</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="Sobel">
+      <property name="text">
+       <string>Sobel</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="depthMap">
+      <property name="text">
+       <string>depth map</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QCheckBox" name="rectified">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>530</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>rectified</string>
    </property>
   </widget>
  </widget>
