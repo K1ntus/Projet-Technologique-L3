@@ -23,6 +23,9 @@
 #include "disparity.h"
 #include "calibration_widget.h"
 #include "ui_mainwindow.h"
+#include "network/server.h"
+
+
 
 
 namespace Ui {
@@ -41,6 +44,8 @@ private:
     ImgCv *img;
     Disparity * parametersWindow;
     Calibration_widget *calib_widget;
+    Server tcp_server;
+
 
 
 private slots:
@@ -58,6 +63,10 @@ private slots:
     void on_actionQImage_triggered();
     void on_actionrecitify_image_triggered();
     void on_actionEnregistrer_triggered();
+    void on_videoFromSet_clicked();
+    void on_actionrun_triggered();
+    void on_actionclose_triggered();
+    void on_tracking_clicked();
 };
 
 #endif // MAINWINDOW_H

@@ -14,6 +14,7 @@ class Server : public QTcpServer
     Q_OBJECT
 public:
     explicit Server(QObject *parent = 0);
+    ~Server();
     void StartServer();
 
 signals:
@@ -27,6 +28,7 @@ protected:
 
 private:
     Disparity * parametersWindow;
+    TCP_Thread *thread;
 
 };
 #endif // SERVER_H

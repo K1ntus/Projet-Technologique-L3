@@ -12,8 +12,8 @@
 #include <iostream>
 // uncomment for common project
 #include "tools/calibration/intrinsicparameters.h"
-#include "opencv2/ximgproc.hpp"
-#include "opencv2/ximgproc/disparity_filter.hpp"
+//#include "opencv2/ximgproc.hpp"
+//#include "opencv2/ximgproc/disparity_filter.hpp"
 
 
 class ImgCv : public cv::Mat
@@ -129,6 +129,21 @@ public:
      * @return the depth map
      */
     cv::Mat static depthMap(cv::Mat const& disparityMap, cv::Mat &dispToDepthMatrix);
+
+    /**
+     * @brief depthMapInterpreter : detect the presence of a personne from the image and compute his distance from
+     * the source.
+     * @param image the left image of the stereo image which allow the detection of a person.
+     *  if no human is found the function return [0, 0, 0]
+     * @param disparityMap the coresponding disparity of the stereo image.
+     * @param depthMap the coresponding depth map of the stereo image.
+     * @return a 1 * 4 matrix with the position of the human in the image and is distance from the source:
+     *      [vx: position x of the human,
+     *       vy: position y of the human,
+     *      theta: the rotation angle of the position of vx, vy and the orthonormal basis,
+     *      d: distance of the human from the source]
+     */
+    cv::Mat static depthMapInterpreter(cv::Mat image, cv::Mat const& disparityMap, cv::Mat &depthMap);
 
     ImgCv static rectifiedImage(ImgCv &distortedImage, IntrinsicParameters const&paramL
                          , IntrinsicParameters const&paramR,

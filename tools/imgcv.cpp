@@ -1,7 +1,7 @@
 #include "imgcv.h"
 
 using namespace cv;
-using namespace cv::ximgproc;
+//using namespace cv::ximgproc;
 
 ImgCv::ImgCv():
     Mat(),
@@ -237,28 +237,28 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
  * @return the filtered disparity map
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
-    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
-    Mat final_disparity_map;
-    left_for_matching= getImgL().clone();
-    right_for_matching = getImgR().clone();
+//    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+//    Mat final_disparity_map;
+//    left_for_matching= getImgL().clone();
+//    right_for_matching = getImgR().clone();
 
-    Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
-    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
-    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
+//    Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
+//    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
+//    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
 
-    cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
-    cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
-    matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
-    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+//    cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
+//    cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
+//    matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
+//    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
-    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
+//    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+//    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
 
-    filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
+//    filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
-    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-    return final_disparity_map;
+//    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
+//    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+//    return final_disparity_map;
 
 }
 /**
@@ -271,31 +271,31 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
  * @return the disparity map post_filtered
  */
 Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
-    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
-    Mat final_disparity_map;
-    left_for_matching= getImgL().clone();
-    right_for_matching = getImgR().clone();
-    Ptr <StereoSGBM> matcher_left = StereoSGBM::create(0,IO_numberOfDisparities,IO_SADWindowSize); // use SBM to create a matcher
+//    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+//    Mat final_disparity_map;
+//    left_for_matching= getImgL().clone();
+//    right_for_matching = getImgR().clone();
+//    Ptr <StereoSGBM> matcher_left = StereoSGBM::create(0,IO_numberOfDisparities,IO_SADWindowSize); // use SBM to create a matcher
 
-    matcher_left->setPreFilterCap(IO_preFilterCap);
-    matcher_left->setP1(IO_P1); // smoothness of the disparity map
-    matcher_left->setP2(IO_P2);
+//    matcher_left->setPreFilterCap(IO_preFilterCap);
+//    matcher_left->setP1(IO_P1); // smoothness of the disparity map
+//    matcher_left->setP2(IO_P2);
 
-    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
-    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
+//    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
+//    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
 
 
-    matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
-    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+//    matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
+//    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-    filter->setLambda(8000);
-    filter->setSigmaColor(1.0);
+//    filter->setLambda(8000);
+//    filter->setSigmaColor(1.0);
 
-    filter->filter(left_disparity,getImgL(),filtered,right_disparity);
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
-     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-   // bitwise_not(final_disparity_map,final_disparity_map);
-    return final_disparity_map;
+//    filter->filter(left_disparity,getImgL(),filtered,right_disparity);
+//    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
+//     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+//   // bitwise_not(final_disparity_map,final_disparity_map);
+//    return final_disparity_map;
 
 }
 
@@ -436,6 +436,34 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 
     return depthMap;
 
+}
+
+/**
+ * @brief depthMapInterpreter : detect the presence of a personne from the image and compute his distance from
+ * the source.
+ * @param image the left image of the stereo image which allow the detection of a person.
+ *  if no human is found the function return [0, 0, 0]
+ * @param disparityMap the coresponding disparity of the stereo image.
+ * @param depthMap the coresponding depth map of the stereo image.
+ * @return a 1 * 4 matrix with the position of the human in the image and is distance from the source:
+ *      [vx: position x of the human,
+ *       vy: position y of the human,
+ *      theta: the rotation angle of the position of vx, vy and the orthonormal basis,
+ *      d: distance of the human from the source]
+ */
+Mat ImgCv::depthMapInterpreter(Mat image, const Mat &disparityMap, Mat &depthMap)
+{
+    Mat computedResult(1, 4, CV_32F);
+    cv::Rect2f roi;
+
+    if(roi.area() <= 0)
+        return computedResult;
+    for(size_t i(roi.x); i < disparityMap.rows - (size_t)(roi.x + roi.width); i++){
+        for(size_t j(roi.y); j < disparityMap.cols - (size_t)(roi.y + roi.height); j++){
+            float d = depthMap.at<float>(i, j);
+        }
+    }
+    return computedResult;
 }
 /**
  * @brief ImgCv::isStereo : Check if

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1214</width>
-    <height>601</height>
+    <height>663</height>
    </rect>
   </property>
   <property name="palette">
@@ -2075,74 +2075,6 @@
     <number>100</number>
    </property>
   </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>549</y>
-     <width>836</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPushButton" name="reset_image">
-      <property name="text">
-       <string>Reset</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="loadImage">
-      <property name="text">
-       <string>load one image</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="load_two_images">
-      <property name="text">
-       <string>Load two images</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="video">
-      <property name="text">
-       <string>load video</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="calib">
-      <property name="text">
-       <string>load calibration file</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="Laplace">
-      <property name="text">
-       <string>Laplace</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="Sobel">
-      <property name="text">
-       <string>Sobel</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="depthMap">
-      <property name="text">
-       <string>depth map</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QCheckBox" name="rectified">
    <property name="geometry">
     <rect>
@@ -2155,6 +2087,96 @@
    <property name="text">
     <string>rectified</string>
    </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>570</y>
+     <width>838</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="reset_image">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="loadImage">
+        <property name="text">
+         <string>load one image</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="load_two_images">
+        <property name="text">
+         <string>Load two images</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="video">
+        <property name="text">
+         <string>load video</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="calib">
+        <property name="text">
+         <string>load calibration file</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="dispMap">
+        <property name="text">
+         <string>disparity map</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="depthMap">
+        <property name="text">
+         <string>depth map</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Sobel">
+        <property name="text">
+         <string>Sobel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Laplace">
+        <property name="text">
+         <string>Laplace</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="dispParam">
+        <property name="text">
+         <string>save disparity param</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

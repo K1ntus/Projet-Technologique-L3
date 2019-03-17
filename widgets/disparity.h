@@ -90,6 +90,10 @@ private slots:
 
     void on_calib_clicked();
 
+    void on_dispMap_clicked();
+
+    void on_dispParam_clicked();
+
 private:
     DispDisplayerMode displayMode;
     Ui::Disparity *ui;

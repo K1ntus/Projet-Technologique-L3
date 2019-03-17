@@ -73,10 +73,10 @@ void Disparity::displayDisparityMap(){
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
         if(ui->sbm->isChecked()){
-                        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
 
         }else{
-                        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
 
         }
     }else{
@@ -175,7 +175,8 @@ void Disparity::on_reset_image_clicked() {
  */
 void Disparity::set_img_mat(ImgCv &img){
     this->img->setImg(img, true);
-    ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+    if(calibFilePath.empty())
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
     imgtoDisplay.setImg(this->img->getImg(), true);
     displayImage(imgtoDisplay);
 }
@@ -295,92 +296,132 @@ void Disparity::on_Laplace_clicked()
 
 void Disparity::on_video_clicked()
 {
-    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-    if(fileName2.isEmpty()) return;
-    std::cout << fileName2.toStdString() << std::endl;
+    /* QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+    if(filePath.isEmpty()) return;
+    std::cout << filePath.toStdString() << std::endl;
 
-    const string& fileLeft(fileName2.toStdString());
+    const string& fileLeft(filePath.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
 
-        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-        if(fileName2.isEmpty()) return;
+        filePath = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+        if(filePath.isEmpty()) return;
 
-        std::cout << fileName2.toStdString() << std::endl;
-        const string& fileRight(fileName2.toStdString());
+        std::cout << filePath.toStdString() << std::endl;
+        const string& fileRight(filePath.toStdString());
         cv::VideoCapture capR(fileRight);
-        if(capR.isOpened()){
-            std::cout << "video opened" << std::endl;
+        */
+    QString filePath = QFileDialog::getExistingDirectory(
+                this, tr("Select the files for calibration"),
+                tr("./resources/") );
 
-            if(calibFilePath.empty()){
-                qDebug("[INFO] Load a calibration file before");
+    if(!filePath.isEmpty()){
 
-                QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
-                if(!inFile.isEmpty()){
-                    calibFilePath = inFile.toStdString();
-                    on_depthMap_clicked();
-                }
-                else{
-                    qDebug("[ERROR] No calibration file loaded");
-                }
-            }
-            cv::Mat displayedImg, imgVidL, imgVidR, Q(imgtoDisplay.getDispToDepthMat(calibFilePath));
-            int key = ' ', prevKey = key;
-            if(!capL.grab() || !capR.grab()) return;
+        string fileLeft(filePath.toStdString());
+        std::cout << fileLeft+"/left_%02d.jpg" << std::endl;
 
-            double framerate = capL.get(CV_CAP_PROP_FPS);
-            while(key != 'q'){
+        cv::VideoCapture capL(fileLeft+"/left_%02d.jpg", cv::CAP_IMAGES );
+        if(capL.isOpened()){
 
-                if(key == 'p'){
+            QString filePath = QFileDialog::getExistingDirectory(
+                        this, tr("Select the files for calibration"),
+                        tr("./resources/") );
 
-                    std::cout << "pause" << std::endl;
-                    prevKey = key;
-                }else{
+            if(!filePath.isEmpty()){
+
+
+                fileLeft = filePath.toStdString();
+                cv::VideoCapture capR(fileLeft+"/right_%02d.jpg", cv::CAP_IMAGES );
+
+                if(capR.isOpened()){
+                    std::cout << "video opened" << std::endl;
+
+                    cv::Mat displayedImg, imgVidL, imgVidR, Q;
+                    int key = ' ', prevKey = key;
+                    if(!capL.grab() || !capR.grab()) return;
                     capL.retrieve(imgVidL);
                     capR.retrieve(imgVidR);
-                    imgtoDisplay.setImg(imgVidL, imgVidR);
-                    if(!calibFilePath.empty())
-                        imgtoDisplay.setImg(ImgCv::rectifiedImage(imgtoDisplay, calibFilePath), true);
-                    if(key == 's'){
-                        displayDisparityMap();
-                    }else{
-                        displayMode = DispDisplayerMode::NORMAL;
-                        if(key == 'l')
-                            displayedImg = imgtoDisplay.getImgL();
-                        else if(key == 'r')
-                            displayedImg = imgtoDisplay.getImgR();
-                        if(key == 'd' && !Q.empty()){
-                            displayDisparityMap();
-                            displayedImg = ImgCv::depthMap(dispMap, Q);
-                        }else
-                            displayedImg = imgtoDisplay;
+                    img->setImg(imgVidL, imgVidR);
+                    imgtoDisplay.setImg(*img, true);
+                    capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capL.grab();
+                    capR.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capR.grab();
+                    if(calibFilePath.empty()){
+                        qDebug("[INFO] Load a calibration file before");
 
-
-                        displayImage(displayedImg);
+                        QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+                        if(!inFile.isEmpty()){
+                            calibFilePath = inFile.toStdString();
+                            Q = (ImgCv::getDispToDepthMat(calibFilePath));
+                            on_depthMap_clicked();
+                        }
+                        else{
+                            qDebug("[ERROR] No calibration file loaded");
+                        }
                     }
-                    imshow("video test", displayedImg);
+                    double framerate = capL.get(CV_CAP_PROP_FPS);
+                    while(key != 'q'){
 
-                    std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+                        if(key == 'p'){
 
-                    prevKey = key;
+                            std::cout << "pause" << std::endl;
+                            prevKey = key;
+                        }else{
+                            capL.retrieve(imgVidL);
+                            capR.retrieve(imgVidR);
+                            imgtoDisplay.setImg(imgVidL, imgVidR);
+                            if(!calibFilePath.empty())
+                                imgtoDisplay.setImg(ImgCv::rectifiedImage(imgtoDisplay, calibFilePath), true);
 
-                    if(!capL.grab() || !capR.grab())
-                        prevKey = 'q';
+                            if(key == 's'){
+                                displayDisparityMap();
+                            }else{
+                                displayMode = DispDisplayerMode::NORMAL;
+                                if(key == 'l')
+                                    displayedImg = imgtoDisplay.getImgL();
+                                else if(key == 'r')
+                                    displayedImg = imgtoDisplay.getImgR();
+                                if(key == 'd' && !Q.empty()){
+                                    displayDisparityMap();
+                                    displayedImg = ImgCv::depthMap(dispMap, Q);
+                                }else
+                                    displayedImg = imgtoDisplay;
+
+
+                                displayImage(displayedImg);
+                            }
+                            imshow("video test", displayedImg);
+
+                            std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+
+                            prevKey = key;
+
+                            if(!capL.grab() || !capR.grab()){
+                                capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                                capL.grab();
+                                capR.set(cv::CAP_PROP_POS_FRAMES, 0);
+                                capR.grab();
+                            }
+
+                        }
+
+                        key = waitKey((int) framerate);
+                        if(key == 255)
+                            key = prevKey;
+                    }
+
                 }
+                capR.release();
+                destroyWindow("video test");
 
-                key = waitKey((int) framerate);
-                if(key == 255)
-                    key = prevKey;
-            }
-
+            }else
+                std::cout << "file empty" << std::endl;
+            capL.release();
         }
-        capR.release();
-        destroyWindow("video test");
-
-    }else
-        std::cout << "file empty" << std::endl;
-    capL.release();
+    }
 }
+
 /**
  * @brief Disparity::on_depthMap_clicked
  */
@@ -612,6 +653,70 @@ void Disparity::on_calib_clicked()
         calibFilePath = inFile.toStdString();
     }
     else{
-        qDebug("[ERROR] No calibration file loaded");
+        qDebug("[ERROR] in: on_calib_clicked\nNo calibration file loaded");
     }
 }
+
+void Disparity::on_dispMap_clicked()
+{
+    displayDisparityMap();
+}
+
+void Disparity::on_dispParam_clicked()
+{
+    if(dispMap.empty()){
+        qDebug("[ERROR] in: on_dispParam_clicked\n No disparity map generated");
+        return;
+    }
+    QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+    if(filePath.isEmpty()){
+        qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
+
+        return;
+    }
+
+    FileStorage fs(filePath.toStdString(), FileStorage::APPEND);
+    if(fs.isOpened()){
+        std::vector<int> param;
+
+        if(ui->sbm->isChecked()){
+            param.push_back(0);
+            param.push_back(IO_minDisparity);
+            param.push_back(IO_numberOfDisparities);
+            param.push_back(IO_SADWindowSize);
+            param.push_back(IO_disp12MaxDif);
+            param.push_back(IO_preFilterCap);
+            param.push_back(IO_uniquenessRatio);
+            param.push_back(IO_speckleWindowSize);
+            param.push_back(IO_speckleRange);
+            param.push_back(IO_textureTreshold);
+            param.push_back(IO_tresholdFilter);
+        }
+        else {
+            param.push_back(2);
+            param.push_back(IO_minDisparity);
+            param.push_back(IO_numberOfDisparities);
+            param.push_back(IO_SADWindowSize);
+            param.push_back(IO_P1);
+            param.push_back(IO_P2);
+            param.push_back(IO_disp12MaxDif);
+            param.push_back(IO_preFilterCap);
+            param.push_back(IO_uniquenessRatio);
+            param.push_back(IO_speckleWindowSize);
+            param.push_back(IO_speckleRange);
+            param.push_back(IO_full_scale);
+        }
+        if(ui->filter->isChecked())
+            param.at(0) += 1;
+
+        cv::Mat paramMat(param, true);
+        fs.writeComment("Disparity parameter\n0: sbm\n2: sgbm\n 1: sbm + post filtering\n 3: sgbm + post filtering", true);
+        fs << "DisparityParameter" << paramMat;
+        fs.release();
+    }else
+              qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+
+
+
+
+    }
