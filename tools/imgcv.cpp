@@ -1,7 +1,6 @@
 #include "imgcv.h"
-
 using namespace cv;
-//using namespace cv::ximgproc;
+using namespace cv::ximgproc;
 
 ImgCv::ImgCv():
     Mat(),
@@ -236,29 +235,38 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
  * @brief ImgCv::disparity_post_filtering : Filter the disparity map
  * @return the filtered disparity map
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize) {
-//    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
-//    Mat final_disparity_map;
-//    left_for_matching= getImgL().clone();
-//    right_for_matching = getImgR().clone();
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter) {
+    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+    Mat final_disparity_map;
+    left_for_matching= getImgL().clone();
+    right_for_matching = getImgR().clone();
 
-//    Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
-//    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
-//    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
+    Ptr<StereoBM> matcher_left = StereoBM::create(IO_numberOfDisparities, IO_SADWindowSize); // use StereoBM to create a matcher
+    matcher_left->setPreFilterCap(IO_preFilterCap);
+    matcher_left->setMinDisparity(IO_minDisparity);
+    matcher_left->setDisp12MaxDiff(IO_disp12MaxDif);
+    matcher_left->setUniquenessRatio(IO_uniquenessRatio);
+    matcher_left->setSpeckleWindowSize(IO_speckleWindowSize);
+    matcher_left->setSpeckleRange(IO_speckleRange);
+    matcher_left->setTextureThreshold(IO_textureTreshold);
+    matcher_left-> setNumDisparities(IO_numberOfDisparities);
 
-//    cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
-//    cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
-//    matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
-//    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
+    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
 
-//    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
-//    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
+    cv::cvtColor(left_for_matching,left_for_matching,COLOR_BGR2GRAY);
+    cv::cvtColor(right_for_matching, right_for_matching, COLOR_BGR2GRAY);
+    matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
+    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-//    filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
+    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
 
-//    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
-//    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-//    return final_disparity_map;
+    filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
+
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
+    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+    return final_disparity_map;
 
 }
 /**
@@ -270,32 +278,44 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const 
  * @param IO_P2
  * @return the disparity map post_filtered
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_preFilterCap, const size_t &IO_P1, const size_t &IO_P2){
-//    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
-//    Mat final_disparity_map;
-//    left_for_matching= getImgL().clone();
-//    right_for_matching = getImgR().clone();
-//    Ptr <StereoSGBM> matcher_left = StereoSGBM::create(0,IO_numberOfDisparities,IO_SADWindowSize); // use SBM to create a matcher
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale){
+    Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
+    Mat final_disparity_map;
+    left_for_matching= getImgL();
+    right_for_matching = getImgR();
+    Ptr <StereoSGBM> matcher_left = StereoSGBM::create(
+                IO_minDisparity,
+                IO_numberOfDisparities,
+                IO_SADWindowSize,
+                IO_P1,
+                IO_P2,
+                IO_disp12MaxDif,
+                IO_preFilterCap,
+                IO_uniquenessRatio,
+                IO_speckleWindowSize,
+                IO_speckleRange,
+                IO_full_scale
+                ); // use SGBM to create a matcher
 
 //    matcher_left->setPreFilterCap(IO_preFilterCap);
 //    matcher_left->setP1(IO_P1); // smoothness of the disparity map
 //    matcher_left->setP2(IO_P2);
 
-//    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
-//    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
+    Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
+    Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
 
 
-//    matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
-//    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
+    matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
+    matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-//    filter->setLambda(8000);
-//    filter->setSigmaColor(1.0);
+    filter->setLambda(12000);
+    filter->setSigmaColor(1.5);
 
-//    filter->filter(left_disparity,getImgL(),filtered,right_disparity);
-//    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
-//     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-//   // bitwise_not(final_disparity_map,final_disparity_map);
-//    return final_disparity_map;
+    filter->filter(left_disparity,getImgL(),filtered,right_disparity);
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
+     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+   // bitwise_not(final_disparity_map,final_disparity_map);
+    return final_disparity_map;
 
 }
 
@@ -324,37 +344,41 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
         std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
 
     ImgCv rectifiedImg;
+    cv::Mat imgLrectified, imgRrectified;
 
-    cv::Mat imgLrectified, imgRrectified,
-            rotL, rotR, projL, projR, dispToDepthMat;
-    cv::Mat const &imgL = distortedImage.getImgL();
-    cv::Mat const &imgR = distortedImage.getImgR();
+    undistort(distortedImage.getImgL(), imgLrectified, camera_matrixL, dist_coeffsL);
+    undistort(distortedImage.getImgR(), imgRrectified, camera_matrixR, dist_coeffsR);
+//    cv::Mat imgLrectified, imgRrectified,
+//            rotL, rotR, projL, projR, dispToDepthMat;
+//    cv::Mat const &imgL = distortedImage.getImgL();
+//    cv::Mat const &imgR = distortedImage.getImgR();
 
-    cv::Rect roi1, roi2;
-    cv::Size imgSize(imgL.size());
-    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
-                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
-                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
-
-
-    cv::Mat map11, map12, map21, map22;
-
-    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
-    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
-
-    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
-    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+//    cv::Rect roi1, roi2;
+//    cv::Size imgSize(imgL.size());
+//    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
+//                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
+//                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
 
 
-    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
-                   cvRound(roi1.width), cvRound(roi1.height));
+//    cv::Mat map11, map12, map21, map22;
+
+//    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
+//    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
+
+//    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
+//    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+
+
+//    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
+//                   cvRound(roi1.width), cvRound(roi1.height));
 
 
 
-    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
-                   cvRound(roi2.width), cvRound(roi2.height));
+//    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
+//                   cvRound(roi2.width), cvRound(roi2.height));
 
-    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
+//    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
+        rectifiedImg.setImg(imgLrectified, imgRrectified);
 
     return rectifiedImg;
 }
@@ -533,18 +557,22 @@ void ImgCv::setImg(const Mat &img, bool isStereo){
 
 void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
 {
+    if(imgL.empty() || imgR.empty()){
+        std::cout << "one of the image is empty in ImgCv::setImg\n"<< std::endl;
+        return;
+    }
+    hconcat(imgL, imgR, *this);
+//    const int& leftWidth = imgL.cols;
+//    const int& rightWidth = imgR.cols;
+//    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
+//    res.adjustROI(0, 0, 0, -rightWidth);
+//    imgL.copyTo(res);
 
-    const int& leftWidth = imgL.cols;
-    const int& rightWidth = imgR.cols;
-    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
-    res.adjustROI(0, 0, 0, -rightWidth);
-    imgL.copyTo(res);
+//    res.adjustROI(0, 0, -leftWidth, rightWidth);
+//    imgR.copyTo(res);
 
-    res.adjustROI(0, 0, -leftWidth, rightWidth);
-    imgR.copyTo(res);
-
-    res.adjustROI(0, 0, leftWidth, 0);
-    res.copyTo(*this);
+//    res.adjustROI(0, 0, leftWidth, 0);
+//    res.copyTo(*this);
     stereo = true;
 }
 
@@ -570,3 +598,36 @@ void ImgCv::split(Mat &img, Mat &imgL, Mat &imgR){
 }
 
 
+Mat ImgCv::orbDetection(const Mat &firstImage, const Mat &secondImage){
+    Mat descriptorL, descriptorR, dst;
+    Ptr<AKAZE> detector = AKAZE::create();
+    //Ptr<ORB> detector =ORB::create();
+    std::vector<KeyPoint> keypointL, keypointR;
+    std::vector<DMatch> matches, best_matches;
+    detector->detectAndCompute(firstImage,noArray(),keypointL,descriptorL);
+    detector->detectAndCompute(secondImage, noArray(),keypointR,descriptorR);
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+    matcher->match(descriptorL, descriptorR, matches);
+    float d_max = 0, d_min = 125;
+
+    for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
+        if(matches[i].distance<d_min)
+            d_min = matches[i].distance;
+        if(matches[i].distance > d_max)
+            d_max= matches[i].distance;
+    }
+    for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
+        if(matches[i].distance <=4.0*d_min)
+            best_matches.push_back(matches[i]);
+
+    }
+    cv::drawMatches(firstImage, keypointL, secondImage, keypointR,best_matches,dst);
+
+    std::vector<Point2f> object, scene;
+    for(unsigned int i = 0; i<best_matches.size();i++){
+        object.push_back(keypointL[best_matches[i].queryIdx].pt);
+        scene.push_back(keypointR[best_matches[i].trainIdx].pt);
+
+    }
+    return dst;
+}
