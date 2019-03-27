@@ -12,10 +12,13 @@ using namespace imagecv;
  */
 Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
+    displayMode(DispDisplayerMode::NORMAL),
     ui(new Ui::Disparity),
-    im1(),
+    dispMap(), depthMap(),
     img(nullptr),
-    displayMode(DispDisplayerMode::NORMAL)
+    imgtoDisplay(),
+    calibFilePath(),
+    trackWindow(Rect(0, 0, 10, 10))
 {
     ui->setupUi(this);
 
@@ -52,7 +55,7 @@ Disparity::~Disparity(){
  * @brief Apply the disparity map parameters when the button got pressed and display it to the right
  * \n
  * When the apply button is triggered, a disparity map will be generated and displayed depending of the parameters\n
- * using the differents checkbox and sliders.\n
+ * using the differents sbm and sliders.\n
  * \n
  * If no image has been loaded, the program just display an error.\n
  * \n
@@ -60,41 +63,60 @@ Disparity::~Disparity(){
  */
 void Disparity::displayDisparityMap(){
 
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
 
     displayMode = DispDisplayerMode::DISPARITY;
-
+    cv::Mat const &imgR(imgtoDisplay.getImgR());
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
-        if(ui->checkBox->isChecked()){
-            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+        if(ui->sbm->isChecked()){
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                            IO_numberOfDisparities,
+                                                            IO_SADWindowSize,
+                                                            IO_disp12MaxDif,
+                                                            IO_preFilterCap,
+                                                            IO_uniquenessRatio,
+                                                            IO_speckleWindowSize,
+                                                            IO_speckleRange,
+                                                            IO_textureTreshold,
+                                                            IO_tresholdFilter);
 
         }else{
-            im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                            IO_numberOfDisparities,
+                                                            IO_SADWindowSize,
+                                                            IO_P1,
+                                                            IO_P2,
+                                                            IO_disp12MaxDif,
+                                                            IO_preFilterCap,
+                                                            IO_uniquenessRatio,
+                                                            IO_speckleWindowSize,
+                                                            IO_speckleRange,
+                                                            IO_full_scale);
 
         }
     }else{
 
-        if(ui->checkBox->isChecked()){
-            im1 = img->sbm(IO_minDisparity,
-                           IO_numberOfDisparities,
-                           IO_SADWindowSize,
-                           IO_disp12MaxDif,
-                           IO_preFilterCap,
-                           IO_uniquenessRatio,
-                           IO_speckleWindowSize,
-                           IO_speckleRange,
-                           IO_textureTreshold,
-                           IO_tresholdFilter
-                           );
+        if(ui->sbm->isChecked()){
+            dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                       IO_numberOfDisparities,
+                                       IO_SADWindowSize,
+                                       IO_disp12MaxDif,
+                                       IO_preFilterCap,
+                                       IO_uniquenessRatio,
+                                       IO_speckleWindowSize,
+                                       IO_speckleRange,
+                                       IO_textureTreshold,
+                                       IO_tresholdFilter
+                                       );
 
         }else{
 
-            this->IO_P1 = 8* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
-            this->IO_P2 = 32* img->getImgR().channels() * IO_SADWindowSize * IO_SADWindowSize;
+            this->IO_P1 = 8* imgR.channels() * IO_SADWindowSize * IO_SADWindowSize;
+            this->IO_P2 = 32* imgR.channels() * IO_SADWindowSize * IO_SADWindowSize;
 
             if(ui->checkbox_fullScale->isChecked()) //Consume a lot of process time
                 this->IO_full_scale = StereoSGBM::MODE_HH;
@@ -103,26 +125,26 @@ void Disparity::displayDisparityMap(){
             /*  END PARAMETERS DISPARITY MAP    */
 
             //Generate the disparity map
-            im1 =img->disparity_map_SGBM(IO_minDisparity,
-                                         IO_numberOfDisparities,
-                                         IO_SADWindowSize,
-                                         IO_P1,
-                                         IO_P2,
-                                         IO_disp12MaxDif,
-                                         IO_preFilterCap,
-                                         IO_uniquenessRatio,
-                                         IO_speckleWindowSize,
-                                         IO_speckleRange,
-                                         IO_full_scale
-                                         );
+            dispMap =imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                     IO_numberOfDisparities,
+                                                     IO_SADWindowSize,
+                                                     IO_P1,
+                                                     IO_P2,
+                                                     IO_disp12MaxDif,
+                                                     IO_preFilterCap,
+                                                     IO_uniquenessRatio,
+                                                     IO_speckleWindowSize,
+                                                     IO_speckleRange,
+                                                     IO_full_scale
+                                                     );
 
 
         }
     }
 
-    QImage img2 = mat_to_qimage(im1).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    QImage img2 = mat_to_qimage(dispMap).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
 
-    //Colorize the disparity map if the dedicated checkbox is checked
+    //Colorize the disparity map if the dedicated sbm is checked
     if(ui->checkbox_colorize->isChecked()){
         // Apply the colormap:
         Mat cm_img0;
@@ -140,14 +162,19 @@ void Disparity::displayDisparityMap(){
  */
 void Disparity::on_loadImage_clicked(){
     if(load_file(*this, *img)){
+        ui->sbm->setCheckState(Qt::CheckState::Unchecked);
 
         QMessageBox::information(this, "Open image", "Image loaded");
         img->setImg(*img, true);
-        displayImage(img->getImg());
+        imgtoDisplay.setImg(img->getImg(), true);
+        ImgCv::trackSomething(*img, imgtoDisplay);
+        trackWindow = Rect(imgtoDisplay.rows/2, 0, imgtoDisplay.rows/2, imgtoDisplay.getImgL().cols/2);
+
+        displayImage(imgtoDisplay);
 
         qDebug(" *** Image file correctly loaded *** ");
     }
-    if(img->getImg().empty()){
+    if(img->empty()){
         qDebug("[ERROR] No images loaded");
         return;
     }
@@ -158,7 +185,9 @@ void Disparity::on_loadImage_clicked(){
  */
 void Disparity::on_reset_image_clicked() {
     displayMode = DispDisplayerMode::NORMAL;
-    displayImage(img->getImg());
+    ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+    imgtoDisplay.setImg(img->getImg(), true);
+    displayImage(imgtoDisplay);
 }
 
 
@@ -168,10 +197,15 @@ void Disparity::on_reset_image_clicked() {
  */
 void Disparity::set_img_mat(ImgCv &img){
     this->img->setImg(img, true);
-    displayImage(this->img->getImg());
+    if(calibFilePath.empty())
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
+    imgtoDisplay.setImg(this->img->getImg(), true);
+
+    displayImage(imgtoDisplay);
 }
+
 ImgCv * Disparity::get_img_mat(){
-    return this->img;
+    return &imgtoDisplay;
 }
 
 
@@ -184,8 +218,10 @@ void Disparity::displayImage(Mat const& image){
         ui->image_loaded->setMaximumSize(width, height);
         ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));
         ui->image_loaded->adjustSize();
-    }else
+    }else if(displayMode == DispDisplayerMode::DISPARITY)
         displayDisparityMap();
+    else
+        on_track_clicked();
 
 }
 
@@ -194,42 +230,61 @@ void Disparity::displayImage(Mat const& image){
  */
 void Disparity::on_Sobel_clicked()
 {
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
     Mat sobel;
-    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
-        im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
-    else if (ui->checkBox->isChecked()){
-        im1 = img->sbm(IO_minDisparity,
-                       IO_numberOfDisparities,
-                       IO_SADWindowSize,
-                       IO_disp12MaxDif,
-                       IO_preFilterCap,
-                       IO_uniquenessRatio,
-                       IO_speckleWindowSize,
-                       IO_speckleRange,
-                       IO_textureTreshold,
-                       IO_tresholdFilter);
+    if(ui->sbm->isChecked()&& ui->filter->isChecked())
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                        IO_numberOfDisparities,
+                                                        IO_SADWindowSize,
+                                                        IO_disp12MaxDif,
+                                                        IO_preFilterCap,
+                                                        IO_uniquenessRatio,
+                                                        IO_speckleWindowSize,
+                                                        IO_speckleRange,
+                                                        IO_textureTreshold,
+                                                        IO_tresholdFilter);
+    else if (ui->sbm->isChecked()){
+        dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                   IO_numberOfDisparities,
+                                   IO_SADWindowSize,
+                                   IO_disp12MaxDif,
+                                   IO_preFilterCap,
+                                   IO_uniquenessRatio,
+                                   IO_speckleWindowSize,
+                                   IO_speckleRange,
+                                   IO_textureTreshold,
+                                   IO_tresholdFilter);
     }else if (ui->filter->isChecked())
-        im1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                       IO_numberOfDisparities,
+                                                       IO_SADWindowSize,
+                                                       IO_P1,
+                                                       IO_P2,
+                                                       IO_disp12MaxDif,
+                                                       IO_preFilterCap,
+                                                       IO_uniquenessRatio,
+                                                       IO_speckleWindowSize,
+                                                       IO_speckleRange,
+                                                       IO_full_scale);
     else {
-        im1 = img->disparity_map_SGBM(IO_minDisparity,
-                                      IO_numberOfDisparities,
-                                      IO_SADWindowSize,
-                                      IO_P1,
-                                      IO_P2,
-                                      IO_disp12MaxDif,
-                                      IO_preFilterCap,
-                                      IO_uniquenessRatio,
-                                      IO_speckleWindowSize,
-                                      IO_speckleRange,
-                                      IO_full_scale
-                                      );
+        dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                  IO_numberOfDisparities,
+                                                  IO_SADWindowSize,
+                                                  IO_P1,
+                                                  IO_P2,
+                                                  IO_disp12MaxDif,
+                                                  IO_preFilterCap,
+                                                  IO_uniquenessRatio,
+                                                  IO_speckleWindowSize,
+                                                  IO_speckleRange,
+                                                  IO_full_scale
+                                                  );
 
     }
-    sobel = ImgCv::contour_sobel(im1);
+    sobel = ImgCv::contour_sobel(dispMap);
     imagecv::displayImage(*ui->image_loaded, sobel);
 
 }
@@ -240,44 +295,63 @@ void Disparity::on_Sobel_clicked()
 
 void Disparity::on_Laplace_clicked()
 {
-    if(img->getImg().empty() || img->getImgR().empty()){
+    if(imgtoDisplay.empty() || imgtoDisplay.getImgR().empty()){
         qDebug("[ERROR] Please, load a stereo image first");
         return;
     }
 
     Mat laplace;
-    if(ui->checkBox->isChecked()&& ui->filter->isChecked())
-        im1 = img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
-    else if(ui->checkBox->isChecked())
-        im1 = img->sbm(IO_minDisparity,
-                       IO_numberOfDisparities,
-                       IO_SADWindowSize,
-                       IO_disp12MaxDif,
-                       IO_preFilterCap,
-                       IO_uniquenessRatio,
-                       IO_speckleWindowSize,
-                       IO_speckleRange,
-                       IO_textureTreshold,
-                       IO_tresholdFilter);
+    if(ui->sbm->isChecked()&& ui->filter->isChecked())
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                        IO_numberOfDisparities,
+                                                        IO_SADWindowSize,
+                                                        IO_disp12MaxDif,
+                                                        IO_preFilterCap,
+                                                        IO_uniquenessRatio,
+                                                        IO_speckleWindowSize,
+                                                        IO_speckleRange,
+                                                        IO_textureTreshold,
+                                                        IO_tresholdFilter);
+    else if(ui->sbm->isChecked())
+        dispMap = imgtoDisplay.sbm(IO_minDisparity,
+                                   IO_numberOfDisparities,
+                                   IO_SADWindowSize,
+                                   IO_disp12MaxDif,
+                                   IO_preFilterCap,
+                                   IO_uniquenessRatio,
+                                   IO_speckleWindowSize,
+                                   IO_speckleRange,
+                                   IO_textureTreshold,
+                                   IO_tresholdFilter);
     else if (ui->filter->isChecked())
-        im1= img->disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                       IO_numberOfDisparities,
+                                                       IO_SADWindowSize,
+                                                       IO_P1,
+                                                       IO_P2,
+                                                       IO_disp12MaxDif,
+                                                       IO_preFilterCap,
+                                                       IO_uniquenessRatio,
+                                                       IO_speckleWindowSize,
+                                                       IO_speckleRange,
+                                                       IO_full_scale);
     else {
-        im1 = img->disparity_map_SGBM(IO_minDisparity,
-                                      IO_numberOfDisparities,
-                                      IO_SADWindowSize,
-                                      IO_P1,
-                                      IO_P2,
-                                      IO_disp12MaxDif,
-                                      IO_preFilterCap,
-                                      IO_uniquenessRatio,
-                                      IO_speckleWindowSize,
-                                      IO_speckleRange,
-                                      IO_full_scale
-                                      );
+        dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
+                                                  IO_numberOfDisparities,
+                                                  IO_SADWindowSize,
+                                                  IO_P1,
+                                                  IO_P2,
+                                                  IO_disp12MaxDif,
+                                                  IO_preFilterCap,
+                                                  IO_uniquenessRatio,
+                                                  IO_speckleWindowSize,
+                                                  IO_speckleRange,
+                                                  IO_full_scale
+                                                  );
 
     }
 
-    laplace = ImgCv::contour_laplace(im1);
+    laplace = ImgCv::contour_laplace(dispMap);
     imagecv::displayImage(*ui->image_loaded, laplace);
 
 }
@@ -285,101 +359,171 @@ void Disparity::on_Laplace_clicked()
 
 void Disparity::on_video_clicked()
 {
-    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-    std::cout << fileName2.toStdString() << std::endl;
-    const string& fileLeft(fileName2.toStdString());
+    /* QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+    if(filePath.isEmpty()) return;
+    std::cout << filePath.toStdString() << std::endl;
+
+    const string& fileLeft(filePath.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
 
-        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-        std::cout << fileName2.toStdString() << std::endl;
-        const string& fileRight(fileName2.toStdString());
+        filePath = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+        if(filePath.isEmpty()) return;
+
+        std::cout << filePath.toStdString() << std::endl;
+        const string& fileRight(filePath.toStdString());
         cv::VideoCapture capR(fileRight);
-        if(capR.isOpened()){
-            std::cout << "video opened" << std::endl;
+        */
+    QString filePath = QFileDialog::getExistingDirectory(
+                this, tr("Select the files for calibration"),
+                tr("./resources/") );
 
-            //            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-            //            FileStorage fs(fileName2.toStdString(), FileStorage::READ);
+    if(!filePath.isEmpty()){
 
-            //            if(fs.isOpened()){
-            cv::Mat displayedImg, imgVidL, imgVidR, Q;
-            //                fs["dispToDepthMatrix"] >> Q;
-            int key = ' ', prevKey = key;
-            if(!capL.grab() || !capR.grab()) return;
+        string fileLeft(filePath.toStdString());
+        std::cout << fileLeft+"/left_%03d.jpg" << std::endl;
 
-            double framerate = capL.get(CV_CAP_PROP_FPS);
-            while(key != 'q'){
+        cv::VideoCapture capL(fileLeft+"/left_%03d.jpg", cv::CAP_IMAGES );
+        if(capL.isOpened()){
 
-                if(key == 'p'){
+            QString filePath = QFileDialog::getExistingDirectory(
+                        this, tr("Select the files for calibration"),
+                        tr("./resources/") );
 
-                    std::cout << "pause" << std::endl;
-                    prevKey = key;
-                }else{
+            if(!filePath.isEmpty()){
+
+
+                fileLeft = filePath.toStdString();
+                cv::VideoCapture capR(fileLeft+"/right_%03d.jpg", cv::CAP_IMAGES );
+
+                if(capR.isOpened()){
+                    std::cout << "video opened" << std::endl;
+
+                    cv::Mat displayedImg, imgVidL, imgVidR, Q, res;
+                    int key = ' ', prevKey = key;
+                    if(!capL.grab() || !capR.grab()) return;
                     capL.retrieve(imgVidL);
                     capR.retrieve(imgVidR);
                     img->setImg(imgVidL, imgVidR);
+                    imgtoDisplay.setImg(*img, true);
+                    capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capL.grab();
+                    capR.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capR.grab();
+                    if(calibFilePath.empty()){
+                        qDebug("[INFO] Load a calibration file before");
 
-                    //                        if(key == 'l')
-                    //                            displayedImg = img->getImgL();
-                    //                        else if(key == 'r')
-                    //                            displayedImg = img->getImgR();
-                    //                        if(key == 'd')
-                    //                            displayedImg = img->getDepthMap(Q);
-                    //                        else if(key == 's')
-                    //                            displayedImg = img->getDisparityMap();
-                    //                        else
-                    //                            displayedImg = *img;
+                        QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+                        if(!inFile.isEmpty()){
+                            calibFilePath = inFile.toStdString();
+                            Q = (ImgCv::getDispToDepthMat(calibFilePath));
+                            on_depthMap_clicked();
+                        }
+                        else{
+                            qDebug("[ERROR] No calibration file loaded");
+                        }
+                    }
+                    double framerate = capL.get(CV_CAP_PROP_FPS);
+                    while(key != 'q'){
+
+                        if(key == 'p'){
+
+                            std::cout << "pause" << std::endl;
+                            prevKey = key;
+                        }else{
+                            capL.retrieve(imgVidL);
+                            capR.retrieve(imgVidR);
+                            imgtoDisplay.setImg(imgVidL, imgVidR);
+                            if(!calibFilePath.empty())
+                                imgtoDisplay.setImg(ImgCv::rectifiedImage(imgtoDisplay, calibFilePath), true);
+
+                            if(key == 's'){
+                                displayDisparityMap();
+                            }else{
+                                displayMode = DispDisplayerMode::NORMAL;
+                                if(key == 'l')
+                                    displayedImg = imgtoDisplay.getImgL();
+                                else if(key == 'r')
+                                    displayedImg = imgtoDisplay.getImgR();
+                                if(key == 'd' && !Q.empty()){
+                                    displayDisparityMap();
+                                    res = ImgCv::depthMap(dispMap, Q);
+                                    normalize(res, res, 0, 255, NORM_MINMAX, CV_32F);
+                                    displayedImg =res;
+                                }else
+                                    displayedImg = imgtoDisplay;
 
 
-                    displayDisparityMap();
-                    imshow("video test", *img);
+                                displayImage(displayedImg);
+                            }
+                            imshow("video test", displayedImg);
 
-                    std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+                            std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
 
-                    prevKey = key;
+                            prevKey = key;
 
-                    if(!capL.grab() || !capR.grab())
-                        prevKey = 'q';
+                            if(!capL.grab() || !capR.grab()){
+                                capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                                capL.grab();
+                                capR.set(cv::CAP_PROP_POS_FRAMES, 0);
+                                capR.grab();
+                            }
+
+                        }
+
+                        key = waitKey((int) framerate);
+                        if(key == 255)
+                            key = prevKey;
+                    }
+
                 }
+                capR.release();
+                destroyWindow("video test");
 
-                key = waitKey((int) framerate);
-                if(key == 255)
-                    key = prevKey;
-            }
-
-            //            }
+            }else
+                std::cout << "file empty" << std::endl;
+            capL.release();
         }
-        capR.release();
-        destroyWindow("video test");
-
-    }else
-        std::cout << "file empty" << std::endl;
-    capL.release();
+    }
 }
+
 /**
  * @brief Disparity::on_depthMap_clicked
  */
 void Disparity::on_depthMap_clicked()
 {
-    if(img->getImg().empty()){
+    if(imgtoDisplay.empty()){
         qDebug("[INFO] Load a stereo file before");
         if(!load_file(*this, *img, true)){
             qDebug("[ERROR] No images loaded");
             return;
         }
+        imgtoDisplay = img->getImg();
     }
-    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
-    if(!inFile.isEmpty()){
-        double min, max;
-        im1 = img->rectifiedImage(*img, inFile.toStdString());
+    if(calibFilePath.empty()){
+        qDebug("[INFO] Load a calibration file before");
+
+        QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+        if(!inFile.isEmpty()){
+            calibFilePath = inFile.toStdString();
+            on_depthMap_clicked();
+        }
+        else{
+            qDebug("[ERROR] No calibration file loaded");
+            return;
+        }
+    }
+    else{
+        imgtoDisplay.setImg(ImgCv::rectifiedImage(*img, calibFilePath), true);
         displayDisparityMap();
 
-        cv::Mat Q = ImgCv::getDispToDepthMat(inFile.toStdString());
-        Mat depth_map = img->depthMap(im1,Q), dst;
-        minMaxLoc(depth_map,&min, &max);
-        depth_map.convertTo(dst, CV_8U,255.0/max,255);
-        cvtColor(dst,dst,cv::COLOR_BGR2GRAY);
-        imshow("depth_map", dst);
+        cv::Mat Q = ImgCv::getDispToDepthMat(calibFilePath);
+        depthMap = ImgCv::depthMap(dispMap,Q);
+        Mat dst;
+
+        ImgCv::trackCamShift(imgtoDisplay.getImgL(), trackWindow);
+        displayMode = DispDisplayerMode::NORMAL;
+        //        displayImage(dst);
 
     }
 }
@@ -389,15 +533,15 @@ void Disparity::on_depthMap_clicked()
  */
 void Disparity::on_slider_windowSize_valueChanged(int value)
 {
-      if(value%2==0){
-         value +=1;
-         ui->slider_windowSize->setValue(value);
-         ui->spinBox_windowSize->setValue(value);
-         this->IO_SADWindowSize = value;
-      }else{
-         this->IO_SADWindowSize = value;
-         ui->spinBox_windowSize->setValue(value);
-      }
+    if(value%2==0){
+        value +=1;
+        ui->slider_windowSize->setValue(value);
+        ui->spinBox_windowSize->setValue(value);
+        this->IO_SADWindowSize = value;
+    }else{
+        this->IO_SADWindowSize = value;
+        ui->spinBox_windowSize->setValue(value);
+    }
     displayDisparityMap();
 }
 /**
@@ -411,7 +555,7 @@ void Disparity::on_slider_numberOfDisparities_valueChanged(int value)
         value -= a;
         this->IO_numberOfDisparities = value;
 
-   }else{
+    }else{
         this->IO_numberOfDisparities=ui->slider_numberOfDisparities->value();
 
     }
@@ -424,11 +568,11 @@ void Disparity::on_slider_numberOfDisparities_valueChanged(int value)
  */
 void Disparity::on_slider_preFilterCap_valueChanged(int value)
 {
-    if(ui->checkBox->isChecked()&& value>=63){
+    if(ui->sbm->isChecked()&& value>=63){
         qDebug("prefilterCap must be within 1...63");
         value -= (value-63);
         this->IO_preFilterCap= value;
-    }else if(ui->checkBox->isChecked() && value<=1){
+    }else if(ui->sbm->isChecked() && value<=1){
         value +=1;
         this->IO_preFilterCap=value;
 
@@ -522,23 +666,235 @@ void Disparity::on_load_two_images_clicked()
 {
     if(load_file(*this, *img, true)){
         QMessageBox::information(this, "Open the first image", "Image loaded");
+        ui->sbm->setCheckState(Qt::CheckState::Unchecked);
+        imgtoDisplay.setImg(img->getImg(), true);
+        trackWindow = Rect(imgtoDisplay.rows/2, 0, imgtoDisplay.rows/2, imgtoDisplay.getImgL().cols/2);
+
     }
 
     else{
-       qDebug("Impossible to load files");
+        qDebug("Impossible to load files");
     }
-    displayImage(img->getImg());
+    displayImage(imgtoDisplay);
 }
 
 /**
- * @brief Disparity::on_checkBox_clicked
+ * @brief Disparity::on_sbm_clicked
  */
-void Disparity::on_checkBox_clicked()
+void Disparity::on_sbm_clicked()
 {
-    if (ui->checkBox->isChecked())
+    if (ui->sbm->isChecked())
         displayDisparityMap();
     else
         displayDisparityMap();
 }
 
 
+
+void Disparity::on_rectified_clicked()
+{
+    if(img->empty() || img->getImgR().empty()){
+        qDebug("[ERROR] Please, load a stereo image first");
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
+        return;
+    }
+
+    if(calibFilePath.empty()){
+        qDebug("[ERROR] Please, load a calibration first");
+        ui->rectified->setCheckState(Qt::CheckState::Unchecked);
+        return;
+    }
+
+    if (ui->rectified->isChecked()){
+        imgtoDisplay.setImg(ImgCv::rectifiedImage(*img, calibFilePath),true);
+    }
+    else
+        imgtoDisplay.setImg(img->getImg(), true);
+
+    displayImage(imgtoDisplay);
+}
+
+void Disparity::on_calib_clicked()
+{
+
+    QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
+    if(!inFile.isEmpty()){
+        calibFilePath = inFile.toStdString();
+        FileStorage fs(calibFilePath, FileStorage::READ);
+        if(fs.isOpened()){
+            cv::Mat param;
+            fs["DisparityParameter"] >> param;
+            switch(param.at<int>(0)){
+            case 0:
+                std::cout << "sbm entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_disp12MaxDif = param.at<int>(4);
+                IO_preFilterCap = param.at<int>(5);
+                IO_uniquenessRatio = param.at<int>(6);
+                IO_speckleWindowSize = param.at<int>(7);
+                IO_speckleRange = param.at<int>(8);
+                IO_textureTreshold = param.at<int>(9);
+                IO_tresholdFilter = param.at<int>(10);
+
+                std::cout << "sbm done" << std::endl;
+
+                break;
+            case 1:
+                std::cout << "sbm + PS entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_disp12MaxDif = param.at<int>(4);
+                IO_preFilterCap = param.at<int>(5);
+                IO_uniquenessRatio = param.at<int>(6);
+                IO_speckleWindowSize = param.at<int>(7);
+                IO_speckleRange = param.at<int>(8);
+                IO_textureTreshold = param.at<int>(9);
+                IO_tresholdFilter = param.at<int>(10);
+
+                std::cout << "sbm  +PS done" << std::endl;
+                break;
+            case 2:
+                std::cout << "SGBM entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_P1 = param.at<int>(4);
+                IO_P2 = param.at<int>(5);
+                IO_disp12MaxDif = param.at<int>(6);
+                IO_preFilterCap = param.at<int>(7);
+                IO_uniquenessRatio = param.at<int>(8);
+                IO_speckleWindowSize =param.at<int>(9);
+                IO_speckleRange = param.at<int>(10);
+                IO_full_scale = param.at<int>(11);
+
+                std::cout << "SGBM done" << std::endl;
+                break;
+            case 3:
+                std::cout << "SGBM + PS entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_P1 = param.at<int>(4);
+                IO_P2 = param.at<int>(5);
+                IO_disp12MaxDif = param.at<int>(6);
+                IO_preFilterCap = param.at<int>(7);
+                IO_uniquenessRatio = param.at<int>(8);
+                IO_speckleWindowSize =param.at<int>(9);
+                IO_speckleRange = param.at<int>(10);
+                IO_full_scale = param.at<int>(11);
+
+                std::cout << "SGBM + PS done" << std::endl;
+
+                break;
+            default:
+                std::cout << "[ERROR] can't match to any case" << std::endl;
+                break;
+
+            }
+
+            fs.release();
+        }else
+            qDebug("[ERROR] in: on_calib_clicked\nNo calibration parameters loaded");
+
+    }
+    else{
+        qDebug("[ERROR] in: on_calib_clicked\nNo calibration file loaded");
+    }
+}
+
+void Disparity::on_dispMap_clicked()
+{
+    displayDisparityMap();
+}
+
+void Disparity::on_dispParam_clicked()
+{
+    if(dispMap.empty()){
+        qDebug("[ERROR] in: on_dispParam_clicked\n No disparity map generated");
+        return;
+    }
+    if(calibFilePath.empty()){
+        QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+        if(filePath.isEmpty()){
+            qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
+
+            return;
+        }
+        calibFilePath = filePath.toStdString();
+    }
+    FileStorage fs(calibFilePath, FileStorage::APPEND);
+    if(fs.isOpened()){
+        std::vector<int> param;
+
+        if(ui->sbm->isChecked()){
+            param.push_back(0);
+            param.push_back(IO_minDisparity);
+            param.push_back(IO_numberOfDisparities);
+            param.push_back(IO_SADWindowSize);
+            param.push_back(IO_disp12MaxDif);
+            param.push_back(IO_preFilterCap);
+            param.push_back(IO_uniquenessRatio);
+            param.push_back(IO_speckleWindowSize);
+            param.push_back(IO_speckleRange);
+            param.push_back(IO_textureTreshold);
+            param.push_back(IO_tresholdFilter);
+        }
+        else {
+            param.push_back(2);
+            param.push_back(IO_minDisparity);
+            param.push_back(IO_numberOfDisparities);
+            param.push_back(IO_SADWindowSize);
+            param.push_back(IO_P1);
+            param.push_back(IO_P2);
+            param.push_back(IO_disp12MaxDif);
+            param.push_back(IO_preFilterCap);
+            param.push_back(IO_uniquenessRatio);
+            param.push_back(IO_speckleWindowSize);
+            param.push_back(IO_speckleRange);
+            param.push_back(IO_full_scale);
+        }
+        if(ui->filter->isChecked())
+            param.at(0) += 1;
+
+        cv::Mat paramMat(param, true);
+        fs.writeComment("Disparity parameter\n0: sbm\n2: sgbm\n 1: sbm + post filtering\n 3: sgbm + post filtering", true);
+        fs << "DisparityParameter" << paramMat;
+        fs.release();
+    }else
+        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+
+
+
+
+}
+
+void Disparity::on_track_clicked()
+{
+
+    if(calibFilePath.empty()){
+        QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+        if(filePath.isEmpty()){
+            qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
+
+            return;
+        }
+        calibFilePath = filePath.toStdString();
+    }
+
+    on_depthMap_clicked();
+    Mat dst(imgtoDisplay.getImgL());
+    rectangle(dst, trackWindow,cv::Scalar(255), 2);
+    displayMode = DispDisplayerMode::TRACKER;
+
+    imshow("tracker", dst);
+
+
+
+}

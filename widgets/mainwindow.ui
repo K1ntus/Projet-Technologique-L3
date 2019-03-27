@@ -41,77 +41,63 @@
       <property name="flat">
        <bool>false</bool>
       </property>
-      <widget class="QPushButton" name="videoTest">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>110</y>
-         <width>121</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Vidéo stéréo</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="calibrate">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>69</y>
-         <width>121</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Calibration</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="button_sobel">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>259</y>
-         <width>121</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Sobel</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="button_laplace">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>309</y>
-         <width>121</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Laplace</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="button_disparity">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>29</y>
-         <width>121</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Carte de disparité</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="button_disparity">
+         <property name="text">
+          <string>Carte de disparité</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="calibrate">
+         <property name="text">
+          <string>Calibration</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="videoTest">
+         <property name="text">
+          <string>Vidéo tracking</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="videoFromSet">
+         <property name="text">
+          <string>video from set</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_sobel">
+         <property name="text">
+          <string>Sobel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_laplace">
+         <property name="text">
+          <string>Laplace</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tracking">
+         <property name="text">
+          <string>Tracking</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
      <widget class="QLabel" name="backgroundLabel">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -144,7 +130,7 @@
      <x>0</x>
      <y>0</y>
      <width>786</width>
-     <height>20</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFichier">
@@ -164,8 +150,13 @@
      </widget>
      <addaction name="actionOuvrir_image"/>
      <addaction name="menu_stereo_image"/>
+     <addaction name="separator"/>
+     <addaction name="actionvideo"/>
+     <addaction name="separator"/>
+     <addaction name="actioncalibration_file"/>
     </widget>
     <addaction name="menu_Ouvrir"/>
+    <addaction name="actionEnregistrer"/>
     <addaction name="separator"/>
     <addaction name="actionQuitter"/>
    </widget>
@@ -173,13 +164,22 @@
     <property name="title">
      <string>Options</string>
     </property>
+    <widget class="QMenu" name="menuServer">
+     <property name="title">
+      <string>Server</string>
+     </property>
+     <addaction name="actionrun"/>
+     <addaction name="actionclose"/>
+    </widget>
     <addaction name="actionA_propos"/>
     <addaction name="separator"/>
+    <addaction name="menuServer"/>
    </widget>
    <widget class="QMenu" name="menuConversion">
     <property name="title">
      <string>Con&amp;version</string>
     </property>
+    <addaction name="actionrecitify_image"/>
     <addaction name="separator"/>
     <addaction name="actionQImage"/>
     <addaction name="actionCv_Mat"/>
@@ -248,6 +248,41 @@
   <action name="actionQImage">
    <property name="text">
     <string>&amp;QImage</string>
+   </property>
+  </action>
+  <action name="actionrecitify_image">
+   <property name="text">
+    <string>recitify image</string>
+   </property>
+  </action>
+  <action name="actionEnregistrer">
+   <property name="text">
+    <string>Enregistrer</string>
+   </property>
+  </action>
+  <action name="actioninit_server">
+   <property name="text">
+    <string>Server</string>
+   </property>
+  </action>
+  <action name="actionrun">
+   <property name="text">
+    <string>run</string>
+   </property>
+  </action>
+  <action name="actionclose">
+   <property name="text">
+    <string>close</string>
+   </property>
+  </action>
+  <action name="actioncalibration_file">
+   <property name="text">
+    <string>calibration file</string>
+   </property>
+  </action>
+  <action name="actionvideo">
+   <property name="text">
+    <string>video</string>
    </property>
   </action>
  </widget>

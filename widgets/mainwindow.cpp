@@ -125,74 +125,17 @@ void MainWindow::on_calibrate_clicked() {
 
 void MainWindow::on_videoTest_clicked()
 {
-    QString fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for left camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-    std::cout << fileName2.toStdString() << std::endl;
-    const string& fileLeft(fileName2.toStdString());
+    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose a video"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
+    if(filePath.isEmpty()) return;
+    std::cout << filePath.toStdString() << std::endl;
+    const string& fileLeft(filePath.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
-
-        fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose a video for right camera"), this->tr("./resources/"), this->tr("Video Files (*.mp4)"));
-        std::cout << fileName2.toStdString() << std::endl;
-        const string& fileRight(fileName2.toStdString());
-        cv::VideoCapture capR(fileRight);
-        if(capR.isOpened()){
-            std::cout << "video opened" << std::endl;
-
-            fileName2 = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-            FileStorage fs(fileName2.toStdString(), FileStorage::READ);
-
-            if(fs.isOpened()){
-                cv::Mat displayedImg, imgVidL, imgVidR, Q;
-                fs["dispToDepthMatrix"] >> Q;
-                int key = ' ', prevKey = key;
-                if(!capL.grab() || !capR.grab()) return;
-
-                double framerate = capL.get(CV_CAP_PROP_FPS);
-                while(key != 'q'){
-
-                    if(key == 'p'){
-
-                        std::cout << "pause" << std::endl;
-                        prevKey = key;
-                    }else{
-                        capL.retrieve(imgVidL);
-                        capR.retrieve(imgVidR);
-                        img->setImg(imgVidL, imgVidR);
-
-                        if(key == 'l')
-                            displayedImg = img->getImgL();
-                        else if(key == 'r')
-                            displayedImg = img->getImgR();
-                        if(key == 'd')
-                            displayedImg = img->getDepthMap(Q);
-                        else if(key == 's')
-                            displayedImg = img->getDisparityMap();
-                        else
-                            displayedImg = *img;
-
-                        imagecv::displayImage(*ui->backgroundLabel, displayedImg);
-
-                        imshow("video test", displayedImg);
-                        std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
-                        prevKey = key;
-
-                        if(!capL.grab() || !capR.grab())
-                            prevKey = 'q';
-                    }
-
-                    key = waitKey((int) framerate);
-                    if(key == 255)
-                        key = prevKey;
-                }
-
-            }
-        }
-        capR.release();
-        destroyWindow("video test");
+        imagecv::displayVideo(*ui->backgroundLabel, capL);
+        capL.release();
 
     }else
         std::cout << "file empty" << std::endl;
-    capL.release();
 
 }
 
@@ -308,5 +251,185 @@ void MainWindow::on_actionQImage_triggered()
     statusBar()->showMessage(str);
 
     imagecv::displayImage(*ui->backgroundLabel, *img);
+
+}
+
+void MainWindow::on_actionrecitify_image_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+    }
+    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+    if(filePath.isEmpty()) return;
+
+    string const &outFile(filePath.toStdString());
+    cv::Mat const &imgRectified = ImgCv::rectifiedImage(*img, outFile);
+
+    img->setImg(imgRectified, true);
+    imagecv::displayImage(*ui->backgroundLabel, *img);
+
+}
+
+void MainWindow::on_actionEnregistrer_triggered()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+
+    }
+    QString filePath = QFileDialog::getSaveFileName(this, this->tr("Save file"), this->tr("./resources/"), this->tr("Images Files (*.jpg *.jpeg *.png)"));
+    if(filePath.isEmpty()) return;
+
+    imwrite(filePath.toStdString(), *img);
+
+}
+
+void MainWindow::on_videoFromSet_clicked()
+{
+    QString filePath = QFileDialog::getExistingDirectory(
+                this, tr("Select the left video set"),
+                tr("./resources/") );
+
+    if(!filePath.isEmpty()){
+
+        string fileLeft(filePath.toStdString());
+        std::string name("left_");
+        std::cout << fileLeft+"/"+ name + "%03d.jpg" << std::endl;
+
+        cv::VideoCapture capL(fileLeft+"/"+ name + "%03d.jpg", cv::CAP_IMAGES );
+        if(capL.isOpened()){
+
+            QString filePath = QFileDialog::getExistingDirectory(
+                        this, tr("Select the right video set"),
+                        tr("./resources/") );
+
+            if(!filePath.isEmpty()){
+
+
+                fileLeft = filePath.toStdString();
+                name = "right_";
+                cv::VideoCapture capR(fileLeft+"/"+ name + "%03d.jpg", cv::CAP_IMAGES );
+                if(capR.isOpened()){
+                    QString filePath = QFileDialog::getOpenFileName(
+                                this, tr("Select a calibration file with a DispParameter member"),
+                                tr("./resources/") );
+                    std::string const&calibFile(filePath.toStdString());
+                    imagecv::displayVideo(*ui->backgroundLabel, capL, capR, calibFile);
+                    capR.release();
+
+                }
+                capL.release();
+            }
+
+
+        }else
+            std::cout << "couldn't make video" << std::endl;
+
+
+    }else{
+        std::cout << "file empty" << std::endl;
+
+    }
+}
+
+void MainWindow::on_actionrun_triggered()
+{
+    tcp_server.StartServer();
+}
+
+void MainWindow::on_actionclose_triggered()
+{
+    tcp_server.close();
+}
+
+void MainWindow::on_tracking_clicked()
+{
+    if(img->getImg().empty()){
+        qDebug("[INFO] Load a stereo file before");
+        if(!load_file(*this, *img, true)){
+            qDebug("[ERROR] No images loaded");
+            return;
+        }
+
+    }
+
+//    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+//    if(filePath.isEmpty()) return;
+
+//    cv::Mat param, dispPrev, dispNext, dispDiff;
+//    ImgCv nextFrame;
+//    FileStorage fs(filePath.toStdString(), FileStorage::READ);
+//    if(fs.isOpened()){
+
+
+//        fs["DisparityParameter"] >> param;
+//        fs.release();
+//    }else{
+//        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+//        return;
+//    }
+
+//    qDebug("[INFO] Load the next frame");
+
+//    if(!load_file(*this, nextFrame, true)){
+//        qDebug("[ERROR] No images loaded");
+//        return;
+//    }
+
+//    qDebug("next frame loaded");
+
+//    switch(param.at<int>(0)){
+//    case 0:
+//        qDebug("sbm entries");
+
+//        dispPrev = img->sbm(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+//                );
+//        dispNext = nextFrame.sbm(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+//                );
+//        qDebug("sbm done");
+
+//        break;
+//    case 1:
+//        break;
+//    case 2:
+//        dispPrev = img->disparity_map_SGBM(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
+//                    param.at<int>(10),  param.at<int>(11)
+//                );
+//        dispNext = nextFrame.disparity_map_SGBM(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
+//                param.at<int>(10),  param.at<int>(11)
+//                );
+//        break;
+//    case 4:
+//        break;
+//    default:
+//        qDebug("[ERROR] can't match to any case");
+//        return;
+
+//    }
+//    qDebug("dis loaded");
+//    img->setImg(dispPrev, dispNext);
+
+//    cvtColor(ImgCv(dispPrev, dispNext), dispDiff, CV_GRAY2BGR);
+//    ImgCv::trackSomething(dispDiff, dispDiff);
+    Mat copyImg(img->getImgR());
+    Rect trackWind(Rect(copyImg.rows/2, 0, copyImg.rows/2, copyImg.cols/(2)));
+
+    ImgCv::trackCamShift(img->getImgL(), trackWind) ;
+    imagecv::displayImage(*ui->backgroundLabel, copyImg);
 
 }

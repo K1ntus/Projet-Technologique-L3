@@ -18,7 +18,8 @@ class Disparity;
 }
 enum DispDisplayerMode{
     NORMAL,
-    DISPARITY
+    DISPARITY,
+    TRACKER
 };
 
 class Disparity : public QWidget
@@ -82,17 +83,30 @@ private slots:
     void on_slider_numberOfDisparities_valueChanged(int value);
 
 
-    void on_checkBox_clicked();
+    void on_sbm_clicked();
 
     void on_slider_treshold_Filter_valueChanged(int value);
+
+    void on_rectified_clicked();
+
+    void on_calib_clicked();
+
+    void on_dispMap_clicked();
+
+    void on_dispParam_clicked();
+
+    void on_track_clicked();
 
 private:
     DispDisplayerMode displayMode;
     Ui::Disparity *ui;
-    cv::Mat im1;
-    ImgCv *img;
+    cv::Mat dispMap, depthMap;
+    ImgCv *img, imgtoDisplay;
+    std::string calibFilePath;
     int width ;
     int height;
+    cv::Rect trackWindow;
+
 };
 
 #endif // DISPARITY_H

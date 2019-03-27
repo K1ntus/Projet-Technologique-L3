@@ -4,6 +4,8 @@
 // open cv
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+
 
 // Qt
 #include <QWidget>
@@ -17,10 +19,6 @@
 #include <time.h>
 
 #include "tools/imgcv.h"
-
-
-
-using namespace std;
 
 namespace imagecv {
 
@@ -77,6 +75,20 @@ namespace imagecv {
      * @param image the image to display
      */
     void displayImage(QLabel &frame, cv::Mat const& image);
+
+    /**
+     * @brief imagecv::displayImage display a mat image into a qt frame
+     * @param frame The qt frame where you want to display the image
+     * @param image the image to display
+     */
+    void displayVideo(QLabel &frame, cv::VideoCapture &capL,  cv::VideoCapture &capR, std::string const& calibFilePath = "");
+
+    /**
+     * @brief imagecv::displayImage display a mat image into a qt frame
+     * @param frame The qt frame where you want to display the image
+     * @param image the image to display
+     */
+    void displayVideo(QLabel &frame, cv::VideoCapture &capL);
 
 }
 

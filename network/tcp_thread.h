@@ -27,6 +27,7 @@ class TCP_Thread : public QThread
     Q_OBJECT
 public:
     explicit TCP_Thread(int iID, QObject *parent = 0x0);
+    ~TCP_Thread();
     Disparity * parametersWindow;
     void run();
 
@@ -45,7 +46,7 @@ private:
     QByteArray mat_to_qByteArray(cv::Mat image);
 
     bool receive_raw_stereo_image();
-    void send_depth_map(cv::Mat depth_map);
+    void send_order(cv::Mat depth_map);
 
 };
 

@@ -15,8 +15,7 @@ Calibration_widget::Calibration_widget(PT_ICalibration *calibration, Calibration
     ui(new Ui::Calibration_widget),
     calib(calibration),
     currentCalibMode(CalibMode),
-    currentMode(ORIGINAL)
-{
+    currentMode(ORIGINAL){
     ui->setupUi(this);
     if(calib != nullptr){
         display_image(currentMode);
@@ -245,8 +244,8 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-                calib = new CharucoCalibration(imageSet);
-                currentCalibMode = CalibrationMode::CHARUCO;
+//                calib = new CharucoCalibration(imageSet);
+//                currentCalibMode = CalibrationMode::CHARUCO;
     }else{
         calib = new ChessboardCalibration(imageSet);
         currentCalibMode = CalibrationMode::CHESSBOARD;
