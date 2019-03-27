@@ -354,10 +354,33 @@ void MainWindow::on_videoFromSet_clicked()
                 cv::VideoCapture capR(fileLeft+"/right_%02d.jpg", cv::CAP_IMAGES );
 
                 int key = ' ', prevKey = key;
+                if(!capR.isOpened()) return;
                 if(!capL.grab() || !capR.grab()) return;
-                if(!capL.isOpened()) return;
-                cv::Mat displayedImg, imgVidL, imgVidR;
+
+                cv::Mat displayedImg, imgVidL, imgVidR, Q, depthMap;
                 ImgCv stereo;
+                capL.retrieve(imgVidL);
+                capR.retrieve(imgVidR);
+                Rect trackWind(Rect(imgVidL.rows/2, 0, imgVidL.rows/2, imgVidL.cols/(2)));
+                if(!capL.grab() || !capR.grab()) return;
+                QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+
+                   if(filePath.isEmpty()) return;
+                   cv::Mat param;
+                FileStorage fs(filePath.toStdString(), FileStorage::READ);
+                   if(fs.isOpened()){
+
+
+                       fs["DisparityParameter"] >> param;
+                       fs["dispToDepthMatrix"] >> Q;
+                       fs.release();
+                   }else{
+                       qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+                       return;
+                   }
+
+
+
                 double framerate = capL.get(CV_CAP_PROP_FPS);
                 while(key != 'q'){
 
@@ -370,10 +393,48 @@ void MainWindow::on_videoFromSet_clicked()
                         capR.retrieve(imgVidR);
                         stereo.setImg(imgVidL, imgVidR);
                         if (key == 'k'){
+                            ImgCv::trackCamShift(imgVidL,trackWind);
+                            rectangle(displayedImg, trackWind, Scalar(255), 2);
 
-                        }if(key == 's')
-                            displayedImg = stereo.getDisparityMap();
-                        else
+                        }if(key == 's'){
+                            displayedImg = imgVidL;
+                            switch(param.at<int>(0)){
+                            case 0:
+                                qDebug("sbm entries");
+
+                                imgVidL = stereo.sbm(
+                                            param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+                                        );
+
+                                qDebug("sbm done");
+
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                imgVidL = stereo.disparity_map_SGBM(
+                                            param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                                            param.at<int>(10),  param.at<int>(11)
+                                        );
+
+                            case 4:
+                                break;
+                            default:
+                                qDebug("[ERROR] can't match to any case");
+                                return;
+
+                            }
+                            depthMap = stereo.depthMap(imgVidL, Q);
+                            cvtColor(depthMap, depthMap, CV_GRAY2BGR);
+                        ImgCv::trackCamShift(displayedImg, trackWind);
+                        rectangle(depthMap, trackWind, Scalar(255), 2);
+                        displayedImg = depthMap;
+
+                        }else
                             displayedImg = stereo;
 
                         imagecv::displayImage(*ui->backgroundLabel, displayedImg);
@@ -432,75 +493,80 @@ void MainWindow::on_tracking_clicked()
 
     }
 
-    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-    if(filePath.isEmpty()) return;
+//    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+//    if(filePath.isEmpty()) return;
 
-    cv::Mat param, dispPrev, dispNext, dispDiff;
-    ImgCv nextFrame;
-    FileStorage fs(filePath.toStdString(), FileStorage::READ);
-    if(fs.isOpened()){
+//    cv::Mat param, dispPrev, dispNext, dispDiff;
+//    ImgCv nextFrame;
+//    FileStorage fs(filePath.toStdString(), FileStorage::READ);
+//    if(fs.isOpened()){
 
 
-        fs["DisparityParameter"] >> param;
-        fs.release();
-    }else{
-        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
-        return;
-    }
+//        fs["DisparityParameter"] >> param;
+//        fs.release();
+//    }else{
+//        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+//        return;
+//    }
 
-    qDebug("[INFO] Load the next frame");
+//    qDebug("[INFO] Load the next frame");
 
-    if(!load_file(*this, nextFrame, true)){
-        qDebug("[ERROR] No images loaded");
-        return;
-    }
+//    if(!load_file(*this, nextFrame, true)){
+//        qDebug("[ERROR] No images loaded");
+//        return;
+//    }
 
-    qDebug("next frame loaded");
+//    qDebug("next frame loaded");
 
-    switch(param.at<int>(0)){
-    case 0:
-        qDebug("sbm entries");
+//    switch(param.at<int>(0)){
+//    case 0:
+//        qDebug("sbm entries");
 
-        dispPrev = img->sbm(
-                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-                );
-        dispNext = nextFrame.sbm(
-                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-                );
-        qDebug("sbm done");
+//        dispPrev = img->sbm(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+//                );
+//        dispNext = nextFrame.sbm(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+//                );
+//        qDebug("sbm done");
 
-        break;
-    case 1:
-        break;
-    case 2:
-        dispPrev = img->disparity_map_SGBM(
-                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                    param.at<int>(10),  param.at<int>(11)
-                );
-        dispNext = nextFrame.disparity_map_SGBM(
-                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                param.at<int>(10),  param.at<int>(11)
-                );
-        break;
-    case 4:
-        break;
-    default:
-        qDebug("[ERROR] can't match to any case");
-        return;
+//        break;
+//    case 1:
+//        break;
+//    case 2:
+//        dispPrev = img->disparity_map_SGBM(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
+//                    param.at<int>(10),  param.at<int>(11)
+//                );
+//        dispNext = nextFrame.disparity_map_SGBM(
+//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
+//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
+//                param.at<int>(10),  param.at<int>(11)
+//                );
+//        break;
+//    case 4:
+//        break;
+//    default:
+//        qDebug("[ERROR] can't match to any case");
+//        return;
 
-    }
-    qDebug("dis loaded");
+//    }
+//    qDebug("dis loaded");
 //    img->setImg(dispPrev, dispNext);
 
-    dispDiff = dispNext - dispPrev;
-    imagecv::displayImage(*ui->backgroundLabel, dispDiff);
+//    cvtColor(ImgCv(dispPrev, dispNext), dispDiff, CV_GRAY2BGR);
+//    ImgCv::trackSomething(dispDiff, dispDiff);
+    Mat copyImg(img->getImgR());
+    Rect trackWind(Rect(copyImg.rows/2, 0, copyImg.rows/2, copyImg.cols/(2)));
+
+    ImgCv::trackCamShift(img->getImgL(), trackWind) ;
+    imagecv::displayImage(*ui->backgroundLabel, copyImg);
 
 }

@@ -412,6 +412,134 @@ Mat ImgCv::getDispToDepthMat(const std::string &outFile)
     return dispToDepthMat;
 }
 
+void ImgCv::trackOrb(const ImgCv &image, ImgCv &displayer)
+{
+    std::vector<cv::Point2f> cornersL, cornersR;
+    Mat grayImage, dispL(displayer.getImgL()), dispR(displayer.getImgR());
+    cvtColor(image.getImgL(), grayImage, CV_BGR2GRAY);
+
+    double qualityLevel(0.01), minDist(10), k(0.04);
+    int blockSize(3), maxCorners(200);
+    bool useHarrisDetector(true);
+
+    goodFeaturesToTrack(grayImage, cornersL, maxCorners,
+                        qualityLevel, minDist, Mat(),
+                        blockSize, useHarrisDetector, k);
+
+    cvtColor(image.getImgR(), grayImage, CV_BGR2GRAY);
+    goodFeaturesToTrack(grayImage, cornersR, maxCorners,
+                        qualityLevel, minDist, Mat(),
+                        blockSize, useHarrisDetector, k);
+    std::cout << "Number of corners detected in trackSomething: " << cornersL.size() + cornersR.size() << std::endl;
+
+
+    int radius(4);
+    for(size_t i(0); i < cornersL.size(); i++)
+        circle(dispL, cornersL[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
+
+    for(size_t i(0); i < cornersR.size(); i++)
+        circle(dispR, cornersR[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
+
+    std::vector<cv::DMatch> matches;
+    std::vector<KeyPoint> descriptorL, descriptorR;
+    KeyPoint::convert(cornersL, descriptorL);
+    KeyPoint::convert(cornersR, descriptorR);
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+    matcher->match(descriptorL, descriptorR, matches);
+    drawMatches(dispL, descriptorL, dispR, descriptorR, matches, displayer);
+
+}
+
+void ImgCv::trackSomething(const Mat &image, Mat &displayer)
+{
+    std::vector<cv::Point2f> corners;
+    Mat grayImage;
+    cvtColor(image, grayImage, CV_BGR2GRAY);
+
+    double qualityLevel(0.01), minDist(10), k(0.04);
+    int blockSize(3), maxCorners(200);
+    bool useHarrisDetector(true);
+
+    goodFeaturesToTrack(grayImage, corners, maxCorners,
+                        qualityLevel, minDist, Mat(),
+                        blockSize, useHarrisDetector, k);
+
+   std::cout << "Number of corners detected in trackSomething: " << corners.size() << std::endl;
+
+
+    int radius(4);
+    for(size_t i(0); i < corners.size(); i++)
+        circle(displayer, corners[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
+
+}
+
+void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
+{
+//    cv::Mat roi(image(Rect(image.rows/2, image.cols/2, 50, 100))),
+//            hsv_roi, mask, roi_hist;
+//    Rect trackWindow(400, 250, 125, 90);
+//    cvtColor(roi, hsv_roi, COLOR_BGR2HSV);
+//    double tab1[] = {0., 60., 32., 180., 255., 255.};
+//    cv::inRange(hsv_roi, std::vector<double>(tab1, tab1 + 3 / sizeof(double)), std::vector<double>(tab1, tab1 + sizeof(tab1) / sizeof(double)), mask);
+
+//    // Quantize the hue to 30 levels
+//    // and the saturation to 32 levels
+//    int hbins = 30, sbins = 32;
+//    int histSize[] = {hbins, sbins};
+//    // hue varies from 0 to 179, see cvtColor
+//    float hranges[] = { 0, 180 };
+//    // saturation varies from 0 (black-gray-white) to
+//    // 255 (pure spectrum color)
+//    float sranges[] = { 0, 256 };
+//    const float* ranges[] = { hranges, sranges };
+//    // we compute the histogram from the 0-th and 1-st channels
+//    int channels[] = {0, 1};
+//    cv::calcHist(&hsv_roi, 1, channels, mask, roi_hist, 180, histSize, ranges);
+//    normalize(roi_hist, roi_hist, 0, 255, NORM_MINMAX);
+
+//    Mat hsv, dst;
+//    cvtColor(image, hsv, COLOR_BGR2HSV);
+//    calcBackProject(&hsv, 1, channels, roi_hist, dst, ranges, 1);
+
+//    cv::meanShift(dst, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
+//    rectangle(displayer, trackWindow, Scalar(255), 2);
+
+    // v2
+
+    int hsize(16), vmin(0), vmax(180), smin(180), channels[] = {0, 0};
+    float hranges[] = {0, 180};
+    const float* phranges = hranges;
+    Mat hsv, hue, mask, hist, histimg(Mat::zeros(200,320, CV_8UC3)), backproj;
+    cvtColor(image, hsv, COLOR_BGR2HSV);
+    inRange(hsv, Scalar(0, smin, vmin), Scalar(180, 256, vmax), mask);
+    hue.create(hsv.size(), hsv.depth());
+    mixChannels(&hsv, 1, &hue, 1, channels, 1);
+
+
+    Mat roi(hue, trackWindow), maskroi( mask, trackWindow);
+    calcHist(&roi, 1, 0, maskroi, hist, 1, &hsize, &phranges);
+    normalize(hist, hist, 0, 255, NORM_MINMAX);
+    histimg = Scalar::all(0);
+    int binW(histimg.cols / hsize);
+    Mat buf(1, hsize, CV_8UC3);
+    for(size_t i(0); i < hsize; i++){
+        buf.at<Vec3b>(i) = Vec3b(saturate_cast<uchar>(i*180./hsize), 255, 255);
+    }
+    cvtColor(buf, buf, COLOR_HSV2BGR);
+    for(size_t i(0); i < hsize; i++){
+        int val(saturate_cast<int>(hist.at<float>(i)*histimg.rows/255));
+        rectangle(histimg, Point(i*binW, histimg.rows), Point((i+1)*binW, histimg.rows -val),
+                  Scalar(buf.at<Vec3b>(i)), -1, 8);
+    }
+
+    calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
+    backproj &= mask;
+    CamShift(backproj, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
+
+
+
+}
+
 /**
  * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
  * @param disparityMap Tje dosparity map

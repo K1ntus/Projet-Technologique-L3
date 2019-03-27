@@ -9,6 +9,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/utility.hpp>
+#include "opencv2/video/tracking.hpp"
 #include <iostream>
 // uncomment for common project
 #include "tools/calibration/intrinsicparameters.h"
@@ -173,6 +174,12 @@ public:
     ImgCv static rectifiedImage(ImgCv &distortedImage, std::string const& outFile);
 
     cv::Mat static getDispToDepthMat(std::string const& outFile);
+
+    void static trackSomething(cv::Mat const& image, cv::Mat &displayer);
+
+    void trackOrb(const ImgCv &image, ImgCv &displayer);
+
+    void static trackCamShift(cv::Mat const& image, cv::Rect &trackWindow);
 
 private:
 

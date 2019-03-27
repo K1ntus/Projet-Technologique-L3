@@ -14,11 +14,11 @@ Disparity::Disparity(QWidget *parent) :
     QWidget(parent),
     displayMode(DispDisplayerMode::NORMAL),
     ui(new Ui::Disparity),
-    dispMap(),
+    dispMap(), depthMap(),
     img(nullptr),
     imgtoDisplay(),
-    calibFilePath()
-
+    calibFilePath(),
+    trackWindow(Rect(0, 0, 10, 10))
 {
     ui->setupUi(this);
 
@@ -148,6 +148,9 @@ void Disparity::on_loadImage_clicked(){
         QMessageBox::information(this, "Open image", "Image loaded");
         img->setImg(*img, true);
         imgtoDisplay.setImg(img->getImg(), true);
+        ImgCv::trackSomething(*img, imgtoDisplay);
+        trackWindow = Rect(imgtoDisplay.rows/2, 0, imgtoDisplay.rows/2, imgtoDisplay.getImgL().cols/2);
+
         displayImage(imgtoDisplay);
 
         qDebug(" *** Image file correctly loaded *** ");
@@ -178,6 +181,7 @@ void Disparity::set_img_mat(ImgCv &img){
     if(calibFilePath.empty())
         ui->rectified->setCheckState(Qt::CheckState::Unchecked);
     imgtoDisplay.setImg(this->img->getImg(), true);
+
     displayImage(imgtoDisplay);
 }
 
@@ -195,8 +199,10 @@ void Disparity::displayImage(Mat const& image){
         ui->image_loaded->setMaximumSize(width, height);
         ui->image_loaded->setPixmap(QPixmap::fromImage(mat_to_qimage(image)));
         ui->image_loaded->adjustSize();
-    }else
+    }else if(displayMode == DispDisplayerMode::DISPARITY)
         displayDisparityMap();
+    else
+        on_track_clicked();
 
 }
 
@@ -453,10 +459,12 @@ void Disparity::on_depthMap_clicked()
         displayDisparityMap();
 
         cv::Mat Q = ImgCv::getDispToDepthMat(calibFilePath);
-        Mat depth_map = ImgCv::depthMap(dispMap,Q), dst;
-        imshow("depth_map", depth_map);
+        depthMap = ImgCv::depthMap(dispMap,Q);
+        Mat dst;
+
+        ImgCv::trackCamShift(imgtoDisplay.getImgL(), trackWindow);
         displayMode = DispDisplayerMode::NORMAL;
-        displayImage(depth_map);
+//        displayImage(dst);
 
     }
 }
@@ -601,6 +609,8 @@ void Disparity::on_load_two_images_clicked()
         QMessageBox::information(this, "Open the first image", "Image loaded");
         ui->sbm->setCheckState(Qt::CheckState::Unchecked);
         imgtoDisplay.setImg(img->getImg(), true);
+        trackWindow = Rect(imgtoDisplay.rows/2, 0, imgtoDisplay.rows/2, imgtoDisplay.getImgL().cols/2);
+
     }
 
     else{
@@ -668,14 +678,16 @@ void Disparity::on_dispParam_clicked()
         qDebug("[ERROR] in: on_dispParam_clicked\n No disparity map generated");
         return;
     }
-    QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-    if(filePath.isEmpty()){
-        qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
+    if(calibFilePath.empty()){
+        QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+        if(filePath.isEmpty()){
+            qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
 
-        return;
+            return;
+        }
+        calibFilePath = filePath.toStdString();
     }
-
-    FileStorage fs(filePath.toStdString(), FileStorage::APPEND);
+    FileStorage fs(calibFilePath, FileStorage::APPEND);
     if(fs.isOpened()){
         std::vector<int> param;
 
@@ -714,9 +726,33 @@ void Disparity::on_dispParam_clicked()
         fs << "DisparityParameter" << paramMat;
         fs.release();
     }else
-              qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
+        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
 
 
 
 
+}
+
+void Disparity::on_track_clicked()
+{
+
+    if(calibFilePath.empty()){
+        QString filePath = QFileDialog::getOpenFileName(this, this->tr("calib file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+        if(filePath.isEmpty()){
+            qDebug("[ERROR] in: on_dispParam_clicked\nNo file opened");
+
+            return;
+        }
+        calibFilePath = filePath.toStdString();
     }
+
+    on_depthMap_clicked();
+    Mat dst(imgtoDisplay.getImgL());
+    rectangle(dst, trackWindow,cv::Scalar(255), 2);
+    displayMode = DispDisplayerMode::TRACKER;
+
+    imshow("tracker", dst);
+
+
+
+}

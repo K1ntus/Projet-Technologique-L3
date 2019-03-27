@@ -2174,6 +2174,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="track">
+        <property name="text">
+         <string>track</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
