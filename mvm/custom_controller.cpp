@@ -104,16 +104,13 @@ using namespace cv;
       cv::FileStorage fs(CONFIG_FILE_PATH, cv::FileStorage::READ);
       if(fs.isOpened()){
         cv::Mat distanceParam;
-        fs["DistParam"] >> distanceParam;
-          std::cout << "distParamLoaded" << std::endl;
         fs["DisparityParameter"] >> disparityParam;
-          std::cout << "Error passed" << std::endl;
         fs["cameraMatrixLeft"] >> camera_matrixL;
         fs["distCoefficientsMatrixRight"] >> dist_coeffsL;
         fs["cameraMatrixRight"] >> camera_matrixR;
         fs["distCoefficientsMatrixRight"] >> dist_coeffsR;
         fs["dispToDepthMatrix"] >> Q;
-
+        fs["DistParam"] >> distanceParam;
         distMin = distanceParam.at<int>(0);
         distMax = distanceParam.at<int>(0);
         fs.release();

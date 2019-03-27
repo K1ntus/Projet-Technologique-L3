@@ -9,15 +9,13 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/core/utility.hpp>
-#include <opencv2/video/tracking.hpp>
+#include "opencv2/video/tracking.hpp"
 #include <iostream>
-
-
 namespace mvm
 {
+
 #define CONFIG_FILE_PATH "calibration.yml"
 #define FPS 30
-
 class CustomController : public Controller
 {
 public:
@@ -31,9 +29,9 @@ public:
 
   virtual void load() override;
 
- 	void sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, size_t const &IO_SADWindowSize, size_t const &IO_numberOfDisparities,  size_t const &IO_preFilterCap, const size_t &IO_minDisparity,
-                   const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                   const size_t &IO_speckleRange, const int &IO_disp12MaxDif, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter);
+ 	void sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
+                   const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
+                   const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter);
 
     /**
      * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n

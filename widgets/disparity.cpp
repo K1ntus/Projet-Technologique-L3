@@ -381,9 +381,9 @@ void Disparity::on_video_clicked()
     if(!filePath.isEmpty()){
 
         string fileLeft(filePath.toStdString());
-        std::cout << fileLeft+"/left_%02d.jpg" << std::endl;
+        std::cout << fileLeft+"/left_%03d.jpg" << std::endl;
 
-        cv::VideoCapture capL(fileLeft+"/left_%02d.jpg", cv::CAP_IMAGES );
+        cv::VideoCapture capL(fileLeft+"/left_%03d.jpg", cv::CAP_IMAGES );
         if(capL.isOpened()){
 
             QString filePath = QFileDialog::getExistingDirectory(
@@ -394,7 +394,7 @@ void Disparity::on_video_clicked()
 
 
                 fileLeft = filePath.toStdString();
-                cv::VideoCapture capR(fileLeft+"/right_%02d.jpg", cv::CAP_IMAGES );
+                cv::VideoCapture capR(fileLeft+"/right_%03d.jpg", cv::CAP_IMAGES );
 
                 if(capR.isOpened()){
                     std::cout << "video opened" << std::endl;
@@ -521,7 +521,7 @@ void Disparity::on_depthMap_clicked()
 
         ImgCv::trackCamShift(imgtoDisplay.getImgL(), trackWindow);
         displayMode = DispDisplayerMode::NORMAL;
-//        displayImage(dst);
+        //        displayImage(dst);
 
     }
 }
@@ -718,6 +718,89 @@ void Disparity::on_calib_clicked()
     QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
     if(!inFile.isEmpty()){
         calibFilePath = inFile.toStdString();
+        FileStorage fs(calibFilePath, FileStorage::READ);
+        if(fs.isOpened()){
+            cv::Mat param;
+            fs["DisparityParameter"] >> param;
+            switch(param.at<int>(0)){
+            case 0:
+                std::cout << "sbm entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_disp12MaxDif = param.at<int>(4);
+                IO_preFilterCap = param.at<int>(5);
+                IO_uniquenessRatio = param.at<int>(6);
+                IO_speckleWindowSize = param.at<int>(7);
+                IO_speckleRange = param.at<int>(8);
+                IO_textureTreshold = param.at<int>(9);
+                IO_tresholdFilter = param.at<int>(10);
+
+                std::cout << "sbm done" << std::endl;
+
+                break;
+            case 1:
+                std::cout << "sbm + PS entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_disp12MaxDif = param.at<int>(4);
+                IO_preFilterCap = param.at<int>(5);
+                IO_uniquenessRatio = param.at<int>(6);
+                IO_speckleWindowSize = param.at<int>(7);
+                IO_speckleRange = param.at<int>(8);
+                IO_textureTreshold = param.at<int>(9);
+                IO_tresholdFilter = param.at<int>(10);
+
+                std::cout << "sbm  +PS done" << std::endl;
+                break;
+            case 2:
+                std::cout << "SGBM entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_P1 = param.at<int>(4);
+                IO_P2 = param.at<int>(5);
+                IO_disp12MaxDif = param.at<int>(6);
+                IO_preFilterCap = param.at<int>(7);
+                IO_uniquenessRatio = param.at<int>(8);
+                IO_speckleWindowSize =param.at<int>(9);
+                IO_speckleRange = param.at<int>(10);
+                IO_full_scale = param.at<int>(11);
+
+                std::cout << "SGBM done" << std::endl;
+                break;
+            case 3:
+                std::cout << "SGBM + PS entries" << std::endl;
+
+                IO_minDisparity = param.at<int>(1);
+                IO_numberOfDisparities = param.at<int>(2);
+                IO_SADWindowSize = param.at<int>(3);
+                IO_P1 = param.at<int>(4);
+                IO_P2 = param.at<int>(5);
+                IO_disp12MaxDif = param.at<int>(6);
+                IO_preFilterCap = param.at<int>(7);
+                IO_uniquenessRatio = param.at<int>(8);
+                IO_speckleWindowSize =param.at<int>(9);
+                IO_speckleRange = param.at<int>(10);
+                IO_full_scale = param.at<int>(11);
+
+                std::cout << "SGBM + PS done" << std::endl;
+
+                break;
+            default:
+                std::cout << "[ERROR] can't match to any case" << std::endl;
+                break;
+
+            }
+
+            fs.release();
+        }else
+            qDebug("[ERROR] in: on_calib_clicked\nNo calibration parameters loaded");
+
     }
     else{
         qDebug("[ERROR] in: on_calib_clicked\nNo calibration file loaded");

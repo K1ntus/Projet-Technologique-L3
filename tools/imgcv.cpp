@@ -297,9 +297,9 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
                 IO_full_scale
                 ); // use SGBM to create a matcher
 
-//    matcher_left->setPreFilterCap(IO_preFilterCap);
-//    matcher_left->setP1(IO_P1); // smoothness of the disparity map
-//    matcher_left->setP2(IO_P2);
+    //    matcher_left->setPreFilterCap(IO_preFilterCap);
+    //    matcher_left->setP1(IO_P1); // smoothness of the disparity map
+    //    matcher_left->setP2(IO_P2);
 
     Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
     Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
@@ -313,8 +313,8 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
-     normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-   // bitwise_not(final_disparity_map,final_disparity_map);
+    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+    // bitwise_not(final_disparity_map,final_disparity_map);
     return final_disparity_map;
 
 }
@@ -348,37 +348,37 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
 
     undistort(distortedImage.getImgL(), imgLrectified, camera_matrixL, dist_coeffsL);
     undistort(distortedImage.getImgR(), imgRrectified, camera_matrixR, dist_coeffsR);
-//    cv::Mat imgLrectified, imgRrectified,
-//            rotL, rotR, projL, projR, dispToDepthMat;
-//    cv::Mat const &imgL = distortedImage.getImgL();
-//    cv::Mat const &imgR = distortedImage.getImgR();
+    //    cv::Mat imgLrectified, imgRrectified,
+    //            rotL, rotR, projL, projR, dispToDepthMat;
+    //    cv::Mat const &imgL = distortedImage.getImgL();
+    //    cv::Mat const &imgR = distortedImage.getImgR();
 
-//    cv::Rect roi1, roi2;
-//    cv::Size imgSize(imgL.size());
-//    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
-//                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
-//                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
-
-
-//    cv::Mat map11, map12, map21, map22;
-
-//    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
-//    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
-
-//    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
-//    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+    //    cv::Rect roi1, roi2;
+    //    cv::Size imgSize(imgL.size());
+    //    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
+    //                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
+    //                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
 
 
-//    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
-//                   cvRound(roi1.width), cvRound(roi1.height));
+    //    cv::Mat map11, map12, map21, map22;
+
+    //    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
+    //    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
+
+    //    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
+    //    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+
+
+    //    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
+    //                   cvRound(roi1.width), cvRound(roi1.height));
 
 
 
-//    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
-//                   cvRound(roi2.width), cvRound(roi2.height));
+    //    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
+    //                   cvRound(roi2.width), cvRound(roi2.height));
 
-//    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
-        rectifiedImg.setImg(imgLrectified, imgRrectified);
+    //    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
+    rectifiedImg.setImg(imgLrectified, imgRrectified);
 
     return rectifiedImg;
 }
@@ -488,7 +488,7 @@ void ImgCv::trackSomething(const Mat &image, Mat &displayer)
                         qualityLevel, minDist, Mat(),
                         blockSize, useHarrisDetector, k);
 
-   std::cout << "Number of corners detected in trackSomething: " << corners.size() << std::endl;
+    std::cout << "Number of corners detected in trackSomething: " << corners.size() << std::endl;
 
 
     int radius(4);
@@ -499,34 +499,34 @@ void ImgCv::trackSomething(const Mat &image, Mat &displayer)
 
 void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
 {
-//    cv::Mat roi(image(Rect(image.rows/2, image.cols/2, 50, 100))),
-//            hsv_roi, mask, roi_hist;
-//    Rect trackWindow(400, 250, 125, 90);
-//    cvtColor(roi, hsv_roi, COLOR_BGR2HSV);
-//    double tab1[] = {0., 60., 32., 180., 255., 255.};
-//    cv::inRange(hsv_roi, std::vector<double>(tab1, tab1 + 3 / sizeof(double)), std::vector<double>(tab1, tab1 + sizeof(tab1) / sizeof(double)), mask);
+    //    cv::Mat roi(image(Rect(image.rows/2, image.cols/2, 50, 100))),
+    //            hsv_roi, mask, roi_hist;
+    //    Rect trackWindow(400, 250, 125, 90);
+    //    cvtColor(roi, hsv_roi, COLOR_BGR2HSV);
+    //    double tab1[] = {0., 60., 32., 180., 255., 255.};
+    //    cv::inRange(hsv_roi, std::vector<double>(tab1, tab1 + 3 / sizeof(double)), std::vector<double>(tab1, tab1 + sizeof(tab1) / sizeof(double)), mask);
 
-//    // Quantize the hue to 30 levels
-//    // and the saturation to 32 levels
-//    int hbins = 30, sbins = 32;
-//    int histSize[] = {hbins, sbins};
-//    // hue varies from 0 to 179, see cvtColor
-//    float hranges[] = { 0, 180 };
-//    // saturation varies from 0 (black-gray-white) to
-//    // 255 (pure spectrum color)
-//    float sranges[] = { 0, 256 };
-//    const float* ranges[] = { hranges, sranges };
-//    // we compute the histogram from the 0-th and 1-st channels
-//    int channels[] = {0, 1};
-//    cv::calcHist(&hsv_roi, 1, channels, mask, roi_hist, 180, histSize, ranges);
-//    normalize(roi_hist, roi_hist, 0, 255, NORM_MINMAX);
+    //    // Quantize the hue to 30 levels
+    //    // and the saturation to 32 levels
+    //    int hbins = 30, sbins = 32;
+    //    int histSize[] = {hbins, sbins};
+    //    // hue varies from 0 to 179, see cvtColor
+    //    float hranges[] = { 0, 180 };
+    //    // saturation varies from 0 (black-gray-white) to
+    //    // 255 (pure spectrum color)
+    //    float sranges[] = { 0, 256 };
+    //    const float* ranges[] = { hranges, sranges };
+    //    // we compute the histogram from the 0-th and 1-st channels
+    //    int channels[] = {0, 1};
+    //    cv::calcHist(&hsv_roi, 1, channels, mask, roi_hist, 180, histSize, ranges);
+    //    normalize(roi_hist, roi_hist, 0, 255, NORM_MINMAX);
 
-//    Mat hsv, dst;
-//    cvtColor(image, hsv, COLOR_BGR2HSV);
-//    calcBackProject(&hsv, 1, channels, roi_hist, dst, ranges, 1);
+    //    Mat hsv, dst;
+    //    cvtColor(image, hsv, COLOR_BGR2HSV);
+    //    calcBackProject(&hsv, 1, channels, roi_hist, dst, ranges, 1);
 
-//    cv::meanShift(dst, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
-//    rectangle(displayer, trackWindow, Scalar(255), 2);
+    //    cv::meanShift(dst, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
+    //    rectangle(displayer, trackWindow, Scalar(255), 2);
 
     // v2
 
@@ -659,8 +659,67 @@ Mat ImgCv::getImgR() const
  * @brief ImgCv::getDisparityMap
  * @return  the disparity map
  */
-Mat ImgCv::getDisparityMap(){
-    return sbm(((this->size().width >> 3) + 15) & -16 , 15);
+Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
+    FileStorage fs(calibFile, FileStorage::READ);
+    if(fs.isOpened()){
+
+        fs["DisparityParameter"] >> param;
+        cv::Mat res;
+        switch(param.at<int>(0)){
+        case 0:
+            std::cout << "sbm entries" << std::endl;
+
+            res = sbm(
+                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+                        );
+
+            std::cout << "sbm done" << std::endl;
+
+            break;
+        case 1:
+            std::cout << "sbm + PS entries" << std::endl;
+
+            res = disparity_post_filtering(
+                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+                        );
+            std::cout << "sbm  +PS done" << std::endl;
+            break;
+        case 2:
+            std::cout << "SGBM entries" << std::endl;
+
+            res = disparity_map_SGBM(
+                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                        param.at<int>(10),  param.at<int>(11)
+                        );
+            std::cout << "SGBM done" << std::endl;
+            break;
+        case 3:
+            std::cout << "SGBM + PS entries" << std::endl;
+
+            res = disparity_post_filtering(
+                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                        param.at<int>(10),  param.at<int>(11)
+                        );
+            std::cout << "SGBM + PS done" << std::endl;
+
+            break;
+        default:
+            std::cout << "[ERROR] can't match to any case" << std::endl;
+            break;
+
+        }
+        fs.release();
+        return res;
+    }else
+        return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
 
 /**
@@ -690,17 +749,17 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
         return;
     }
     hconcat(imgL, imgR, *this);
-//    const int& leftWidth = imgL.cols;
-//    const int& rightWidth = imgR.cols;
-//    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
-//    res.adjustROI(0, 0, 0, -rightWidth);
-//    imgL.copyTo(res);
+    //    const int& leftWidth = imgL.cols;
+    //    const int& rightWidth = imgR.cols;
+    //    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
+    //    res.adjustROI(0, 0, 0, -rightWidth);
+    //    imgL.copyTo(res);
 
-//    res.adjustROI(0, 0, -leftWidth, rightWidth);
-//    imgR.copyTo(res);
+    //    res.adjustROI(0, 0, -leftWidth, rightWidth);
+    //    imgR.copyTo(res);
 
-//    res.adjustROI(0, 0, leftWidth, 0);
-//    res.copyTo(*this);
+    //    res.adjustROI(0, 0, leftWidth, 0);
+    //    res.copyTo(*this);
     stereo = true;
 }
 

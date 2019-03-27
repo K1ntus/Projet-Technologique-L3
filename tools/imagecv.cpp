@@ -166,7 +166,8 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR
 
             if(key == 'p'){
 
-                std::cout << "pause" << std::endl;
+                if(prevKey != 'p')
+                    std::cout << "pause" << std::endl;
                 prevKey = key;
             }else{
                 capL.retrieve(imgVidL);
@@ -185,48 +186,28 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR
                 else if(key == 's' && hasFile){
                     stereo.setImg(ImgCv::rectifiedImage(stereo, calibFilePath), true);
                     displayedImg = imgVidL;
-                    switch(param.at<int>(0)){
-                    case 0:
-                        qDebug("sbm entries");
-
-                        imgVidL = stereo.sbm(
-                                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                                    param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-                                    );
-
-                        qDebug("sbm done");
-
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        imgVidL = stereo.disparity_map_SGBM(
-                                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                                    param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                                    param.at<int>(10),  param.at<int>(11)
-                                    );
-
-                    case 4:
-                        break;
-                    default:
-                        std::cout << "[ERROR] can't match to any case" << std::endl;
-                        return;
-
-                    }
-                    depthMap = stereo.depthMap(imgVidL, Q);
-                    cvtColor(depthMap, depthMap, CV_GRAY2BGR);
+                    std::cout << "param 0: " << param.at<int>(0) << std::endl;
+                    imgVidL = stereo.getDisparityMap(calibFilePath, param);
                     ImgCv::trackCamShift(displayedImg, trackWind);
                     rectangle(imgVidL, trackWind, Scalar(255), 2);
                     displayedImg = imgVidL;
 
+                }else if(key == 'd' && hasFile){
+                    stereo.setImg(ImgCv::rectifiedImage(stereo, calibFilePath), true);
+                    displayedImg = imgVidL;
+                    imgVidL = stereo.getDisparityMap(calibFilePath, param);
+                    depthMap = stereo.depthMap(imgVidL, Q);
+                    cvtColor(depthMap, depthMap, CV_GRAY2BGR);
+                    ImgCv::trackCamShift(displayedImg, trackWind);
+                    rectangle(depthMap, trackWind, Scalar(255), 2);
+                    Scalar avr = mean(depthMap(trackWind));
+                    std::cout << "average value" << avr(0) << std::endl;
+                    displayedImg = depthMap;
                 }else
                     displayedImg = stereo;
 
                 imagecv::displayImage(frame, displayedImg);
                 imshow("video test", displayedImg);
-                std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
                 prevKey = key;
 
                 if(!capL.grab() || !capR.grab()){
@@ -267,8 +248,8 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL)
         while(key != 'q'){
 
             if(key == 'p'){
-
-                std::cout << "pause" << std::endl;
+                if(prevKey != 'p')
+                    std::cout << "pause" << std::endl;
                 prevKey = key;
             }else{
                 capL.retrieve(imgVidL);

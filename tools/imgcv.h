@@ -47,7 +47,7 @@ public:
      * @brief ImgCv::getDisparityMap
      * @return  the disparity map
      */
-    cv::Mat getDisparityMap();
+    cv::Mat getDisparityMap(std::string const& calibFile = "", cv::Mat param = cv::Mat() );
 
     /**
      * @brief ImgCv::getDepthMap
