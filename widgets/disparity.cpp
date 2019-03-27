@@ -73,10 +73,29 @@ void Disparity::displayDisparityMap(){
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
         if(ui->sbm->isChecked()){
-            dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                            IO_numberOfDisparities,
+                                                            IO_SADWindowSize,
+                                                            IO_disp12MaxDif,
+                                                            IO_preFilterCap,
+                                                            IO_uniquenessRatio,
+                                                            IO_speckleWindowSize,
+                                                            IO_speckleRange,
+                                                            IO_textureTreshold,
+                                                            IO_tresholdFilter);
 
         }else{
-            dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize, IO_preFilterCap, IO_P1, IO_P2);
+            dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                            IO_numberOfDisparities,
+                                                            IO_SADWindowSize,
+                                                            IO_P1,
+                                                            IO_P2,
+                                                            IO_disp12MaxDif,
+                                                            IO_preFilterCap,
+                                                            IO_uniquenessRatio,
+                                                            IO_speckleWindowSize,
+                                                            IO_speckleRange,
+                                                            IO_full_scale);
 
         }
     }else{
@@ -217,7 +236,16 @@ void Disparity::on_Sobel_clicked()
     }
     Mat sobel;
     if(ui->sbm->isChecked()&& ui->filter->isChecked())
-        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                        IO_numberOfDisparities,
+                                                        IO_SADWindowSize,
+                                                        IO_disp12MaxDif,
+                                                        IO_preFilterCap,
+                                                        IO_uniquenessRatio,
+                                                        IO_speckleWindowSize,
+                                                        IO_speckleRange,
+                                                        IO_textureTreshold,
+                                                        IO_tresholdFilter);
     else if (ui->sbm->isChecked()){
         dispMap = imgtoDisplay.sbm(IO_minDisparity,
                                    IO_numberOfDisparities,
@@ -230,7 +258,17 @@ void Disparity::on_Sobel_clicked()
                                    IO_textureTreshold,
                                    IO_tresholdFilter);
     }else if (ui->filter->isChecked())
-        dispMap= imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                       IO_numberOfDisparities,
+                                                       IO_SADWindowSize,
+                                                       IO_P1,
+                                                       IO_P2,
+                                                       IO_disp12MaxDif,
+                                                       IO_preFilterCap,
+                                                       IO_uniquenessRatio,
+                                                       IO_speckleWindowSize,
+                                                       IO_speckleRange,
+                                                       IO_full_scale);
     else {
         dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
                                                   IO_numberOfDisparities,
@@ -264,7 +302,16 @@ void Disparity::on_Laplace_clicked()
 
     Mat laplace;
     if(ui->sbm->isChecked()&& ui->filter->isChecked())
-        dispMap = imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize);
+        dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                        IO_numberOfDisparities,
+                                                        IO_SADWindowSize,
+                                                        IO_disp12MaxDif,
+                                                        IO_preFilterCap,
+                                                        IO_uniquenessRatio,
+                                                        IO_speckleWindowSize,
+                                                        IO_speckleRange,
+                                                        IO_textureTreshold,
+                                                        IO_tresholdFilter);
     else if(ui->sbm->isChecked())
         dispMap = imgtoDisplay.sbm(IO_minDisparity,
                                    IO_numberOfDisparities,
@@ -277,7 +324,17 @@ void Disparity::on_Laplace_clicked()
                                    IO_textureTreshold,
                                    IO_tresholdFilter);
     else if (ui->filter->isChecked())
-        dispMap= imgtoDisplay.disparity_post_filtering(IO_numberOfDisparities, IO_SADWindowSize,IO_preFilterCap, IO_P1, IO_P2);
+        dispMap= imgtoDisplay.disparity_post_filtering(IO_minDisparity,
+                                                       IO_numberOfDisparities,
+                                                       IO_SADWindowSize,
+                                                       IO_P1,
+                                                       IO_P2,
+                                                       IO_disp12MaxDif,
+                                                       IO_preFilterCap,
+                                                       IO_uniquenessRatio,
+                                                       IO_speckleWindowSize,
+                                                       IO_speckleRange,
+                                                       IO_full_scale);
     else {
         dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
                                                   IO_numberOfDisparities,

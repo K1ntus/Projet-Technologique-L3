@@ -296,10 +296,10 @@ void MainWindow::on_videoFromSet_clicked()
     if(!filePath.isEmpty()){
 
         string fileLeft(filePath.toStdString());
-        std::string name("calib_reftImage_");
-        std::cout << fileLeft+"/"+ name + "%02d.jpg" << std::endl;
+        std::string name("left_");
+        std::cout << fileLeft+"/"+ name + "%03d.jpg" << std::endl;
 
-        cv::VideoCapture capL(fileLeft+"/"+ name + "%02d.jpg", cv::CAP_IMAGES );
+        cv::VideoCapture capL(fileLeft+"/"+ name + "%03d.jpg", cv::CAP_IMAGES );
         if(capL.isOpened()){
 
             QString filePath = QFileDialog::getExistingDirectory(
@@ -310,8 +310,8 @@ void MainWindow::on_videoFromSet_clicked()
 
 
                 fileLeft = filePath.toStdString();
-                name = "calib_rightImage_";
-                cv::VideoCapture capR(fileLeft+"/"+ name + "%02d.jpg", cv::CAP_IMAGES );
+                name = "right_";
+                cv::VideoCapture capR(fileLeft+"/"+ name + "%03d.jpg", cv::CAP_IMAGES );
                 if(capR.isOpened()){
                     QString filePath = QFileDialog::getOpenFileName(
                                 this, tr("Select a calibration file with a DispParameter member"),
