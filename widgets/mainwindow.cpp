@@ -131,49 +131,7 @@ void MainWindow::on_videoTest_clicked()
     const string& fileLeft(filePath.toStdString());
     cv::VideoCapture capL(fileLeft);
     if(capL.isOpened()){
-
-
-        cv::Mat displayedImg;
-        ImgCv imgVidL;
-
-        int key = ' ', prevKey = key;
-        if(!capL.grab()) return;
-
-        double framerate = capL.get(CV_CAP_PROP_FPS);
-        while(key != 'q'){
-
-            if(key == 'p'){
-
-                std::cout << "pause" << std::endl;
-                prevKey = key;
-            }else{
-                capL.retrieve(imgVidL);
-
-                if (key == 'k'){
-
-                }if(key == 's')
-                    displayedImg = imgVidL.getDisparityMap();
-                else
-                    displayedImg = imgVidL;
-
-                imagecv::displayImage(*ui->backgroundLabel, displayedImg);
-
-                imshow("video test", displayedImg);
-                std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
-                prevKey = key;
-
-                if(!capL.grab()){
-                    capL.set(cv::CAP_PROP_POS_FRAMES, 0);
-                    capL.grab();
-                }
-            }
-
-            key = waitKey((int) framerate);
-            if(key == 255)
-                key = prevKey;
-        }
-
-        destroyWindow("video test");
+        imagecv::displayVideo(*ui->backgroundLabel, capL);
         capL.release();
 
     }else
@@ -332,133 +290,38 @@ void MainWindow::on_actionEnregistrer_triggered()
 void MainWindow::on_videoFromSet_clicked()
 {
     QString filePath = QFileDialog::getExistingDirectory(
-                this, tr("Select the files for calibration"),
+                this, tr("Select the left video set"),
                 tr("./resources/") );
 
     if(!filePath.isEmpty()){
 
         string fileLeft(filePath.toStdString());
-        std::cout << fileLeft+"/left_%02d.jpg" << std::endl;
+        std::string name("calib_reftImage_");
+        std::cout << fileLeft+"/"+ name + "%02d.jpg" << std::endl;
 
-        cv::VideoCapture capL(fileLeft+"/left_%02d.jpg", cv::CAP_IMAGES );
+        cv::VideoCapture capL(fileLeft+"/"+ name + "%02d.jpg", cv::CAP_IMAGES );
         if(capL.isOpened()){
 
             QString filePath = QFileDialog::getExistingDirectory(
-                        this, tr("Select the files for calibration"),
+                        this, tr("Select the right video set"),
                         tr("./resources/") );
 
             if(!filePath.isEmpty()){
 
 
                 fileLeft = filePath.toStdString();
-                cv::VideoCapture capR(fileLeft+"/right_%02d.jpg", cv::CAP_IMAGES );
+                name = "calib_rightImage_";
+                cv::VideoCapture capR(fileLeft+"/"+ name + "%02d.jpg", cv::CAP_IMAGES );
+                if(capR.isOpened()){
+                    QString filePath = QFileDialog::getOpenFileName(
+                                this, tr("Select a calibration file with a DispParameter member"),
+                                tr("./resources/") );
+                    std::string const&calibFile(filePath.toStdString());
+                    imagecv::displayVideo(*ui->backgroundLabel, capL, capR, calibFile);
+                    capR.release();
 
-                int key = ' ', prevKey = key;
-                if(!capR.isOpened()) return;
-                if(!capL.grab() || !capR.grab()) return;
-
-                cv::Mat displayedImg, imgVidL, imgVidR, Q, depthMap;
-                ImgCv stereo;
-                capL.retrieve(imgVidL);
-                capR.retrieve(imgVidR);
-                Rect trackWind(Rect(imgVidL.rows/2, 0, imgVidL.rows/2, imgVidL.cols/(2)));
-                if(!capL.grab() || !capR.grab()) return;
-                QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-
-                   if(filePath.isEmpty()) return;
-                   cv::Mat param;
-                FileStorage fs(filePath.toStdString(), FileStorage::READ);
-                   if(fs.isOpened()){
-
-
-                       fs["DisparityParameter"] >> param;
-                       fs["dispToDepthMatrix"] >> Q;
-                       fs.release();
-                   }else{
-                       qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
-                       return;
-                   }
-
-
-
-                double framerate = capL.get(CV_CAP_PROP_FPS);
-                while(key != 'q'){
-
-                    if(key == 'p'){
-
-                        std::cout << "pause" << std::endl;
-                        prevKey = key;
-                    }else{
-                        capL.retrieve(imgVidL);
-                        capR.retrieve(imgVidR);
-                        stereo.setImg(imgVidL, imgVidR);
-                        if (key == 'k'){
-                            ImgCv::trackCamShift(imgVidL,trackWind);
-                            rectangle(displayedImg, trackWind, Scalar(255), 2);
-
-                        }if(key == 's'){
-                            displayedImg = imgVidL;
-                            switch(param.at<int>(0)){
-                            case 0:
-                                qDebug("sbm entries");
-
-                                imgVidL = stereo.sbm(
-                                            param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-                                        );
-
-                                qDebug("sbm done");
-
-                                break;
-                            case 1:
-                                break;
-                            case 2:
-                                imgVidL = stereo.disparity_map_SGBM(
-                                            param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                                            param.at<int>(10),  param.at<int>(11)
-                                        );
-
-                            case 4:
-                                break;
-                            default:
-                                qDebug("[ERROR] can't match to any case");
-                                return;
-
-                            }
-                            depthMap = stereo.depthMap(imgVidL, Q);
-                            cvtColor(depthMap, depthMap, CV_GRAY2BGR);
-                        ImgCv::trackCamShift(displayedImg, trackWind);
-                        rectangle(depthMap, trackWind, Scalar(255), 2);
-                        displayedImg = depthMap;
-
-                        }else
-                            displayedImg = stereo;
-
-                        imagecv::displayImage(*ui->backgroundLabel, displayedImg);
-
-                        imshow("video test", displayedImg);
-                        std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
-                        prevKey = key;
-
-                        if(!capL.grab() || !capR.grab()){
-                            capL.set(cv::CAP_PROP_POS_FRAMES, 0);
-                            capL.grab();
-                            capR.set(cv::CAP_PROP_POS_FRAMES, 0);
-                            capR.grab();
-                        }
-                    }
-
-                    key = waitKey((int) framerate);
-                    if(key == 255)
-                        key = prevKey;
                 }
-
-                destroyWindow("video test");
                 capL.release();
-                capR.release();
             }
 
 

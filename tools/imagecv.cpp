@@ -55,13 +55,13 @@ bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
         Mat image = imread(fileName.toStdString());
         if(stereo){
             fileName = QFileDialog::getOpenFileName(&thisWidget, thisWidget.tr("Sélectionnez une image"), thisWidget.tr("resources/"), thisWidget.tr("Image Files (*.png *.jpg *.bmp)"));
-           if(!fileName.isEmpty()){
-               Mat imageRight = imread(fileName.toStdString());
+            if(!fileName.isEmpty()){
+                Mat imageRight = imread(fileName.toStdString());
 
-               img.setImg(image, imageRight);
-               return true;
-           }else
-               std::cout << "Error : couldn't open second file.\nin: imagecv::load_file" << std::endl;
+                img.setImg(image, imageRight);
+                return true;
+            }else
+                std::cout << "Error : couldn't open second file.\nin: imagecv::load_file" << std::endl;
         }
         img.setImg(image, stereo);
         return true;
@@ -80,7 +80,7 @@ bool imagecv::load_file(QWidget &thisWidget, ImgCv &img, bool stereo) {
 QImage imagecv::mat_to_qimage(Mat const& src) {
     Mat temp;  // make the same cv::Mat than src
     if(src.channels()==1)
-       cvtColor(src,temp,CV_GRAY2RGB);
+        cvtColor(src,temp,CV_GRAY2RGB);
     else if(src.channels()==3)
         cvtColor(src,temp,CV_BGR2RGB);
     else
@@ -127,4 +127,176 @@ void imagecv::displayImage(QLabel &frame, const Mat &image)
                     ); //Display the original image
 
     frame.adjustSize();
+}
+
+void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR, string const&calibFilePath)
+{
+
+    if(capL.isOpened() && capR.isOpened()){
+
+        int key = ' ', prevKey = key;
+        if(!capL.grab() || !capR.grab()){
+            std::cout << "[ERROR] in:imagecv::displayVideo\n no frame to grab." << std::endl;
+            return;
+        }
+
+        cv::Mat displayedImg, imgVidL, imgVidR, Q, depthMap;
+        ImgCv stereo;
+        capL.retrieve(imgVidL);
+        capR.retrieve(imgVidR);
+        Rect trackWind(Rect(imgVidL.rows/2, 0, imgVidL.rows/2, imgVidL.cols/(2)));
+        if(!capL.grab() || !capR.grab()) return;
+
+        cv::Mat param;
+        bool hasFile(!calibFilePath.empty());
+        if(hasFile){
+            FileStorage fs(calibFilePath, FileStorage::READ);
+            if(fs.isOpened()){
+
+                fs["DisparityParameter"] >> param;
+                fs["dispToDepthMatrix"] >> Q;
+                fs.release();
+            }else{
+                std::cout << "[ERROR] in: on_dispParam_clicked\n couldn't opend calib file." << std::endl;
+                return;
+            }
+        }
+        double framerate = capL.get(CV_CAP_PROP_FPS);
+        while(key != 'q'){
+
+            if(key == 'p'){
+
+                std::cout << "pause" << std::endl;
+                prevKey = key;
+            }else{
+                capL.retrieve(imgVidL);
+                capR.retrieve(imgVidR);
+                stereo.setImg(imgVidL, imgVidR);
+                if (key == 'k'){
+                    ImgCv::trackCamShift(imgVidL,trackWind);
+                    rectangle(displayedImg, trackWind, Scalar(255), 2);
+
+                }else if(key == 'l')
+                    displayedImg = stereo.getImgL();
+                else if(key == 'r')
+                    displayedImg = stereo.getImgR();
+                else if(key == 'u' && hasFile)
+                    displayedImg = ImgCv::rectifiedImage(stereo, calibFilePath), true;
+                else if(key == 's' && hasFile){
+                    stereo.setImg(ImgCv::rectifiedImage(stereo, calibFilePath), true);
+                    displayedImg = imgVidL;
+                    switch(param.at<int>(0)){
+                    case 0:
+                        qDebug("sbm entries");
+
+                        imgVidL = stereo.sbm(
+                                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                                    param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+                                    );
+
+                        qDebug("sbm done");
+
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        imgVidL = stereo.disparity_map_SGBM(
+                                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                                    param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                                    param.at<int>(10),  param.at<int>(11)
+                                    );
+
+                    case 4:
+                        break;
+                    default:
+                        std::cout << "[ERROR] can't match to any case" << std::endl;
+                        return;
+
+                    }
+                    depthMap = stereo.depthMap(imgVidL, Q);
+                    cvtColor(depthMap, depthMap, CV_GRAY2BGR);
+                    ImgCv::trackCamShift(displayedImg, trackWind);
+                    rectangle(imgVidL, trackWind, Scalar(255), 2);
+                    displayedImg = imgVidL;
+
+                }else
+                    displayedImg = stereo;
+
+                imagecv::displayImage(frame, displayedImg);
+                imshow("video test", displayedImg);
+                std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+                prevKey = key;
+
+                if(!capL.grab() || !capR.grab()){
+                    capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capL.grab();
+                    capR.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capR.grab();
+                }
+            }
+
+            key = waitKey((int) framerate);
+            if(key == 255)
+                key = prevKey;
+        }
+
+        destroyWindow("video test");
+    }else{
+        std::cout << "Couldn't open video in imagecv::displayVideo" << std::endl;
+    }
+}
+
+void imagecv::displayVideo(QLabel &frame, VideoCapture &capL)
+{
+    if(capL.isOpened()){
+
+        int key = ' ', prevKey = key;
+        if(!capL.grab()){
+            std::cout << "[ERROR] in:imagecv::displayVideo\n no frame to grab." << std::endl;
+            return;
+        }
+
+        cv::Mat displayedImg, imgVidL;
+        capL.retrieve(imgVidL);
+        Rect trackWind(Rect(imgVidL.rows/2, 0, imgVidL.rows/2, imgVidL.cols/(2)));
+        if(!capL.grab()) return;
+
+        double framerate = capL.get(CV_CAP_PROP_FPS);
+        while(key != 'q'){
+
+            if(key == 'p'){
+
+                std::cout << "pause" << std::endl;
+                prevKey = key;
+            }else{
+                capL.retrieve(imgVidL);
+                if (key == 'k'){
+                    ImgCv::trackCamShift(imgVidL,trackWind);
+                    rectangle(displayedImg, trackWind, Scalar(255), 2);
+
+                }else
+                    displayedImg = imgVidL;
+
+                imagecv::displayImage(frame, displayedImg);
+                imshow("video test", displayedImg);
+                std::cout << "next frame" << "\tkey : " << (char)prevKey << std::endl;
+                prevKey = key;
+
+                if(!capL.grab()){
+                    capL.set(cv::CAP_PROP_POS_FRAMES, 0);
+                    capL.grab();
+                }
+            }
+
+            key = waitKey((int) framerate);
+            if(key == 255)
+                key = prevKey;
+        }
+
+        destroyWindow("video test");
+    }else{
+        std::cout << "Couldn't open video in imagecv::displayVideo" << std::endl;
+    }
 }

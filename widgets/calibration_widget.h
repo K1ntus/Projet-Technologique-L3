@@ -11,7 +11,7 @@
 
 #include "tools/calibration/pt_stereocalibration.h"
 #include "tools/calibration/chessboardcalibration.h"
-#include "tools/calibration/charucocalibration.h"
+//#include "tools/calibration/charucocalibration.h"
 #include "tools/imagecv.h"
 
 
