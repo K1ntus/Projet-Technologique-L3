@@ -1,18 +1,12 @@
 %YAML:1.0
 ---
-# Disparity parameters
-DisparityParameter: !!opencv-matrix
-   rows: 1
-   cols: 9
-   dt: i
-   data: [ 5, 64, 62, 0, 5, 10, 7, 187, 500, 0 ]
-
+# Intrinsic parameters
+#old params: data: [ 5, 64, 62, 0, 5, 10, 7, 187, 500, 0 ]
 DistParam: !!opencv-matrix
    rows: 1
    cols: 2
    dt: i
-   data: [ 1000, 1500 ]
-# Intrinsic parameters
+   data: [ 100, 150 ]
 cameraMatrixLeft: !!opencv-matrix
    rows: 3
    cols: 3
@@ -111,3 +105,51 @@ dispToDepthMatrix: !!opencv-matrix
    data: [ 1., 0., 0., -1.5951422185897827e+03, 0., 1., 0.,
        -3.4505802059173584e+02, 0., 0., 0., 4.7752829641029558e+02, 0.,
        0., 1.2353372091639191e-01, 0. ]
+# ...
+# ---
+# # Disparity parameter
+# # 0: sbm
+# # 2: sgbm
+# #  1: sbm + post filtering
+# #  3: sgbm + post filtering
+# DisparityParameter: !!opencv-matrix
+#    rows: 11
+#    cols: 1
+#    dt: i
+#    data: [ 1, 9, 16, 25, -1, 7, 5, 0, 5, 0, 0 ]
+# ...
+# ---
+# # Disparity parameter
+# # 0: sbm
+# # 2: sgbm
+# #  1: sbm + post filtering
+# #  3: sgbm + post filtering
+# DisparityParameter: !!opencv-matrix
+#    rows: 11
+#    cols: 1
+#    dt: i
+#    data: [ 0, 5, 64, 11, 18, 53, 6, 199, 7, 500, 0 ]
+# ...
+# ---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+# DisparityParameter: !!opencv-matrix
+#    rows: 11
+#    cols: 1
+#    dt: i
+#    data: [ 0, 21, 96, 5, 105, 33, 5, 0, 1, 500, 4 ]
+# ...
+# ---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+DisparityParameter: !!opencv-matrix
+   rows: 12
+   cols: 1
+   dt: i
+   data: [ 2, 6, 112, 5, 600, 2400, 200, 10, 5, 0, 1, 0 ]
