@@ -345,40 +345,40 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
 
     ImgCv rectifiedImg;
     cv::Mat imgLrectified, imgRrectified;
-
     undistort(distortedImage.getImgL(), imgLrectified, camera_matrixL, dist_coeffsL);
     undistort(distortedImage.getImgR(), imgRrectified, camera_matrixR, dist_coeffsR);
-    //    cv::Mat imgLrectified, imgRrectified,
-    //            rotL, rotR, projL, projR, dispToDepthMat;
-    //    cv::Mat const &imgL = distortedImage.getImgL();
-    //    cv::Mat const &imgR = distortedImage.getImgR();
-
-    //    cv::Rect roi1, roi2;
-    //    cv::Size imgSize(imgL.size());
-    //    cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
-    //                      imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
-    //                      cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
-
-
-    //    cv::Mat map11, map12, map21, map22;
-
-    //    cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
-    //    cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
-
-    //    cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
-    //    cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
-
-
-    //    cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
-    //                   cvRound(roi1.width), cvRound(roi1.height));
-
-
-
-    //    cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
-    //                   cvRound(roi2.width), cvRound(roi2.height));
-
-    //    rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
     rectifiedImg.setImg(imgLrectified, imgRrectified);
+
+//        cv::Mat imgLrectified, imgRrectified,
+//                rotL, rotR, projL, projR, dispToDepthMat;
+//        cv::Mat const &imgL = distortedImage.getImgL();
+//        cv::Mat const &imgR = distortedImage.getImgR();
+
+//        cv::Rect roi1, roi2;
+//        cv::Size imgSize(imgL.size());
+//        cv::stereoRectify(camera_matrixL, dist_coeffsL, camera_matrixR, dist_coeffsR,
+//                          imgSize, R, T, rotL, rotR, projL, projR, dispToDepthMat,
+//                          cv::CALIB_ZERO_DISPARITY, -1, imgSize, &roi1, &roi2);
+
+
+//        cv::Mat map11, map12, map21, map22;
+
+//        cv::initUndistortRectifyMap(camera_matrixL, dist_coeffsL, rotL, projL, imgSize, CV_16SC2, map11, map12);
+//        cv::initUndistortRectifyMap(camera_matrixR, dist_coeffsR, rotR, projR, imgSize, CV_16SC2, map21, map22);
+
+//        cv::remap(imgL, imgLrectified, map11, map12, cv::INTER_LINEAR);
+//        cv::remap(imgR, imgRrectified, map21, map22, cv::INTER_LINEAR);
+
+
+//        cv::Rect vroi1(cvRound(roi1.x), cvRound(roi1.y),
+//                       cvRound(roi1.width), cvRound(roi1.height));
+
+
+
+//        cv::Rect vroi2(cvRound(roi2.x), cvRound(roi2.y),
+//                       cvRound(roi2.width), cvRound(roi2.height));
+
+//        rectifiedImg.setImg(imgLrectified(vroi1), imgRrectified(vroi2));
 
     return rectifiedImg;
 }
@@ -499,36 +499,6 @@ void ImgCv::trackSomething(const Mat &image, Mat &displayer)
 
 void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
 {
-    //    cv::Mat roi(image(Rect(image.rows/2, image.cols/2, 50, 100))),
-    //            hsv_roi, mask, roi_hist;
-    //    Rect trackWindow(400, 250, 125, 90);
-    //    cvtColor(roi, hsv_roi, COLOR_BGR2HSV);
-    //    double tab1[] = {0., 60., 32., 180., 255., 255.};
-    //    cv::inRange(hsv_roi, std::vector<double>(tab1, tab1 + 3 / sizeof(double)), std::vector<double>(tab1, tab1 + sizeof(tab1) / sizeof(double)), mask);
-
-    //    // Quantize the hue to 30 levels
-    //    // and the saturation to 32 levels
-    //    int hbins = 30, sbins = 32;
-    //    int histSize[] = {hbins, sbins};
-    //    // hue varies from 0 to 179, see cvtColor
-    //    float hranges[] = { 0, 180 };
-    //    // saturation varies from 0 (black-gray-white) to
-    //    // 255 (pure spectrum color)
-    //    float sranges[] = { 0, 256 };
-    //    const float* ranges[] = { hranges, sranges };
-    //    // we compute the histogram from the 0-th and 1-st channels
-    //    int channels[] = {0, 1};
-    //    cv::calcHist(&hsv_roi, 1, channels, mask, roi_hist, 180, histSize, ranges);
-    //    normalize(roi_hist, roi_hist, 0, 255, NORM_MINMAX);
-
-    //    Mat hsv, dst;
-    //    cvtColor(image, hsv, COLOR_BGR2HSV);
-    //    calcBackProject(&hsv, 1, channels, roi_hist, dst, ranges, 1);
-
-    //    cv::meanShift(dst, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
-    //    rectangle(displayer, trackWindow, Scalar(255), 2);
-
-    // v2
 
     int hsize(16), vmin(0), vmax(180), smin(180), channels[] = {0, 0};
     float hranges[] = {0, 180};
@@ -584,7 +554,6 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
             depthMap.at<float>(i, j) = floatPoint[2];
         }
     }
-    normalize(depthMap, depthMap, 0, 255, NORM_MINMAX, CV_32F);
 
     return depthMap;
 

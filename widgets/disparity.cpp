@@ -399,7 +399,7 @@ void Disparity::on_video_clicked()
                 if(capR.isOpened()){
                     std::cout << "video opened" << std::endl;
 
-                    cv::Mat displayedImg, imgVidL, imgVidR, Q;
+                    cv::Mat displayedImg, imgVidL, imgVidR, Q, res;
                     int key = ' ', prevKey = key;
                     if(!capL.grab() || !capR.grab()) return;
                     capL.retrieve(imgVidL);
@@ -447,7 +447,9 @@ void Disparity::on_video_clicked()
                                     displayedImg = imgtoDisplay.getImgR();
                                 if(key == 'd' && !Q.empty()){
                                     displayDisparityMap();
-                                    displayedImg = ImgCv::depthMap(dispMap, Q);
+                                    res = ImgCv::depthMap(dispMap, Q);
+                                    normalize(res, res, 0, 255, NORM_MINMAX, CV_32F);
+                                    displayedImg =res;
                                 }else
                                     displayedImg = imgtoDisplay;
 

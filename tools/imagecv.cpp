@@ -175,8 +175,27 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR
                 stereo.setImg(imgVidL, imgVidR);
                 if (key == 'k'){
                     ImgCv::trackCamShift(imgVidL,trackWind);
-                    rectangle(displayedImg, trackWind, Scalar(255), 2);
 
+                    if(trackWind.width > trackWind.height){
+                        std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+                        std::cout << "     * width = " << trackWind.width <<", height = " << trackWind.height << std::endl;
+
+                        trackWind.height = imgVidL.rows*0.75;//Box have a height of 3/4 of the image
+                        trackWind.width = imgVidL.cols*0.2;//Box have a width of 1/10 of the image
+
+                        trackWind.x = imgVidL.cols/2;
+                        trackWind.y = 0;
+                    }
+
+                    std::cout << "[INFO] Tracking position:" << std::endl;
+                    std::cout << "     * TopCorner = (" << trackWind.x << "," << trackWind.y << ")" << std::endl;
+                    std::cout << "     * Size      = (" << trackWind.width << "," << trackWind.height << ")" << std::endl;
+
+                    if(trackWind.width < imgVidL.cols*0.2){
+                        std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+                    }
+
+                    rectangle(displayedImg, trackWind, Scalar(255), 2);
                 }else if(key == 'l')
                     displayedImg = stereo.getImgL();
                 else if(key == 'r')
@@ -192,17 +211,85 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR
                     rectangle(imgVidL, trackWind, Scalar(255), 2);
                     displayedImg = imgVidL;
 
-                }else if(key == 'd' && hasFile){
+                }else if(key == 'j'){
+
                     stereo.setImg(ImgCv::rectifiedImage(stereo, calibFilePath), true);
                     displayedImg = imgVidL;
                     imgVidL = stereo.getDisparityMap(calibFilePath, param);
                     depthMap = stereo.depthMap(imgVidL, Q);
+                    std::cout << "depthMap generated" << std::endl;
+
+                    normalize(depthMap, depthMap, 0, 255, NORM_MINMAX, CV_32F);
+                    std::cout << "depthMap normalized" << std::endl;
+
                     cvtColor(depthMap, depthMap, CV_GRAY2BGR);
-                    ImgCv::trackCamShift(displayedImg, trackWind);
-                    rectangle(depthMap, trackWind, Scalar(255), 2);
+                    ImgCv::trackCamShift(displayedImg,trackWind);
+                    std::cout << "tracker tracked" << std::endl;
+
+                    if(trackWind.width > trackWind.height){
+                        std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+                        std::cout << "     * width = " << trackWind.width <<", height = " << trackWind.height << std::endl;
+
+                        trackWind.height = imgVidL.rows*0.75;//Box have a height of 3/4 of the image
+                        trackWind.width = imgVidL.cols*0.2;//Box have a width of 1/10 of the image
+
+                        trackWind.x = imgVidL.cols/2;
+                        trackWind.y = 0;
+                    }
+
+                    std::cout << "[INFO] Tracking position:" << std::endl;
+                    std::cout << "     * TopCorner = (" << trackWind.x << "," << trackWind.y << ")" << std::endl;
+                    std::cout << "     * Size      = (" << trackWind.width << "," << trackWind.height << ")" << std::endl;
+
+                    if(trackWind.width < imgVidL.cols*0.2){
+                        std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+                    }
+
                     Scalar avr = mean(depthMap(trackWind));
-                    std::cout << "average value" << avr(0) << std::endl;
+                    std::cout << "average value " << avr(1) << std::endl;
+                    displayedImg = stereo;
+                    rectangle(displayedImg, trackWind, Scalar(255), 2);
+                    key = 'p';
+
+                }
+                else if(key == 'd' && hasFile){
+                    stereo.setImg(ImgCv::rectifiedImage(stereo, calibFilePath), true);
+                    displayedImg = imgVidL;
+                    imgVidL = stereo.getDisparityMap(calibFilePath, param);
+                    depthMap = stereo.depthMap(imgVidL, Q);
+                    std::cout << "depthMap generated" << std::endl;
+
+                    normalize(depthMap, depthMap, 0, 255, NORM_MINMAX, CV_32F);
+                    std::cout << "depthMap normalized" << std::endl;
+
+                    cvtColor(depthMap, depthMap, CV_GRAY2BGR);
+                    ImgCv::trackCamShift(displayedImg,trackWind);
+                    std::cout << "tracker tracked" << std::endl;
+
+                    if(trackWind.width > trackWind.height){
+                        std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+                        std::cout << "     * width = " << trackWind.width <<", height = " << trackWind.height << std::endl;
+
+                        trackWind.height = imgVidL.rows*0.75;//Box have a height of 3/4 of the image
+                        trackWind.width = imgVidL.cols*0.2;//Box have a width of 1/10 of the image
+
+                        trackWind.x = imgVidL.cols/2;
+                        trackWind.y = 0;
+                    }
+
+                    std::cout << "[INFO] Tracking position:" << std::endl;
+                    std::cout << "     * TopCorner = (" << trackWind.x << "," << trackWind.y << ")" << std::endl;
+                    std::cout << "     * Size      = (" << trackWind.width << "," << trackWind.height << ")" << std::endl;
+
+                    if(trackWind.width < imgVidL.cols*0.2){
+                        std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+                    }
+
+                    Scalar avr = mean(depthMap(trackWind));
+                    std::cout << "average value" << avr(1) << std::endl;
                     displayedImg = depthMap;
+                    rectangle(displayedImg, trackWind, Scalar(255), 2);
+
                 }else
                     displayedImg = stereo;
 
@@ -255,6 +342,26 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL)
                 capL.retrieve(imgVidL);
                 if (key == 'k'){
                     ImgCv::trackCamShift(imgVidL,trackWind);
+
+                    if(trackWind.width > trackWind.height){
+                        std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+                        std::cout << "     * width = " << trackWind.width <<", height = " << trackWind.height << std::endl;
+
+                        trackWind.height = imgVidL.rows*0.75;//Box have a height of 3/4 of the image
+                        trackWind.width = imgVidL.cols*0.2;//Box have a width of 1/10 of the image
+
+                        trackWind.x = imgVidL.cols/2;
+                        trackWind.y = 0;
+                    }
+
+                    std::cout << "[INFO] Tracking position:" << std::endl;
+                    std::cout << "     * TopCorner = (" << trackWind.x << "," << trackWind.y << ")" << std::endl;
+                    std::cout << "     * Size      = (" << trackWind.width << "," << trackWind.height << ")" << std::endl;
+
+                    if(trackWind.width < imgVidL.cols*0.2){
+                        std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+                    }
+
                     rectangle(displayedImg, trackWind, Scalar(255), 2);
 
                 }else
