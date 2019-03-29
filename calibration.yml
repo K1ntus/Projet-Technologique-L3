@@ -108,10 +108,10 @@ dispToDepthMatrix: !!opencv-matrix
 # #  1: sbm + post filtering
 # #  3: sgbm + post filtering
 # DisparityParameter: !!opencv-matrix
-#    rows: 11
+#    rows: 12
 #    cols: 1
 #    dt: i
-#    data: [ 1, 9, 16, 25, -1, 7, 5, 0, 5, 0, 0 ]
+#    data: [ 1, 9, 16, 25, -1, 7, 5, 0, 5, 0, 0, 0.8 ]
 # ...
 # ---
 # # Disparity parameter
@@ -148,3 +148,39 @@ DisparityParameter: !!opencv-matrix
    cols: 1
    dt: i
    data: [ 2, 6, 112, 5, 600, 2400, 200, 10, 5, 0, 1, 0 ]
+...
+---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+DisparityParameter: !!opencv-matrix
+   rows: 13
+   cols: 1
+   dt: i
+   data: [ 3, 6, 16, 5, 600, 2400, 200, 10, 5, 0, 1, 0, 0.8 ]
+...
+---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+DisparityParameter: !!opencv-matrix
+   rows: 12
+   cols: 1
+   dt: i
+   data: [ 1, 5, 16, 23, 7, 31, 5, 16, 6, 37, 50, 2 ]
+...
+---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+DisparityParameter: !!opencv-matrix
+   rows: 13
+   cols: 1
+   dt: i
+   data: [ 3, 9, 16, 5, 600, 2400, 116, 20, 5, 0, 1, 0, 2 ]
