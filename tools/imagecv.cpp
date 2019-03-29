@@ -209,7 +209,7 @@ void imagecv::displayVideo(QLabel &frame, VideoCapture &capL, VideoCapture &capR
                     imgVidL = stereo.getDisparityMap(calibFilePath, param);
                     ImgCv::trackCamShift(displayedImg, trackWind);
                     rectangle(imgVidL, trackWind, Scalar(255), 2);
-                    displayedImg = imgVidL;
+                    normalize(imgVidL, displayedImg, 0, 255, NORM_MINMAX, CV_8U);
 
                 }else if(key == 'j'){
 

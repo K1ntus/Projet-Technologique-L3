@@ -181,7 +181,6 @@ Mat ImgCv::disparity_map_SGBM(const size_t &IO_minDisparity, const size_t &IO_nu
                 IO_full_scale
                 );
     sgbm->compute(img_left_gray, img_right_gray, disp);    //Generate the disparity map
-    normalize(disp, disp, 0, 255, NORM_MINMAX, CV_8U);
     return disp;
 }
 /**
@@ -235,7 +234,7 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
  * @brief ImgCv::disparity_post_filtering : Filter the disparity map
  * @return the filtered disparity map
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter) {
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma) {
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL().clone();
@@ -260,7 +259,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
     filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
-    filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
+    filter->setSigmaColor(IO_sigma); // sigma represents the sensitivity of the filter
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
@@ -278,7 +277,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
  * @param IO_P2
  * @return the disparity map post_filtered
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale){
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma){
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL();
@@ -297,9 +296,9 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
                 IO_full_scale
                 ); // use SGBM to create a matcher
 
-    //    matcher_left->setPreFilterCap(IO_preFilterCap);
-    //    matcher_left->setP1(IO_P1); // smoothness of the disparity map
-    //    matcher_left->setP2(IO_P2);
+        matcher_left->setPreFilterCap(IO_preFilterCap);
+        matcher_left->setP1(IO_P1); // smoothness of the disparity map
+        matcher_left->setP2(IO_P2);
 
     Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creates the WLSfilter
     Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);
@@ -309,7 +308,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
     filter->setLambda(12000);
-    filter->setSigmaColor(1.5);
+    filter->setSigmaColor(IO_sigma);
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
@@ -548,12 +547,25 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 
 
     Mat depthMap(depthMapImage.rows, depthMapImage.cols, CV_32F);
+    float min = std::numeric_limits<float>::max(), max = std::numeric_limits<float>::lowest();
     for(size_t i(0); i < depthMapImage.rows; i++){
         for(size_t j(0); j < depthMapImage.cols; j++){
             floatPoint = depthMapImage.at<Vec3f>(i,j);
             depthMap.at<float>(i, j) = floatPoint[2];
+
+            if( floatPoint[2] < min) {
+                min = floatPoint[2];
+            }
+
+            if ( floatPoint[2] > max ) {
+                max = floatPoint[2];
+            }
         }
     }
+
+    std::cout << "--------------------------" << std::endl;
+    std::cout << "max " << max << std::endl;
+    std::cout << "min " << min << std::endl;
 
     return depthMap;
 
@@ -653,7 +665,8 @@ Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
             res = disparity_post_filtering(
                         param.at<int>(1), param.at<int>(2), param.at<int>(3),
                         param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
+                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                        param.at<int>(10), param.at<int>(11)
                         );
             std::cout << "sbm  +PS done" << std::endl;
             break;
@@ -675,7 +688,7 @@ Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
                         param.at<int>(1), param.at<int>(2), param.at<int>(3),
                         param.at<int>(4), param.at<int>(5), param.at<int>(6),
                         param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10),  param.at<int>(11)
+                        param.at<int>(10),  param.at<int>(11), param.at<int>(12)
                         );
             std::cout << "SGBM + PS done" << std::endl;
 

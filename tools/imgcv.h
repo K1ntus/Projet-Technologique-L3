@@ -117,7 +117,7 @@ public:
      */
     cv::Mat disparity_post_filtering(size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter);
+                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma);
 
     /**
      * @brief disparity_post_filtering
@@ -126,7 +126,7 @@ public:
     cv::Mat disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
                                      const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const int &IO_full_scale);
+                                     const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma);
 
     /**
      * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n

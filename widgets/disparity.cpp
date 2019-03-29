@@ -33,6 +33,7 @@ Disparity::Disparity(QWidget *parent) :
     IO_textureTreshold = 5;
     IO_smallerBlockSize = 12;
     IO_tresholdFilter = 50;
+    IO_sigma = 0.8;
 
     IO_P1 = 156;
     IO_P2 = 864;
@@ -70,6 +71,7 @@ void Disparity::displayDisparityMap(){
 
     displayMode = DispDisplayerMode::DISPARITY;
     cv::Mat const &imgR(imgtoDisplay.getImgR());
+
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
     if(ui->filter->isChecked()){
         if(ui->sbm->isChecked()){
@@ -82,7 +84,8 @@ void Disparity::displayDisparityMap(){
                                                             IO_speckleWindowSize,
                                                             IO_speckleRange,
                                                             IO_textureTreshold,
-                                                            IO_tresholdFilter);
+                                                            IO_tresholdFilter,
+                                                            IO_sigma);
 
         }else{
             dispMap = imgtoDisplay.disparity_post_filtering(IO_minDisparity,
@@ -95,7 +98,8 @@ void Disparity::displayDisparityMap(){
                                                             IO_uniquenessRatio,
                                                             IO_speckleWindowSize,
                                                             IO_speckleRange,
-                                                            IO_full_scale);
+                                                            IO_full_scale,
+                                                            IO_sigma);
 
         }
     }else{
@@ -141,8 +145,11 @@ void Disparity::displayDisparityMap(){
 
         }
     }
+    cv::Mat dispNorm;
+    normalize(dispMap, dispNorm, 0, 255, NORM_MINMAX, CV_8U);
 
-    QImage img2 = mat_to_qimage(dispMap).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    QImage img2 = mat_to_qimage(dispNorm).scaled(width,height, Qt::KeepAspectRatio);   //Create a new image which will fit the window
+    qDebug("[INFO] disp pdisplayed");
 
     //Colorize the disparity map if the dedicated sbm is checked
     if(ui->checkbox_colorize->isChecked()){
@@ -245,7 +252,8 @@ void Disparity::on_Sobel_clicked()
                                                         IO_speckleWindowSize,
                                                         IO_speckleRange,
                                                         IO_textureTreshold,
-                                                        IO_tresholdFilter);
+                                                        IO_tresholdFilter,
+                                                        IO_sigma);
     else if (ui->sbm->isChecked()){
         dispMap = imgtoDisplay.sbm(IO_minDisparity,
                                    IO_numberOfDisparities,
@@ -268,7 +276,8 @@ void Disparity::on_Sobel_clicked()
                                                        IO_uniquenessRatio,
                                                        IO_speckleWindowSize,
                                                        IO_speckleRange,
-                                                       IO_full_scale);
+                                                       IO_full_scale,
+                                                       IO_sigma);
     else {
         dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
                                                   IO_numberOfDisparities,
@@ -284,7 +293,10 @@ void Disparity::on_Sobel_clicked()
                                                   );
 
     }
-    sobel = ImgCv::contour_sobel(dispMap);
+    cv::Mat dispNorm;
+    normalize(dispMap, dispNorm, 0, 255, NORM_MINMAX, CV_8U);
+
+    sobel = ImgCv::contour_sobel(dispNorm);
     imagecv::displayImage(*ui->image_loaded, sobel);
 
 }
@@ -311,7 +323,8 @@ void Disparity::on_Laplace_clicked()
                                                         IO_speckleWindowSize,
                                                         IO_speckleRange,
                                                         IO_textureTreshold,
-                                                        IO_tresholdFilter);
+                                                        IO_tresholdFilter,
+                                                        IO_sigma);
     else if(ui->sbm->isChecked())
         dispMap = imgtoDisplay.sbm(IO_minDisparity,
                                    IO_numberOfDisparities,
@@ -334,7 +347,8 @@ void Disparity::on_Laplace_clicked()
                                                        IO_uniquenessRatio,
                                                        IO_speckleWindowSize,
                                                        IO_speckleRange,
-                                                       IO_full_scale);
+                                                       IO_full_scale,
+                                                       IO_sigma);
     else {
         dispMap = imgtoDisplay.disparity_map_SGBM(IO_minDisparity,
                                                   IO_numberOfDisparities,
@@ -350,8 +364,9 @@ void Disparity::on_Laplace_clicked()
                                                   );
 
     }
-
-    laplace = ImgCv::contour_laplace(dispMap);
+    cv::Mat dispNorm;
+    normalize(dispMap, dispNorm, 0, 255, NORM_MINMAX, CV_8U);
+    laplace = ImgCv::contour_laplace(dispNorm);
     imagecv::displayImage(*ui->image_loaded, laplace);
 
 }
@@ -417,13 +432,18 @@ void Disparity::on_video_clicked()
                         if(!inFile.isEmpty()){
                             calibFilePath = inFile.toStdString();
                             Q = (ImgCv::getDispToDepthMat(calibFilePath));
+
                             on_depthMap_clicked();
+                            qDebug("[INFO] depth loaded");
+
                         }
                         else{
                             qDebug("[ERROR] No calibration file loaded");
                         }
                     }
                     double framerate = capL.get(CV_CAP_PROP_FPS);
+                    qDebug("[INFO] video runnig");
+
                     while(key != 'q'){
 
                         if(key == 'p'){
@@ -514,11 +534,17 @@ void Disparity::on_depthMap_clicked()
         }
     }
     else{
+        qDebug("[INFO] in on_depthMap_clicked ");
+
         imgtoDisplay.setImg(ImgCv::rectifiedImage(*img, calibFilePath), true);
         displayDisparityMap();
 
         cv::Mat Q = ImgCv::getDispToDepthMat(calibFilePath);
+        qDebug("[INFO] iQ ");
+
         depthMap = ImgCv::depthMap(dispMap,Q);
+        qDebug("[INFO] in on_depthMap_clicked depth map generated ");
+
         Mat dst;
 
         ImgCv::trackCamShift(imgtoDisplay.getImgL(), trackWindow);
@@ -755,6 +781,7 @@ void Disparity::on_calib_clicked()
                 IO_speckleRange = param.at<int>(8);
                 IO_textureTreshold = param.at<int>(9);
                 IO_tresholdFilter = param.at<int>(10);
+                IO_sigma = param.at<int>(11);
 
                 std::cout << "sbm  +PS done" << std::endl;
                 break;
@@ -789,6 +816,8 @@ void Disparity::on_calib_clicked()
                 IO_speckleWindowSize =param.at<int>(9);
                 IO_speckleRange = param.at<int>(10);
                 IO_full_scale = param.at<int>(11);
+                IO_sigma = param.at<int>(12);
+
 
                 std::cout << "SGBM + PS done" << std::endl;
 
@@ -860,8 +889,11 @@ void Disparity::on_dispParam_clicked()
             param.push_back(IO_speckleRange);
             param.push_back(IO_full_scale);
         }
-        if(ui->filter->isChecked())
+        if(ui->filter->isChecked()){
             param.at(0) += 1;
+            param.push_back(IO_sigma);
+
+        }
 
         cv::Mat paramMat(param, true);
         fs.writeComment("Disparity parameter\n0: sbm\n2: sgbm\n 1: sbm + post filtering\n 3: sgbm + post filtering", true);
@@ -897,4 +929,10 @@ void Disparity::on_track_clicked()
 
 
 
+}
+
+void Disparity::on_horizontalSlider_valueChanged(int value)
+{
+    this->IO_sigma = float(value)/10;
+    displayDisparityMap();
 }

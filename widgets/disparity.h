@@ -48,6 +48,7 @@ public:
     int IO_full_scale;
     unsigned int IO_textureTreshold;
     unsigned int IO_tresholdFilter;
+    float IO_sigma;
 
 
 private slots:
@@ -96,6 +97,8 @@ private slots:
     void on_dispParam_clicked();
 
     void on_track_clicked();
+
+    void on_horizontalSlider_valueChanged(int value);
 
 private:
     DispDisplayerMode displayMode;
