@@ -59,16 +59,17 @@ namespace mvm
 				std::cout << "     * TopCorner = (" << trackWindow.x << "," << trackWindow.y << ")" << std::endl;
 				std::cout << "     * Size      = (" << trackWindow.width << "," << trackWindow.height << ")" << std::endl;
 				avr = mean(depthMapIm(trackWindow));
+				std::cout << "(" << avr(0) << "," << avr(1) << "," << avr(2) << ")" << std::endl;
 
 				if(trackWindow.width < left_img.cols*0.1 || trackWindow.y > 0){
-					std::cout << "[INFO] No need to move on *vx" << std::endl;
+					std::cout << "[INFO] No need to move on *vx. Distance: " << avr(0) << std::endl;
 					*vx = 0;
 				}else if(avr(0) > distMax){
-					std::cout << "[FORWARD] Tracking object at a distance of " << distMax << std::endl;
-					*vx = 0.3;
+					std::cout << "[FORWARD] Tracking object at a distance of " << avr(0) << std::endl;
+					*vx = VMAX * (avr(0)/distMax);
 				}else{// if(avr(0) < distMin){
-					std::cout << "[BACKWARD] Tracking object at a distance of " << distMax << std::endl;
-					*vx = -0.3;
+					std::cout << "[BACKWARD] Tracking object at a distance of " << avr(0) << std::endl;
+					*vx = -VMAX * (distMax/avr(0));
 				}
 
 				//Rotation handler
@@ -146,7 +147,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 		matcher->setSpeckleWindowSize(IO_speckleWindowSize);
 		matcher->setSpeckleRange(IO_speckleRange);
 		matcher->setTextureThreshold(IO_textureTreshold);
-		matcher-> setNumDisparities(IO_numberOfDisparities);
+		matcher->setNumDisparities(IO_numberOfDisparities);
 
 		matcher->compute(imgL,imgR,dst);
 		normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
@@ -181,9 +182,13 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 			normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
 		}
 
-		void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
-			const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-			const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter)
+		void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst,
+			size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,
+			size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
+			const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio,
+			const size_t &IO_speckleWindowSize,	const size_t &IO_speckleRange,
+			const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter,
+			const size_t &IO_sigma, const size_t &IO_lambda)
 			{
 				using namespace cv::ximgproc;
 
@@ -199,7 +204,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				matcher_left->setSpeckleWindowSize(IO_speckleWindowSize);
 				matcher_left->setSpeckleRange(IO_speckleRange);
 				matcher_left->setTextureThreshold(IO_textureTreshold);
-				matcher_left-> setNumDisparities(IO_numberOfDisparities);
+				matcher_left->setNumDisparities(IO_numberOfDisparities);
 
 				Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
 				Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
@@ -209,8 +214,8 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
 				matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-				filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
-				filter->setSigmaColor(0.8); // sigma represents the sensitivity of the filter
+				filter->setLambda(IO_lambda);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+				filter->setSigmaColor(IO_sigma); // sigma represents the sensitivity of the filter
 
 				filter->filter(left_disparity,imageL,filtered,right_disparity); // apply the filter
 
@@ -218,10 +223,13 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				normalize(dst, dst,0,255,CV_MINMAX, CV_8U);
 			}
 
-			void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
-				const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif,
-				const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-				const size_t &IO_speckleRange, const int &IO_full_scale)
+			void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst,
+				const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
+				const size_t &IO_P1, const size_t &IO_P2,
+				const int &IO_disp12MaxDif, const size_t &IO_preFilterCap,
+				const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
+				const size_t &IO_speckleRange, const int &IO_full_scale,
+				const size_t &IO_sigma, const size_t &IO_lambda)
 				{
 					using namespace cv::ximgproc;
 
@@ -250,8 +258,8 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 					matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
 					matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-					filter->setLambda(12000);
-					filter->setSigmaColor(1.5);
+					filter->setLambda(IO_lambda);
+					filter->setSigmaColor(IO_sigma);
 
 					filter->filter(left_disparity,imageL,filtered,right_disparity);
 					cv::ximgproc::getDisparityVis(filtered,dst, 10.0);
@@ -277,41 +285,42 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 
 						break;
 						case 1:
-						std::cout << "[INFO] sbm + PS entries" << std::endl;
+							std::cout << "[INFO] sbm + PS entries" << std::endl;
 
-						disparity_post_filtering(imageL, imageR, dst,
-							param.at<int>(1), param.at<int>(2), param.at<int>(3),
-							param.at<int>(4), param.at<int>(5), param.at<int>(6),
-							param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-						);
-						std::cout << "[INFO] sbm  +PS done" << std::endl;
-						break;
+							disparity_post_filtering(imageL, imageR, dst,
+								param.at<int>(1), param.at<int>(2), param.at<int>(3),
+								param.at<int>(4), param.at<int>(5), param.at<int>(6),
+								param.at<int>(7), param.at<int>(8), param.at<int>(9),
+								param.at<int>(10), param.at<int>(11), param.at<int>(12)
+							);
+							std::cout << "[INFO] sbm  +PS done" << std::endl;
+							break;
 						case 2:
-						std::cout << "[INFO] SGBM entries" << std::endl;
+							std::cout << "[INFO] SGBM entries" << std::endl;
 
-						disparity_map_SGBM(imageL, imageR, dst,
-							param.at<int>(1), param.at<int>(2), param.at<int>(3),
-							param.at<int>(4), param.at<int>(5), param.at<int>(6),
-							param.at<int>(7), param.at<int>(8), param.at<int>(9),
-							param.at<int>(10),  param.at<int>(11)
-						);
-						std::cout << "[INFO] SGBM done" << std::endl;
-						break;
+							disparity_map_SGBM(imageL, imageR, dst,
+								param.at<int>(1), param.at<int>(2), param.at<int>(3),
+								param.at<int>(4), param.at<int>(5), param.at<int>(6),
+								param.at<int>(7), param.at<int>(8), param.at<int>(9),
+								param.at<int>(10),  param.at<int>(11)
+							);
+							std::cout << "[INFO] SGBM done" << std::endl;
+							break;
 						case 3:
-						std::cout << "[INFO] SGBM + PS entries" << std::endl;
+							std::cout << "[INFO] SGBM + PS entries" << std::endl;
 
-						disparity_post_filtering(imageL, imageR, dst,
-							param.at<int>(1), param.at<int>(2), param.at<int>(3),
-							param.at<int>(4), param.at<int>(5), param.at<int>(6),
-							param.at<int>(7), param.at<int>(8), param.at<int>(9),
-							param.at<int>(10),  param.at<int>(11)
-						);
-						std::cout << "[INFO] SGBM + PS done" << std::endl;
+							disparity_post_filtering(imageL, imageR, dst,
+								param.at<int>(1), param.at<int>(2), param.at<int>(3),
+								param.at<int>(4), param.at<int>(5), param.at<int>(6),
+								param.at<int>(7), param.at<int>(8), param.at<int>(9),
+								param.at<int>(10), param.at<int>(11), param.at<int>(12)
+							);
+							std::cout << "[INFO] SGBM + PS done" << std::endl;
 
-						break;
+							break;
 						default:
-						std::cout << "[ERROR] can't match to any case" << std::endl;
-						break;
+							std::cout << "[ERROR] can't match to any case" << std::endl;
+							break;
 
 					}
 
@@ -327,6 +336,13 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 					cv::Mat depthMapVal(depthMapImage.rows, depthMapImage.cols, CV_32F);
 					for(size_t i(0); i < depthMapImage.rows; i++){
 						for(size_t j(0); j < depthMapImage.cols; j++){
+							/*
+							if(depthMapImage.at<float>(i,j)<200){
+								floatPoint = depthMapImage.at<Vec3f>(i,j);
+								depthMapVal.at<float>(i, j) = floatPoint[2];
+							}
+							*/
+
 							floatPoint = depthMapImage.at<Vec3f>(i,j);
 							depthMapVal.at<float>(i, j) = floatPoint[2];
 						}

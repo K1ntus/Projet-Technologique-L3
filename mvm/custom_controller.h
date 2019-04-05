@@ -17,7 +17,8 @@ namespace mvm
 {
 
 #define CONFIG_FILE_PATH "calibration.yml"
-#define FPS 30
+#define FPS 10
+#define VMAX 0.3
 class CustomController : public Controller
 {
 public:
@@ -51,7 +52,7 @@ public:
      */
     void disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter);
+                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const size_t &IO_sigma, const size_t &IO_lambda);
 
     /**
      * @brief disparity_post_filtering
@@ -60,7 +61,7 @@ public:
     void disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
                                      const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const int &IO_full_scale);
+                                     const size_t &IO_speckleRange, const int &IO_full_scale, const size_t &IO_sigma, const size_t &IO_lambda);
 
 
 
