@@ -63,29 +63,6 @@ Mat ImgCv::contour_laplace(Mat const&img)
 }
 
 /**
-* @brief Convert an image following the laplace algorithm
-* @return The parameters converted with laplace algorithm
-*/
-
-Mat ImgCv::contour_laplace() const
-{
-    Mat img_read;
-    if(this->empty()){
-        std::cout << "img is empty" << std::endl;
-        return img_read;
-    }else
-        img_read = this->clone();
-    Mat gray_img, result, final;
-
-    GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT); // apply the gaussianBlur to smooth the img
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
-
-    Laplacian(gray_img,result,CV_16S,3,1,0,BORDER_DEFAULT);
-    convertScaleAbs(result,final,1,0);                          //convert to a CV_8U image
-    return final;
-}
-
-/**
  * @brief ImgCv::contour_sobel :  convert an image using the Sobel filter. Permits to detect the contours of an image.
  * @param img :  the loaded image
  * @return the converted image
@@ -110,36 +87,6 @@ Mat ImgCv::contour_sobel(const Mat &img){
     return final;
 
 }
-/**
-* @brief Convert an image following the sobel algorithm
-* @param Image to convert
-*  @return The parameters converted with sobel algorithm
-*/
-Mat ImgCv::contour_sobel() const
-{
-    Mat img_read;
-    if(this->empty()){
-        std::cout << "img is empty" << std::endl;
-        return img_read;
-
-    }else
-        img_read = this->clone();
-
-    Mat gray_img,final,gx,gy,gx_goodFormat, gy_goodFormat;
-
-    GaussianBlur(img_read,img_read,Size(3,3),0,0,BORDER_DEFAULT);
-    cvtColor(img_read,gray_img,CV_BGR2GRAY);
-
-    Sobel(gray_img,gx,CV_16S,1,0,3,1,0,BORDER_DEFAULT);  // derivative in x
-    Sobel(gray_img,gy,CV_16S,0,1,3,1,0,BORDER_DEFAULT);// derivative in y
-
-    convertScaleAbs(gy,gy_goodFormat,1,0);
-    convertScaleAbs(gx,gx_goodFormat,1,0);
-
-    addWeighted(gx_goodFormat,0.5,gy_goodFormat,0.5,0,final,-1); // final gradient is the addition of the two gradients
-    return final;
-}
-
 /**
  * @brief ImgCv::disparity_map_SGBM : compute a disparity map, using SGBM (a block matching method)\n
  * @param IO_minDisparity : the minimal disparity\n
@@ -212,7 +159,6 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
     cvtColor(getImgR(),imgR,CV_BGR2GRAY);
 
     Ptr<StereoBM> matcher= StereoBM::create(IO_numberOfDisparities,IO_SADWindowSize);
-
     matcher->setPreFilterCap(IO_preFilterCap);
     matcher->setMinDisparity(IO_minDisparity);
     matcher->setDisp12MaxDiff(IO_disp12MaxDif);
@@ -223,8 +169,7 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
     matcher-> setNumDisparities(IO_numberOfDisparities);
 
     matcher->compute(imgL,imgR,dst);
-    normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
-    threshold(dst,dst,IO_tresholdFilter,255,THRESH_TOZERO);
+    threshold(dst,dst,IO_tresholdFilter,255,THRESH_TRUNC);
 
     return dst;
 }
@@ -234,7 +179,8 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
  * @brief ImgCv::disparity_post_filtering : Filter the disparity map
  * @return the filtered disparity map
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma) {
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
+                                    const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma, const size_t &IO_lambda) {
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL().clone();
@@ -258,13 +204,12 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_left->compute(left_for_matching,right_for_matching,left_disparity);    // compute the left disparity map
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-    filter->setLambda(8000);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+    filter->setLambda(IO_lambda);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
     filter->setSigmaColor(IO_sigma); // sigma represents the sensitivity of the filter
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);// permits to visualize the disparity map
-    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 1.0);// permits to visualize the disparity map
     return final_disparity_map;
 
 }
@@ -277,7 +222,7 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
  * @param IO_P2
  * @return the disparity map post_filtered
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma){
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma, const size_t &IO_lambda){
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL();
@@ -307,13 +252,12 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_left->compute(left_for_matching,right_for_matching,left_disparity); // compute the left disparity map
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
-    filter->setLambda(12000);
+    filter->setLambda(IO_lambda);
     filter->setSigmaColor(IO_sigma);
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
-    cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 10.0);
-    normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
-    // bitwise_not(final_disparity_map,final_disparity_map);
+    cv::ximgproc::getDisparityVis(filtered,final_disparity_map);
+   // normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
     return final_disparity_map;
 
 }
@@ -546,7 +490,7 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
     reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
 
 
-    Mat depthMap(depthMapImage.rows, depthMapImage.cols, CV_32F);
+    Mat depthMap(depthMapImage.rows, depthMapImage.cols,CV_32F);
     float min = std::numeric_limits<float>::max(), max = std::numeric_limits<float>::lowest();
     for(size_t i(0); i < depthMapImage.rows; i++){
         for(size_t j(0); j < depthMapImage.cols; j++){
@@ -666,7 +610,8 @@ Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
                         param.at<int>(1), param.at<int>(2), param.at<int>(3),
                         param.at<int>(4), param.at<int>(5), param.at<int>(6),
                         param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10), param.at<int>(11)
+                        param.at<int>(10), param.at<int>(11), param.at<double>(12),
+                        param.at<int>(13)
                         );
             std::cout << "sbm  +PS done" << std::endl;
             break;
@@ -688,7 +633,8 @@ Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
                         param.at<int>(1), param.at<int>(2), param.at<int>(3),
                         param.at<int>(4), param.at<int>(5), param.at<int>(6),
                         param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10),  param.at<int>(11), param.at<int>(12)
+                        param.at<int>(10),  param.at<int>(11), param.at<int>(12),
+                        param.at<int>(13)
                         );
             std::cout << "SGBM + PS done" << std::endl;
 
@@ -799,4 +745,29 @@ Mat ImgCv::orbDetection(const Mat &firstImage, const Mat &secondImage){
 
     }
     return dst;
+}
+
+float ImgCv::calculateDistanceDepthMap(const Mat &roiDepthMap){
+    std::vector<float> values;
+    int count =0;
+
+    for(int i = 0; i<roiDepthMap.rows;i++){
+        for(int j = 0; j<roiDepthMap.cols; j++){
+            if(roiDepthMap.at<float>(i,j)<200){
+               values.push_back(roiDepthMap.at<float>(i,j));
+               count ++;
+            }
+        }
+    }
+    double min, max;
+    cv::minMaxLoc(values,&min, &max);
+    cv::Scalar temp = mean(values);
+    float average = temp(0);
+    FileStorage fs("depthMap.yml", FileStorage::WRITE);
+    fs<<"minimal value"<<min;
+    fs<<"max value"<<max;
+    fs<<"average"<<average;
+    fs<< "depth"<<values;
+    fs.release();
+    return average;
 }

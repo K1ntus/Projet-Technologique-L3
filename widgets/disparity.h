@@ -49,6 +49,7 @@ public:
     unsigned int IO_textureTreshold;
     unsigned int IO_tresholdFilter;
     float IO_sigma;
+    unsigned int IO_lambda;
 
 
 private slots:
@@ -98,7 +99,11 @@ private slots:
 
     void on_track_clicked();
 
-    void on_horizontalSlider_valueChanged(int value);
+    void on_doubleSpinBox_sigma_valueChanged(double arg1);
+
+    void on_spinBox_lambda_2_valueChanged(int arg1);
+
+    void on_save_depth_map_clicked();
 
 private:
     DispDisplayerMode displayMode;

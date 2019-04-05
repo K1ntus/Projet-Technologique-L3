@@ -73,11 +73,6 @@ public:
      */
     cv::Mat static contour_laplace(cv::Mat const&);
 
-    /**
-    * @brief Convert an image following the laplace algorithm
-    * @return The parameters converted with laplace algorithm
-    */
-    cv::Mat contour_laplace() const;
 
     /** static version of the method
      * @brief Convert an image following the sobel algorithm
@@ -85,12 +80,6 @@ public:
      * @return The parameters converted with sobel algorithm
      */
     cv::Mat static contour_sobel(cv::Mat const& img);
-
-    /**
-     * @brief convert an image following the sobel algorithm
-     * @return The parameters converted with sobel algorithm
-     */
-    cv::Mat contour_sobel() const;
 
     /**
      * @brief Display a disparity map using sbm parameters
@@ -117,7 +106,7 @@ public:
      */
     cv::Mat disparity_post_filtering(size_t const &IO_minDisparity, size_t const &IO_numberOfDisparities,  size_t const &IO_SADWindowSize, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma);
+                                     const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma, const size_t &IO_lambda);
 
     /**
      * @brief disparity_post_filtering
@@ -126,7 +115,7 @@ public:
     cv::Mat disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
                                      const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif,
                                      const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                     const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma);
+                                     const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma, const size_t  &IO_lambda);
 
     /**
      * @brief ImgCv::depthMap :  Compute the depth map using the disparity and the camera parameters\n
@@ -187,6 +176,8 @@ public:
     void static trackCamShift(cv::Mat const& image, cv::Rect &trackWindow);
 
     cv::Mat static orbDetection(const cv::Mat &firstImage, const cv::Mat &secondImage);
+
+    float calculateDistanceDepthMap(const cv::Mat &roiDepthMap);
 private:
 
     bool stereo;
