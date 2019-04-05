@@ -38,14 +38,14 @@ namespace mvm
 				std::cout << "[FORWARD] disparity map generation !\n";
 				cv::Mat disparityMap;
 				getDisparityMap(left_img, right_img, disparityMap,disparityParam);
-
+				
 				std::cout << "[INFO] depth map generation !\n";
-				cv::Mat depthMapIm(depthMap(disparityMap, Q));
+				cv::Mat depthMapIm = depthMap(disparityMap, Q);
 
 				trackCamShift(left_img, trackWindow);
-				Scalar avr= mean(depthMapIm(trackWindow));
 
-				if(trackWindow.width > trackWindow.height){
+				
+				if(trackWindow.width >= trackWindow.height){
 					std::cout << "[WARNING] Tracking object has a larger width than height" << std::endl;
 					std::cout << "     * width = " << trackWindow.width <<", height = " << trackWindow.height << std::endl;
 
@@ -58,7 +58,17 @@ namespace mvm
 				std::cout << "[INFO] Tracking lambda position:" << std::endl;
 				std::cout << "     * TopCorner = (" << trackWindow.x << "," << trackWindow.y << ")" << std::endl;
 				std::cout << "     * Size      = (" << trackWindow.width << "," << trackWindow.height << ")" << std::endl;
-				avr = mean(depthMapIm(trackWindow));
+				std::vector<float> values;
+				for(int i = 0; i<depthMapIm.rows;i++){
+        				for(int j = 0; j<depthMapIm.cols; j++){
+           					if(depthMapIm.at<float>(i,j)<180){
+               						values.push_back(depthMapIm.at<float>(i,j));
+              
+            					}
+        				}
+    				}
+				Scalar avr= mean(values);
+				
 				std::cout << "(" << avr(0) << "," << avr(1) << "," << avr(2) << ")" << std::endl;
 
 				if(trackWindow.width < left_img.cols*0.1 || trackWindow.y > 0){
@@ -150,7 +160,6 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 		matcher->setNumDisparities(IO_numberOfDisparities);
 
 		matcher->compute(imgL,imgR,dst);
-		normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
 		threshold(dst,dst,IO_tresholdFilter,255,THRESH_TOZERO);
 
 	}
@@ -179,7 +188,6 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				IO_full_scale
 			);
 			sgbm->compute(img_left_gray, img_right_gray, dst);    //Generate the disparity map
-			normalize(dst, dst, 0, 255, NORM_MINMAX, CV_8U);
 		}
 
 		void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst,
@@ -188,7 +196,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 			const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio,
 			const size_t &IO_speckleWindowSize,	const size_t &IO_speckleRange,
 			const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter,
-			const size_t &IO_sigma, const size_t &IO_lambda)
+			const float &IO_sigma, const size_t &IO_lambda)
 			{
 				using namespace cv::ximgproc;
 
@@ -205,7 +213,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				matcher_left->setSpeckleRange(IO_speckleRange);
 				matcher_left->setTextureThreshold(IO_textureTreshold);
 				matcher_left->setNumDisparities(IO_numberOfDisparities);
-
+				
 				Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
 				Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
 
@@ -219,9 +227,9 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 
 				filter->filter(left_disparity,imageL,filtered,right_disparity); // apply the filter
 
-				cv::ximgproc::getDisparityVis(filtered,dst, 10.0);// permits to visualize the disparity map
-				normalize(dst, dst,0,255,CV_MINMAX, CV_8U);
+				cv::ximgproc::getDisparityVis(filtered,dst, 1.0);// permits to visualize the disparity map
 			}
+
 
 			void CustomController::disparity_post_filtering(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst,
 				const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
@@ -229,7 +237,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 				const int &IO_disp12MaxDif, const size_t &IO_preFilterCap,
 				const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
 				const size_t &IO_speckleRange, const int &IO_full_scale,
-				const size_t &IO_sigma, const size_t &IO_lambda)
+				const float &IO_sigma, const size_t &IO_lambda)
 				{
 					using namespace cv::ximgproc;
 
@@ -262,8 +270,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 					filter->setSigmaColor(IO_sigma);
 
 					filter->filter(left_disparity,imageL,filtered,right_disparity);
-					cv::ximgproc::getDisparityVis(filtered,dst, 10.0);
-					normalize(dst, dst,0,255,CV_MINMAX, CV_8U);
+					cv::ximgproc::getDisparityVis(filtered,dst, 1.0);
 				}
 
 				void CustomController::getDisparityMap(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &dst, cv::Mat param ){
@@ -291,7 +298,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 								param.at<int>(1), param.at<int>(2), param.at<int>(3),
 								param.at<int>(4), param.at<int>(5), param.at<int>(6),
 								param.at<int>(7), param.at<int>(8), param.at<int>(9),
-								param.at<int>(10), param.at<int>(11), param.at<int>(12)
+								param.at<int>(10), param.at<int>(11), param.at<float>(12)
 							);
 							std::cout << "[INFO] sbm  +PS done" << std::endl;
 							break;
@@ -332,22 +339,13 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 					cv::Vec3f floatPoint;
 					cv::reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
 
-
 					cv::Mat depthMapVal(depthMapImage.rows, depthMapImage.cols, CV_32F);
 					for(size_t i(0); i < depthMapImage.rows; i++){
 						for(size_t j(0); j < depthMapImage.cols; j++){
-							/*
-							if(depthMapImage.at<float>(i,j)<200){
-								floatPoint = depthMapImage.at<Vec3f>(i,j);
-								depthMapVal.at<float>(i, j) = floatPoint[2];
-							}
-							*/
-
 							floatPoint = depthMapImage.at<Vec3f>(i,j);
 							depthMapVal.at<float>(i, j) = floatPoint[2];
 						}
 					}
-					normalize(depthMapVal, depthMapVal, 0, 255, NORM_MINMAX, CV_32F);
 
 					return depthMapVal;
 
