@@ -44,17 +44,29 @@ public:
     cv::Mat getImgR() const;
 
     /**
-     * @brief ImgCv::getDisparityMap
+     * @brief ImgCv::getDisparityMap from a calibration file, and save the param in a cv::Mat
+     * @param
      * @return  the disparity map
      */
-    cv::Mat getDisparityMap(std::string const& calibFile = "", cv::Mat param = cv::Mat() );
+    cv::Mat getDisparityMap(std::string const& calibFile = "", cv::Mat *param = nullptr);
+
+    /**
+     * @brief ImgCv::getDisparityMap from a parameters cv::Mat
+     * @param
+     * @return  the disparity map
+     */
+    cv::Mat getDisparityMap(cv::Mat const&param );
 
     /**
      * @brief ImgCv::getDepthMap
      * @param TProjectionMat The matrix containing the intrinsec and extrinsec parameters of the camera
      * @return the depth map
      */
-    cv::Mat getDepthMap(cv::Mat &TProjectionMat);
+    cv::Mat getDepthMap(cv::Mat const&param, cv::Mat &TProjectionMat);
+
+    cv::Mat getDepthMap(const std::string &calibFile, cv::Mat &TProjectionMat);
+
+    cv::Mat getDepthMap(std::string const& calibFile);
 
     void setImg(cv::Mat const&img, bool isStereo);
     void setImg(cv::Mat const&imgL, cv::Mat const&imgR);
@@ -177,7 +189,7 @@ public:
 
     cv::Mat static orbDetection(const cv::Mat &firstImage, const cv::Mat &secondImage);
 
-    float calculateDistanceDepthMap(const cv::Mat &roiDepthMap);
+    float static calculateDistanceDepthMap(const cv::Mat &roiDepthMap);
 private:
 
     bool stereo;

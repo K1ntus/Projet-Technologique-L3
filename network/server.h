@@ -15,12 +15,13 @@ class Server : public QTcpServer
 public:
     explicit Server(QObject *parent = 0);
     ~Server();
-    void StartServer();
+    void StartServer(std::string const&calibFile);
 
 signals:
+    void order(int);
 
 public slots:
-    void received_pair_image(QImage received_image);
+    void received_pair_image(ImgCv received_image, int &order);
 
 protected:
     //void incomingConnection(qintptr socketDescriptor);  //New version Qt's signature
@@ -29,6 +30,8 @@ protected:
 private:
     Disparity * parametersWindow;
     TCP_Thread *thread;
+    std::string calibFile;
+
 
 };
 #endif // SERVER_H

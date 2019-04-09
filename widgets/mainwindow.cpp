@@ -337,8 +337,11 @@ void MainWindow::on_videoFromSet_clicked()
 
 void MainWindow::on_actionrun_triggered()
 {
-    tcp_server.StartServer();
+//    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+//    if(filePath.isEmpty()) return;
+    tcp_server.StartServer("");
 }
+
 
 void MainWindow::on_actionclose_triggered()
 {
@@ -356,80 +359,65 @@ void MainWindow::on_tracking_clicked()
 
     }
 
-//    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
-//    if(filePath.isEmpty()) return;
-
-//    cv::Mat param, dispPrev, dispNext, dispDiff;
-//    ImgCv nextFrame;
-//    FileStorage fs(filePath.toStdString(), FileStorage::READ);
-//    if(fs.isOpened()){
-
-
-//        fs["DisparityParameter"] >> param;
-//        fs.release();
-//    }else{
-//        qDebug("[ERROR] in: on_dispParam_clicked\n couldn't opend calib file.");
-//        return;
-//    }
-
-//    qDebug("[INFO] Load the next frame");
-
-//    if(!load_file(*this, nextFrame, true)){
-//        qDebug("[ERROR] No images loaded");
-//        return;
-//    }
-
-//    qDebug("next frame loaded");
-
-//    switch(param.at<int>(0)){
-//    case 0:
-//        qDebug("sbm entries");
-
-//        dispPrev = img->sbm(
-//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-//                );
-//        dispNext = nextFrame.sbm(
-//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-//                param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-//                );
-//        qDebug("sbm done");
-
-//        break;
-//    case 1:
-//        break;
-//    case 2:
-//        dispPrev = img->disparity_map_SGBM(
-//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
-//                    param.at<int>(10),  param.at<int>(11)
-//                );
-//        dispNext = nextFrame.disparity_map_SGBM(
-//                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
-//                param.at<int>(4), param.at<int>(5), param.at<int>(6),
-//                param.at<int>(7), param.at<int>(8), param.at<int>(9),
-//                param.at<int>(10),  param.at<int>(11)
-//                );
-//        break;
-//    case 4:
-//        break;
-//    default:
-//        qDebug("[ERROR] can't match to any case");
-//        return;
-
-//    }
-//    qDebug("dis loaded");
-//    img->setImg(dispPrev, dispNext);
-
-//    cvtColor(ImgCv(dispPrev, dispNext), dispDiff, CV_GRAY2BGR);
-//    ImgCv::trackSomething(dispDiff, dispDiff);
-    Mat copyImg(img->getImgR());
+    Mat copyImg;
+    if(img->channels()==1)
+        cvtColor((img->isStereo())? img->getImgR() : *img,copyImg,CV_GRAY2BGR);
+    else
+        copyImg = (img->isStereo())? img->getImgR() : *img;
     Rect trackWind(Rect(copyImg.rows/2, 0, copyImg.rows/2, copyImg.cols/(2)));
 
-    ImgCv::trackCamShift(img->getImgL(), trackWind) ;
+
+    ImgCv::trackCamShift(copyImg, trackWind);
+    rectangle( copyImg, trackWind, cv::Scalar(255), 2);
     imagecv::displayImage(*ui->backgroundLabel, copyImg);
+
+}
+
+void MainWindow::on_actiondisparity_map_triggered()
+{
+        QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the disparity map file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+        if(filePath.isEmpty()) return;
+
+        cv::Mat dispMap;
+        FileStorage fs(filePath.toStdString(), FileStorage::READ);
+        if(fs.isOpened()){
+            fs["DisparityMap"] >> dispMap;
+            displayImage(*ui->backgroundLabel, dispMap);
+            img->setImg(dispMap, false);
+            fs.release();
+        }
+}
+
+void MainWindow::on_actiondepth_map_triggered()
+{
+    if(img->empty()){
+        qDebug("[INFO] Load a disparity map before");
+        on_actiondisparity_map_triggered();
+
+    }
+    Mat copyImg;
+    if(img->channels()==1)
+        cvtColor(*img,copyImg,CV_GRAY2BGR);
+    else{
+        qDebug("[ERROR] not a disparity map ");
+
+        return;
+    }
+    QString filePath = QFileDialog::getOpenFileName(this, this->tr("Choose the calibration file"), this->tr("./resources/"), this->tr("yaml Files (*.yml)"));
+    if(filePath.isEmpty()) return;
+
+    cv::Mat Q(ImgCv::getDispToDepthMat(filePath.toStdString()));
+    cv::Mat depthMap(ImgCv::depthMap(*img, Q));
+
+    Rect trackWind(Rect(copyImg.rows/2, 0, copyImg.rows/2, copyImg.cols/(2)));
+    ImgCv::trackCamShift(copyImg, trackWind);
+    rectangle( depthMap, trackWind, cv::Scalar(255), 2);
+    Scalar avr = mean(depthMap(trackWind));
+    std::cout << "average value 0: " << avr(0)
+              << "\naverage value 1" << avr(1)<< std::endl;
+    normalize(depthMap, depthMap, 0, 255, NORM_MINMAX, CV_32F);
+
+    imshow("depth map", depthMap);
+
 
 }

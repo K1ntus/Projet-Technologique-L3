@@ -67,6 +67,8 @@ private slots:
     void on_actionrun_triggered();
     void on_actionclose_triggered();
     void on_tracking_clicked();
+    void on_actiondisparity_map_triggered();
+    void on_actiondepth_map_triggered();
 };
 
 #endif // MAINWINDOW_H

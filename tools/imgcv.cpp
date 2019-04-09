@@ -179,8 +179,11 @@ Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDispariti
  * @brief ImgCv::disparity_post_filtering : Filter the disparity map
  * @return the filtered disparity map
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize,
-                                    const size_t &IO_speckleRange, const size_t &IO_textureTreshold, const size_t &IO_tresholdFilter, const float &IO_sigma, const size_t &IO_lambda) {
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
+                                    const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio,
+                                    const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const size_t &IO_textureTreshold,
+                                    const size_t &IO_tresholdFilter, const float &IO_sigma, const size_t &IO_lambda) {
+
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL().clone();
@@ -205,11 +208,13 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_right->compute(right_for_matching,left_for_matching, right_disparity); // compute the right disparity map
 
     filter->setLambda(IO_lambda);// lambda defining regularization of the filter.  With a high value, the edge of the disparity map will "more" match with the source image
+
     filter->setSigmaColor(IO_sigma); // sigma represents the sensitivity of the filter
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity); // apply the filter
 
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map, 1.0);// permits to visualize the disparity map
+
     return final_disparity_map;
 
 }
@@ -222,7 +227,11 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
  * @param IO_P2
  * @return the disparity map post_filtered
  */
-Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize, const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange, const int &IO_full_scale, const float &IO_sigma, const size_t &IO_lambda){
+Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
+                                    const size_t &IO_P1, const size_t &IO_P2, const int &IO_disp12MaxDif, const size_t &IO_preFilterCap,
+                                    const size_t &IO_uniquenessRatio, const size_t &IO_speckleWindowSize, const size_t &IO_speckleRange,
+                                    const int &IO_full_scale, const float &IO_sigma, const size_t &IO_lambda){
+
     Mat left_disparity, right_disparity, filtered, left_for_matching, right_for_matching;
     Mat final_disparity_map;
     left_for_matching= getImgL();
@@ -257,7 +266,6 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
 
     filter->filter(left_disparity,getImgL(),filtered,right_disparity);
     cv::ximgproc::getDisparityVis(filtered,final_disparity_map);
-   // normalize(final_disparity_map, final_disparity_map,0,255,CV_MINMAX, CV_8U);
     return final_disparity_map;
 
 }
@@ -446,7 +454,7 @@ void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
     int hsize(16), vmin(0), vmax(180), smin(180), channels[] = {0, 0};
     float hranges[] = {0, 180};
     const float* phranges = hranges;
-    Mat hsv, hue, mask, hist, histimg(Mat::zeros(200,320, CV_8UC3)), backproj;
+    Mat hsv, hue, mask, hist, backproj;
     cvtColor(image, hsv, COLOR_BGR2HSV);
     inRange(hsv, Scalar(0, smin, vmin), Scalar(180, 256, vmax), mask);
     hue.create(hsv.size(), hsv.depth());
@@ -454,25 +462,32 @@ void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
 
 
     Mat roi(hue, trackWindow), maskroi( mask, trackWindow);
-    calcHist(&roi, 1, 0, maskroi, hist, 1, &hsize, &phranges);
+    calcHist(&roi, 1, nullptr, maskroi, hist, 1, &hsize, &phranges);
     normalize(hist, hist, 0, 255, NORM_MINMAX);
-    histimg = Scalar::all(0);
-    int binW(histimg.cols / hsize);
-    Mat buf(1, hsize, CV_8UC3);
-    for(size_t i(0); i < hsize; i++){
-        buf.at<Vec3b>(i) = Vec3b(saturate_cast<uchar>(i*180./hsize), 255, 255);
-    }
-    cvtColor(buf, buf, COLOR_HSV2BGR);
-    for(size_t i(0); i < hsize; i++){
-        int val(saturate_cast<int>(hist.at<float>(i)*histimg.rows/255));
-        rectangle(histimg, Point(i*binW, histimg.rows), Point((i+1)*binW, histimg.rows -val),
-                  Scalar(buf.at<Vec3b>(i)), -1, 8);
-    }
 
-    calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
+    calcBackProject(&hue, 1, nullptr, hist, backproj, &phranges);
     backproj &= mask;
     CamShift(backproj, trackWindow, TermCriteria(TermCriteria::EPS | TermCriteria::COUNT, 10, 1));
 
+    if(trackWindow.width > trackWindow.height){
+        std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+        std::cout << "     * width = " << trackWindow.width <<", height = " << trackWindow.height << std::endl;
+
+        trackWindow.height = image.rows*0.75;//Box have a height of 3/4 of the image
+        trackWindow.width = image.cols*0.2;//Box have a width of 1/10 of the image
+
+        trackWindow.x = image.cols/3;
+        trackWindow.y = 0;
+    }
+
+    std::cout << "[INFO] Tracking position:" << std::endl;
+    std::cout << "     * TopCorner = (" << trackWindow.x << "," << trackWindow.y << ")" << std::endl;
+    std::cout << "     * Size      = (" << trackWindow.width << "," << trackWindow.height << ")" << std::endl;
+
+    if(trackWindow.width < image.cols*0.2){
+        std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+
+    }
 
 
 }
@@ -584,79 +599,108 @@ Mat ImgCv::getImgR() const
  * @brief ImgCv::getDisparityMap
  * @return  the disparity map
  */
-Mat ImgCv::getDisparityMap(const std::string &calibFile, cv::Mat param ){
+Mat ImgCv::getDisparityMap(const std::string &calibFile, Mat *param){
     FileStorage fs(calibFile, FileStorage::READ);
     if(fs.isOpened()){
 
-        fs["DisparityParameter"] >> param;
-        cv::Mat res;
-        switch(param.at<int>(0)){
-        case 0:
-            std::cout << "sbm entries" << std::endl;
+        if(param == nullptr){
+            cv::Mat res;
+            param = new cv::Mat;
+            fs["DisparityParameter"] >> *param;
+            res = getDisparityMap(*param);
+            delete param;
+            fs.release();
 
-            res = sbm(
-                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                        param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
-                        );
-
-            std::cout << "sbm done" << std::endl;
-
-            break;
-        case 1:
-            std::cout << "sbm + PS entries" << std::endl;
-
-            res = disparity_post_filtering(
-                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10), param.at<int>(11), param.at<double>(12),
-                        param.at<int>(13)
-                        );
-            std::cout << "sbm  +PS done" << std::endl;
-            break;
-        case 2:
-            std::cout << "SGBM entries" << std::endl;
-
-            res = disparity_map_SGBM(
-                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10),  param.at<int>(11)
-                        );
-            std::cout << "SGBM done" << std::endl;
-            break;
-        case 3:
-            std::cout << "SGBM + PS entries" << std::endl;
-
-            res = disparity_post_filtering(
-                        param.at<int>(1), param.at<int>(2), param.at<int>(3),
-                        param.at<int>(4), param.at<int>(5), param.at<int>(6),
-                        param.at<int>(7), param.at<int>(8), param.at<int>(9),
-                        param.at<int>(10),  param.at<int>(11), param.at<int>(12),
-                        param.at<int>(13)
-                        );
-            std::cout << "SGBM + PS done" << std::endl;
-
-            break;
-        default:
-            std::cout << "[ERROR] can't match to any case" << std::endl;
-            break;
-
+            return res;
+        }else{
+            fs["DisparityParameter"] >> *param;
+            fs.release();
+            return getDisparityMap(*param);
         }
-        fs.release();
-        return res;
     }else
         return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
+
+Mat ImgCv::getDisparityMap(const Mat &param)
+{
+    cv::Mat res;
+    switch((int)param.at<float>(0)){
+    case 0:
+        std::cout << "sbm entries" << std::endl;
+
+        res = sbm(
+                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
+                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
+                    param.at<float>(7), param.at<float>(8), param.at<float>(9), param.at<float>(10)
+                    );
+
+        std::cout << "sbm done" << std::endl;
+
+        break;
+    case 1:
+        std::cout << "sbm + PS entries" << std::endl;
+
+        res = disparity_post_filtering(
+                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
+                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
+                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
+                    param.at<float>(10), param.at<float>(11), param.at<double>(12),
+                    param.at<float>(13)
+                    );
+        std::cout << "sbm  +PS done" << std::endl;
+        break;
+    case 2:
+        std::cout << "SGBM entries" << std::endl;
+
+        res = disparity_map_SGBM(
+                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
+                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
+                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
+                    param.at<float>(10),  param.at<float>(11)
+                    );
+        std::cout << "SGBM done" << std::endl;
+        break;
+    case 3:
+        std::cout << "SGBM + PS entries" << std::endl;
+
+        res = disparity_post_filtering(
+                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
+                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
+                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
+                    param.at<float>(10),  param.at<float>(11), param.at<float>(12),
+                    param.at<float>(13)
+                    );
+        std::cout << "SGBM + PS done" << std::endl;
+
+        break;
+    default:
+        std::cout << "[ERROR] can't match to any case "
+                  << param.at<int>(0) << std::endl;
+        break;
+    }
+    return res;
+}
+
+Mat ImgCv::getDepthMap(const std::string &calibFile, Mat &TProjectionMat)
+{
+    return depthMap(getDisparityMap(calibFile), TProjectionMat);
+}
+
 
 /**
  * @brief ImgCv::getDepthMap
  * @param TProjectionMat The matrix containing the intrinsec and extrinsec parameters of the camera
  * @return the depth map
  */
-Mat ImgCv::getDepthMap(Mat &TProjectionMat){
-    return depthMap(getDisparityMap(), TProjectionMat);
+Mat ImgCv::getDepthMap(cv::Mat const&param, Mat &TProjectionMat){
+    return depthMap(getDisparityMap(param), TProjectionMat);
+}
+
+Mat ImgCv::getDepthMap(const std::string &calibFile)
+{
+    Mat Q = getDispToDepthMat(calibFile);
+    return depthMap(getDisparityMap(calibFile), Q);
+
 }
 
 /**
@@ -763,11 +807,10 @@ float ImgCv::calculateDistanceDepthMap(const Mat &roiDepthMap){
     cv::minMaxLoc(values,&min, &max);
     cv::Scalar temp = mean(values);
     float average = temp(0);
-    FileStorage fs("depthMap.yml", FileStorage::WRITE);
-    fs<<"minimal value"<<min;
-    fs<<"max value"<<max;
-    fs<<"average"<<average;
-    fs<< "depth"<<values;
-    fs.release();
+//    FileStorage fs("depthMap.yml", FileStorage::WRITE);
+    std::cout << "minimal value: "<< min
+    << "\nmax value: "<< max
+    << "\naverage: "<< average << std::endl;
+//    fs.release();
     return average;
 }

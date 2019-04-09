@@ -244,8 +244,8 @@ void Calibration_widget::on_CharucoCalib_clicked()
         imageSet = calib->getSet();
     delete calib;
     if(ui->CharucoCalib->isChecked()){
-//                calib = new CharucoCalibration(imageSet);
-//                currentCalibMode = CalibrationMode::CHARUCO;
+                calib = new CharucoCalibration(imageSet);
+                currentCalibMode = CalibrationMode::CHARUCO;
     }else{
         calib = new ChessboardCalibration(imageSet);
         currentCalibMode = CalibrationMode::CHESSBOARD;
@@ -303,8 +303,21 @@ void Calibration_widget::on_stereoCalibration_clicked()
                 on_originalImage_clicked();
 
             }
-            else
+            else{
                 cout << "couldn't open right files" << endl;
+                delete calib;
+                vector<ImgCv> imagesStereo;
+                for (size_t i(0); i < imagesL.size(); i++) {
+                    imagesStereo.push_back(ImgCv(imagesL.at(i), true));
+                }
+                calib = new PT_StereoCalibration(imagesStereo, 6, 9, currentCalibMode);
+                ui->undistortedButton->setEnabled(true);
+                enableFeatures(true);
+                int nbImg = calib->getSet().size();
+                ui->nbImage->setNum(nbImg);
+                currentCalibMode = CalibrationMode::STEREO;
+                on_originalImage_clicked();
+            }
         }else
             cout << "couldn't open left files" << endl;
     }

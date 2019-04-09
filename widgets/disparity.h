@@ -27,10 +27,13 @@ class Disparity : public QWidget
     Q_OBJECT
 
 public:
-    explicit Disparity(QWidget *parent = nullptr);
+    explicit Disparity(std::string const&calibFile = "", QWidget *parent = nullptr);
     ~Disparity();
     void set_img_mat(ImgCv &img);
+    void setCalibrationFile(std::string const&calibFile);
     ImgCv * get_img_mat();
+    cv::Mat get_depth_map(bool roiTracked = false);
+
     void displayDisparityMap();
 
 

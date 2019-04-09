@@ -10,14 +10,14 @@ using namespace imagecv;
  *
  * @param parent parent of this widget
  */
-Disparity::Disparity(QWidget *parent) :
+Disparity::Disparity(string const &calibFile, QWidget *parent) :
     QWidget(parent),
     displayMode(DispDisplayerMode::NORMAL),
     ui(new Ui::Disparity),
     dispMap(), depthMap(),
     img(nullptr),
     imgtoDisplay(),
-    calibFilePath(),
+    calibFilePath(calibFile),
     trackWindow(Rect(0, 0, 10, 10))
 {
     ui->setupUi(this);
@@ -70,7 +70,6 @@ void Disparity::displayDisparityMap(){
         return;
     }
 
-    displayMode = DispDisplayerMode::DISPARITY;
     cv::Mat const &imgR(imgtoDisplay.getImgR());
 
     /*  APPLY SELECTED PARAMETERS DISPARITY MAP  */
@@ -164,6 +163,8 @@ void Disparity::displayDisparityMap(){
     //Display the generated disparity map in the left image slot
     ui->image_loaded->setPixmap(QPixmap::fromImage(img2));
     ui->image_loaded->adjustSize();
+    displayMode = DispDisplayerMode::DISPARITY;
+
 }
 
 /**
@@ -194,7 +195,6 @@ void Disparity::on_loadImage_clicked(){
  */
 void Disparity::on_reset_image_clicked() {
     displayMode = DispDisplayerMode::NORMAL;
-    ui->sbm->setCheckState(Qt::CheckState::Unchecked);
     imgtoDisplay.setImg(img->getImg(), true);
     displayImage(imgtoDisplay);
 }
@@ -213,8 +213,175 @@ void Disparity::set_img_mat(ImgCv &img){
     displayImage(imgtoDisplay);
 }
 
+void Disparity::setCalibrationFile(const string &calibFile)
+{
+    this->calibFilePath = calibFile;
+    FileStorage fs(calibFilePath, FileStorage::READ);
+    if(fs.isOpened()){
+        cv::Mat param;
+        fs["DisparityParameter"] >> param;
+        switch((int)param.at<float>(0)){
+        case 0:
+            std::cout << "sbm entries" << std::endl;
+
+            IO_minDisparity = param.at<float>(1);
+            IO_numberOfDisparities = param.at<float>(2);
+            IO_SADWindowSize = param.at<float>(3);
+            IO_disp12MaxDif = param.at<float>(4);
+            IO_preFilterCap = param.at<float>(5);
+            IO_uniquenessRatio = param.at<float>(6);
+            IO_speckleWindowSize = param.at<float>(7);
+            IO_speckleRange = param.at<float>(8);
+            IO_textureTreshold = param.at<float>(9);
+            IO_tresholdFilter = param.at<float>(10);
+
+            ui->spinBox_minDisparity->setValue(IO_minDisparity);
+            ui->spinBox_minDisparity->setValue(IO_numberOfDisparities);
+            ui->spinBox_windowSize->setValue(IO_SADWindowSize);
+            ui->spinBox_disp12MaxDiff->setValue(IO_disp12MaxDif);
+            ui->spinBox_prefilterCap->setValue(IO_preFilterCap);
+            ui->spinBox_uniquenessRatio->setValue(IO_uniquenessRatio);
+            ui->spinBox_speckleWindowSize->setValue(IO_speckleWindowSize);
+            ui->spinBox_speckleRange->setValue(IO_speckleRange);
+            ui->spinBox_textureTreshlod->setValue(IO_textureTreshold);
+            ui->spinBox_tresholdFilter->setValue(IO_tresholdFilter);
+            ui->sbm->setChecked(true);
+            ui->filter->setChecked(false);
+            std::cout << "sbm done" << std::endl;
+
+            break;
+        case 1:
+            std::cout << "sbm + PS entries" << std::endl;
+
+            IO_minDisparity = param.at<float>(1);
+            IO_numberOfDisparities = param.at<float>(2);
+            IO_SADWindowSize = param.at<float>(3);
+            IO_disp12MaxDif = param.at<float>(4);
+            IO_preFilterCap = param.at<float>(5);
+            IO_uniquenessRatio = param.at<float>(6);
+            IO_speckleWindowSize = param.at<float>(7);
+            IO_speckleRange = param.at<float>(8);
+            IO_textureTreshold = param.at<float>(9);
+            IO_tresholdFilter = param.at<float>(10);
+            IO_sigma = param.at<float>(11);
+            IO_lambda = param.at<float>(12);
+
+            ui->spinBox_minDisparity->setValue(IO_minDisparity);
+            ui->spinBox_minDisparity->setValue(IO_numberOfDisparities);
+            ui->spinBox_windowSize->setValue(IO_SADWindowSize);
+            ui->spinBox_disp12MaxDiff->setValue(IO_disp12MaxDif);
+            ui->spinBox_prefilterCap->setValue(IO_preFilterCap);
+            ui->spinBox_uniquenessRatio->setValue(IO_uniquenessRatio);
+            ui->spinBox_speckleWindowSize->setValue(IO_speckleWindowSize);
+            ui->spinBox_speckleRange->setValue(IO_speckleRange);
+            ui->spinBox_textureTreshlod->setValue(IO_textureTreshold);
+            ui->spinBox_tresholdFilter->setValue(IO_tresholdFilter);
+            ui->doubleSpinBox_sigma->setValue(IO_sigma);
+            ui->spinBox_lambda_2->setValue(IO_lambda);
+            ui->sbm->setChecked(true);
+            ui->filter->setChecked(true);
+            std::cout << "sbm  +PS done" << std::endl;
+            break;
+        case 2:
+            std::cout << "SGBM entries" << std::endl;
+
+            IO_minDisparity = param.at<float>(1);
+            IO_numberOfDisparities = param.at<float>(2);
+            IO_SADWindowSize = param.at<float>(3);
+            IO_P1 = param.at<float>(4);
+            IO_P2 = param.at<float>(5);
+            IO_disp12MaxDif = param.at<float>(6);
+            IO_preFilterCap = param.at<float>(7);
+            IO_uniquenessRatio = param.at<float>(8);
+            IO_speckleWindowSize =param.at<float>(9);
+            IO_speckleRange = param.at<float>(10);
+            IO_full_scale = param.at<float>(11);
+
+            ui->spinBox_minDisparity->setValue(IO_minDisparity);
+            ui->spinBox_minDisparity->setValue(IO_numberOfDisparities);
+            ui->spinBox_windowSize->setValue(IO_SADWindowSize);
+            ui->spinBox_disp12MaxDiff->setValue(IO_disp12MaxDif);
+            ui->spinBox_prefilterCap->setValue(IO_preFilterCap);
+            ui->spinBox_uniquenessRatio->setValue(IO_uniquenessRatio);
+            ui->spinBox_speckleWindowSize->setValue(IO_speckleWindowSize);
+            ui->spinBox_speckleRange->setValue(IO_speckleRange);
+
+            if(IO_full_scale =! 0)
+                ui->checkbox_fullScale->setChecked(true);
+            else
+                ui->checkbox_fullScale->setChecked(false);
+
+            ui->sbm->setChecked(false);
+            ui->filter->setChecked(false);
+            std::cout << "SGBM done" << std::endl;
+            break;
+        case 3:
+            std::cout << "SGBM + PS entries" << std::endl;
+
+            IO_minDisparity = param.at<float>(1);
+            IO_numberOfDisparities = param.at<float>(2);
+            IO_SADWindowSize = param.at<float>(3);
+            IO_P1 = param.at<float>(4);
+            IO_P2 = param.at<float>(5);
+            IO_disp12MaxDif = param.at<float>(6);
+            IO_preFilterCap = param.at<float>(7);
+            IO_uniquenessRatio = param.at<float>(8);
+            IO_speckleWindowSize =param.at<float>(9);
+            IO_speckleRange = param.at<float>(10);
+            IO_full_scale = param.at<float>(11);
+            IO_sigma = param.at<float>(12);
+            IO_lambda = param.at<float>(13);
+
+            ui->spinBox_minDisparity->setValue(IO_minDisparity);
+            ui->spinBox_minDisparity->setValue(IO_numberOfDisparities);
+            ui->spinBox_windowSize->setValue(IO_SADWindowSize);
+            ui->spinBox_disp12MaxDiff->setValue(IO_disp12MaxDif);
+            ui->spinBox_prefilterCap->setValue(IO_preFilterCap);
+            ui->spinBox_uniquenessRatio->setValue(IO_uniquenessRatio);
+            ui->spinBox_speckleWindowSize->setValue(IO_speckleWindowSize);
+            ui->spinBox_speckleRange->setValue(IO_speckleRange);
+
+            if(IO_full_scale =! 0)
+                ui->checkbox_fullScale->setChecked(true);
+            else
+                ui->checkbox_fullScale->setChecked(false);
+            ui->doubleSpinBox_sigma->setValue(IO_sigma);
+            ui->spinBox_lambda_2->setValue(IO_lambda);
+            ui->sbm->setChecked(false);
+            ui->filter->setChecked(true);
+
+            std::cout << "SGBM + PS done" << std::endl;
+
+            break;
+        default:
+            std::cout << "[ERROR] can't match to any case" << std::endl;
+            break;
+
+        }
+        fs.release();
+    }
+    else{
+        qDebug("[ERROR] in: setCalibrationFile\nNo calibration file loaded");
+    }
+}
+
 ImgCv * Disparity::get_img_mat(){
     return &imgtoDisplay;
+}
+
+Mat Disparity::get_depth_map(bool roiTracked)
+{
+    DispDisplayerMode old(displayMode);
+
+    on_depthMap_clicked();
+    if(roiTracked){
+        on_track_clicked();
+        displayMode = old;
+
+        return depthMap(trackWindow);
+    }
+    displayMode = old;
+    return depthMap;
 }
 
 
@@ -557,7 +724,7 @@ void Disparity::on_depthMap_clicked()
         displayMode = DispDisplayerMode::NORMAL;
         normalize(depthMap, dst, 0, 255, CV_MINMAX, CV_32F);
         imshow("depth",dst);
-            //displayImage(dst);
+        displayImage(imgtoDisplay);
 
     }
 }
@@ -752,106 +919,16 @@ void Disparity::on_calib_clicked()
 {
 
     QString inFile = QFileDialog::getOpenFileName(this, tr("open a calibration file"),"",tr("yaml files (*.yml)"));
-    if(!inFile.isEmpty()){
-        calibFilePath = inFile.toStdString();
-        FileStorage fs(calibFilePath, FileStorage::READ);
-        if(fs.isOpened()){
-            cv::Mat param;
-            fs["DisparityParameter"] >> param;
-            switch(param.at<int>(0)){
-            case 0:
-                std::cout << "sbm entries" << std::endl;
-
-                IO_minDisparity = param.at<int>(1);
-                IO_numberOfDisparities = param.at<int>(2);
-                IO_SADWindowSize = param.at<int>(3);
-                IO_disp12MaxDif = param.at<int>(4);
-                IO_preFilterCap = param.at<int>(5);
-                IO_uniquenessRatio = param.at<int>(6);
-                IO_speckleWindowSize = param.at<int>(7);
-                IO_speckleRange = param.at<int>(8);
-                IO_textureTreshold = param.at<int>(9);
-                IO_tresholdFilter = param.at<int>(10);
-
-                std::cout << "sbm done" << std::endl;
-
-                break;
-            case 1:
-                std::cout << "sbm + PS entries" << std::endl;
-
-                IO_minDisparity = param.at<int>(1);
-                IO_numberOfDisparities = param.at<int>(2);
-                IO_SADWindowSize = param.at<int>(3);
-                IO_disp12MaxDif = param.at<int>(4);
-                IO_preFilterCap = param.at<int>(5);
-                IO_uniquenessRatio = param.at<int>(6);
-                IO_speckleWindowSize = param.at<int>(7);
-                IO_speckleRange = param.at<int>(8);
-                IO_textureTreshold = param.at<int>(9);
-                IO_tresholdFilter = param.at<int>(10);
-                IO_sigma = param.at<int>(11);
-                IO_lambda = param.at<int>(12);
-
-                std::cout << "sbm  +PS done" << std::endl;
-                break;
-            case 2:
-                std::cout << "SGBM entries" << std::endl;
-
-                IO_minDisparity = param.at<int>(1);
-                IO_numberOfDisparities = param.at<int>(2);
-                IO_SADWindowSize = param.at<int>(3);
-                IO_P1 = param.at<int>(4);
-                IO_P2 = param.at<int>(5);
-                IO_disp12MaxDif = param.at<int>(6);
-                IO_preFilterCap = param.at<int>(7);
-                IO_uniquenessRatio = param.at<int>(8);
-                IO_speckleWindowSize =param.at<int>(9);
-                IO_speckleRange = param.at<int>(10);
-                IO_full_scale = param.at<int>(11);
-
-                std::cout << "SGBM done" << std::endl;
-                break;
-            case 3:
-                std::cout << "SGBM + PS entries" << std::endl;
-
-                IO_minDisparity = param.at<int>(1);
-                IO_numberOfDisparities = param.at<int>(2);
-                IO_SADWindowSize = param.at<int>(3);
-                IO_P1 = param.at<int>(4);
-                IO_P2 = param.at<int>(5);
-                IO_disp12MaxDif = param.at<int>(6);
-                IO_preFilterCap = param.at<int>(7);
-                IO_uniquenessRatio = param.at<int>(8);
-                IO_speckleWindowSize =param.at<int>(9);
-                IO_speckleRange = param.at<int>(10);
-                IO_full_scale = param.at<int>(11);
-                IO_sigma = param.at<int>(12);
-
-
-                std::cout << "SGBM + PS done" << std::endl;
-
-                break;
-            default:
-                std::cout << "[ERROR] can't match to any case" << std::endl;
-                break;
-
-            }
-
-            fs.release();
-        }else
-            qDebug("[ERROR] in: on_calib_clicked\nNo calibration parameters loaded");
-
-    }
-    else{
-        qDebug("[ERROR] in: on_calib_clicked\nNo calibration file loaded");
-    }
+    if(!inFile.isEmpty())
+        setCalibrationFile(inFile.toStdString());
+    else
+        qDebug("[ERROR] in: on_calib_clicked\nNo calibration parameters loaded");
 }
 
 void Disparity::on_dispMap_clicked()
 {
 
     displayDisparityMap();
-    on_track_clicked();
 }
 /**
  * @brief Disparity::on_save_depth_map_clicked
@@ -860,7 +937,6 @@ void Disparity::on_dispMap_clicked()
  */
 void Disparity::on_save_depth_map_clicked(){
 
-    displayDisparityMap();
     on_depthMap_clicked();
     on_track_clicked();
     displayMode = DispDisplayerMode::TRACKER;
@@ -948,7 +1024,6 @@ void Disparity::on_track_clicked()
         calibFilePath = filePath.toStdString();
     }
 
-    on_depthMap_clicked();
     Mat dst(imgtoDisplay.getImgL());
     rectangle(dst, trackWindow,cv::Scalar(255), 2);
     displayMode = DispDisplayerMode::TRACKER;

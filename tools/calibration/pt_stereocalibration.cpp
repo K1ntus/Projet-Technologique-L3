@@ -13,8 +13,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<cv::Mat> &imgsL, std::vec
     switch (calibrationMode) {
 
     case CHARUCO:
-//                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-//                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
 
     default:
@@ -58,8 +58,8 @@ PT_StereoCalibration::PT_StereoCalibration(std::vector<ImgCv> &stereoImgs, int n
 
     switch (calibrationMode) {
     case CHARUCO:
-//                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
-//                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
+                calibLeft = new CharucoCalibration(imgsL, nLines, nCols);
+                calibRight = new CharucoCalibration(imgsR, nLines, nCols);
         break;
     default:
         calibLeft = new ChessboardCalibration(imgsL, nLines, nCols);
@@ -378,6 +378,10 @@ bool PT_StereoCalibration::saveCalibration(const std::string &outFile) const
         fs << "projectionMatrixRight" << projR;
         fs << "dispToDepthMatrix" << dispToDepthMat;
 
+        cv::Mat dispParam(1, 1, CV_32FC1);
+        dispParam.ptr<float>(0)[0] = 1;
+        fs.writeComment("Disparity parameter\n0: sbm\n2: sgbm\n 1: sbm + post filtering\n 3: sgbm + post filtering", true);
+        fs << "DisparityParameter" << dispParam;
         fs.release();
 
         return true;

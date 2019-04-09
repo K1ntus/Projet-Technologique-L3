@@ -26,27 +26,25 @@ class TCP_Thread : public QThread
 {
     Q_OBJECT
 public:
-    explicit TCP_Thread(int iID, QObject *parent = 0x0);
+    explicit TCP_Thread(int iID, QObject *parent = nullptr);
     ~TCP_Thread();
-    Disparity * parametersWindow;
     void run();
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
-    void send_raw_images(QImage img);
+    void send_raw_images(ImgCv img, int&order);
 
 public slots:
     void readyRead();
     void disconnected();
+    void send_order(int order);
 
 private:
     QTcpSocket *socket;
     int socketDescriptor;
-
     QByteArray mat_to_qByteArray(cv::Mat image);
 
     bool receive_raw_stereo_image();
-    void send_order(cv::Mat depth_map);
 
 };
 

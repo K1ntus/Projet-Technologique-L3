@@ -154,6 +154,7 @@
      <addaction name="actionvideo"/>
      <addaction name="separator"/>
      <addaction name="actioncalibration_file"/>
+     <addaction name="actiondisparity_map"/>
     </widget>
     <addaction name="menu_Ouvrir"/>
     <addaction name="actionEnregistrer"/>
@@ -180,6 +181,7 @@
      <string>Con&amp;version</string>
     </property>
     <addaction name="actionrecitify_image"/>
+    <addaction name="actiondepth_map"/>
     <addaction name="separator"/>
     <addaction name="actionQImage"/>
     <addaction name="actionCv_Mat"/>
@@ -283,6 +285,16 @@
   <action name="actionvideo">
    <property name="text">
     <string>video</string>
+   </property>
+  </action>
+  <action name="actiondisparity_map">
+   <property name="text">
+    <string>disparity map</string>
+   </property>
+  </action>
+  <action name="actiondepth_map">
+   <property name="text">
+    <string>depth map</string>
    </property>
   </action>
  </widget>
