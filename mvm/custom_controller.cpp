@@ -35,7 +35,7 @@ namespace mvm
 
 			if(!right_img.empty() && !left_img.empty()){
 
-				std::cout << "[FORWARD] disparity map generation !\n";
+				std::cout << "[I disparity map generation !\n";
 				cv::Mat disparityMap;
 				getDisparityMap(left_img, right_img, disparityMap,disparityParam);
 				
@@ -55,39 +55,47 @@ namespace mvm
 					trackWindow.x = left_img.cols/2;
 					trackWindow.y = 0;
 				}
+				
 				std::cout << "[INFO] Tracking lambda position:" << std::endl;
 				std::cout << "     * TopCorner = (" << trackWindow.x << "," << trackWindow.y << ")" << std::endl;
 				std::cout << "     * Size      = (" << trackWindow.width << "," << trackWindow.height << ")" << std::endl;
 				std::vector<float> values;
+				double min, max;
+    				
 				for(int i = 0; i<depthMapIm.rows;i++){
         				for(int j = 0; j<depthMapIm.cols; j++){
-           					if(depthMapIm.at<float>(i,j)<180){
+           					if(depthMapIm.at<float>(i,j)<200){
                						values.push_back(depthMapIm.at<float>(i,j));
               
             					}
         				}
     				}
+				cv::minMaxLoc(values,&min, &max);
+				std::cout<< "[INFO] min : " << min<<std::endl;
+				std::cout <<"[INFO] max : " << max<<std::endl;
 				Scalar avr= mean(values);
 				
-				std::cout << "(" << avr(0) << "," << avr(1) << "," << avr(2) << ")" << std::endl;
+				std::cout << "(" << avr(0) << "," << avr(1) << "," << avr(2) << ")"<< std::endl;
 
 				if(trackWindow.width < left_img.cols*0.1 || trackWindow.y > 0){
-					std::cout << "[INFO] No need to move on *vx. Distance: " << avr(0) << std::endl;
+					std::cout << "[INFO] No need to move on *vx. No human to track. Distance: " << avr(0) << std::endl;
 					*vx = 0;
 				}else if(avr(0) > distMax){
-					std::cout << "[FORWARD] Tracking object at a distance of " << avr(0) << std::endl;
+					std::cout << "[FORWARD] Tracking object at a distance of : " << avr(0) << std::endl;
 					*vx = VMAX * (avr(0)/distMax);
-				}else{// if(avr(0) < distMin){
-					std::cout << "[BACKWARD] Tracking object at a distance of " << avr(0) << std::endl;
+				}else if(avr(0) < distMin){
+					std::cout << "[BACKWARD] Tracking object at a distance of : " << avr(0) << std::endl;
 					*vx = -VMAX * (distMax/avr(0));
+				}else{
+					*vx=0;
+					std::cout<< "[INFO] No need to move : object at a distance of  :" <<avr(0) <<std::endl;
 				}
-
 				//Rotation handler
 				//rad/s, + is left
-				if(trackWindow.x > (left_img.cols/2 + left_img.cols/10)){
+				if(trackWindow.x > (left_img.cols/2 + left_img.cols/6)){
 					std::cout << "[ROTATION RIGHT] Tracking object at a distance of " << distMax << std::endl;
 					*omega = -0.3;
-				}else if (trackWindow.x < left_img.cols/2){
+				}else if (trackWindow.x < left_img.cols/2- left_img.cols/6){
 					std::cout << "[ROTATION LEFT] Tracking object at a distance of " << distMax << std::endl;
 					*omega = +0.3;
 				}
@@ -130,7 +138,7 @@ void CustomController::load() {
 		fs["dispToDepthMatrix"] >> Q;
 		fs["DistParam"] >> distanceParam;
 		distMin = distanceParam.at<int>(0);
-		distMax = distanceParam.at<int>(0);
+		distMax = distanceParam.at<int>(1);
 		fs.release();
 
 		std::cout << "intrinsic parameters successfully loaded" << std::endl;
@@ -160,7 +168,6 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 		matcher->setNumDisparities(IO_numberOfDisparities);
 
 		matcher->compute(imgL,imgR,dst);
-		threshold(dst,dst,IO_tresholdFilter,255,THRESH_TOZERO);
 
 	}
 
@@ -298,7 +305,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 								param.at<int>(1), param.at<int>(2), param.at<int>(3),
 								param.at<int>(4), param.at<int>(5), param.at<int>(6),
 								param.at<int>(7), param.at<int>(8), param.at<int>(9),
-								param.at<int>(10), param.at<int>(11), param.at<float>(12)
+								param.at<int>(10), (float)param.at<int>(11)/10, param.at<int>(12)
 							);
 							std::cout << "[INFO] sbm  +PS done" << std::endl;
 							break;
@@ -320,7 +327,7 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 								param.at<int>(1), param.at<int>(2), param.at<int>(3),
 								param.at<int>(4), param.at<int>(5), param.at<int>(6),
 								param.at<int>(7), param.at<int>(8), param.at<int>(9),
-								param.at<int>(10), param.at<int>(11), param.at<int>(12)
+								param.at<int>(10), (float)param.at<int>(11)/10, param.at<int>(12)
 							);
 							std::cout << "[INFO] SGBM + PS done" << std::endl;
 
@@ -340,8 +347,8 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 					cv::reprojectImageTo3D(disparityMap, depthMapImage, dispToDepthMatrix, true);
 
 					cv::Mat depthMapVal(depthMapImage.rows, depthMapImage.cols, CV_32F);
-					for(size_t i(0); i < depthMapImage.rows; i++){
-						for(size_t j(0); j < depthMapImage.cols; j++){
+					for(int i(0); i < depthMapImage.rows; i++){
+						for(int j(0); j < depthMapImage.cols; j++){
 							floatPoint = depthMapImage.at<Vec3f>(i,j);
 							depthMapVal.at<float>(i, j) = floatPoint[2];
 						}
@@ -381,5 +388,24 @@ void CustomController::sbm(cv::Mat const&imageL, cv::Mat const&imageR, cv::Mat &
 						backproj &= mask;
 						CamShift(backproj, trackWindow, TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1));
 
+						 if(trackWindow.width > trackWindow.height){
+							std::cout << "[INFO] Tracked object has a larger width than height" << std::endl;
+							std::cout << "     * width = " << trackWindow.width <<", height = " << trackWindow.height << std::endl;
+
+							trackWindow.height = image.rows*0.75;//Box have a height of 3/4 of the image
+							trackWindow.width = image.cols*0.2;//Box have a width of 1/10 of the image
+
+							trackWindow.x = image.cols/3;
+							trackWindow.y = 0;
+						}	
+
+						    std::cout << "[INFO] Tracking position:" << std::endl;
+						    std::cout << "     * TopCorner = (" << trackWindow.x << "," << trackWindow.y << ")" << std::endl;
+						    std::cout << "     * Size      = (" << trackWindow.width << "," << trackWindow.height << ")" << std::endl;
+
+						    if(trackWindow.width < image.cols*0.2){
+							std::cout << "[INFO] INVALID OBJECT DETECTED." << std::endl;
+
+						    }
 					}
-				}
+}

@@ -6,7 +6,7 @@ DistParam: !!opencv-matrix
    rows: 1
    cols: 2
    dt: i
-   data: [ 100, 150 ]
+   data: [ 90, 120 ]
 cameraMatrixLeft: !!opencv-matrix
    rows: 3
    cols: 3
@@ -105,54 +105,7 @@ dispToDepthMatrix: !!opencv-matrix
    data: [ 1., 0., 0., -1.5951422185897827e+03, 0., 1., 0.,
        -3.4505802059173584e+02, 0., 0., 0., 4.7752829641029558e+02, 0.,
        0., 1.2353372091639191e-01, 0. ]
-# ...
-# ---
-# # Disparity parameter
-# # 0: sbm
-# # 2: sgbm
-# #  1: sbm + post filtering
-# #  3: sgbm + post filtering
-# DisparityParameter: !!opencv-matrix
-#    rows: 12
-#    cols: 1
-#    dt: i
-#    data: [ 1, 9, 16, 25, -1, 7, 5, 0, 5, 0, 0, 0.8 ]
-# ...
-# ---
-# # Disparity parameter
-# # 0: sbm
-# # 2: sgbm
-# #  1: sbm + post filtering
-# #  3: sgbm + post filtering
-# DisparityParameter: !!opencv-matrix
-#    rows: 11
-#    cols: 1
-#    dt: i
-#    data: [ 0, 5, 64, 11, 18, 53, 6, 199, 7, 500, 0 ]
-# ...
-# ---
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-# DisparityParameter: !!opencv-matrix
-#    rows: 11
-#    cols: 1
-#    dt: i
-#    data: [ 0, 21, 96, 5, 105, 33, 5, 0, 1, 500, 4 ]
-# ...
-# ---
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: i
-   data: [ 1, 5, 16, 23, 7, 31, 5, 16, 6, 37, 50, 2.0, 8000 ]
+
 ...
 ---
 # Disparity parameter
@@ -164,7 +117,8 @@ DisparityParameter: !!opencv-matrix
    rows: 13
    cols: 1
    dt: i
-   data: [ 3, 9, 16, 5, 600, 2400, 116, 20, 5, 0, 1, 0, 2 ]
+   data: [ 1, 28, 48, 13, 2, 13, 6, 0, 1, 0, 0, 29, 8000 ]
+
 ...
 ---
 # Disparity parameter
@@ -176,7 +130,19 @@ DisparityParameter: !!opencv-matrix
    rows: 13
    cols: 1
    dt: i
-   data: [ 1, 5, 16, 21, 200, 62, 5, 0, 1, 5, 255, 2, 8000 ]
+   data: [ 1, 20, 64, 29, -1, 10, 5, 0, 7, 5, 50, 3, 10000 ]
+...
+---
+# Disparity parameter
+# 0: sbm
+# 2: sgbm
+#  1: sbm + post filtering
+#  3: sgbm + post filtering
+DisparityParameter: !!opencv-matrix
+   rows: 13
+   cols: 1
+   dt: i
+   data: [ 1, 19, 64, 21, 200, 2, 5, 0, 1, 5, 50, 2, 9000 ]
 
 
 ...
@@ -190,81 +156,4 @@ DisparityParameter: !!opencv-matrix
    rows: 13
    cols: 1
    dt: i
-   data: [ 1, 19, 64, 5, 200, 62, 5, 0, 1, 5, 50, 2, 10000 ]
-
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 6., 112., 19., 200., 10., 5., 0., 1., 5., 50.,
-       2.90000010e+00, 8000. ]
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 6., 112., 17., 200., 10., 5., 0., 1., 5., 50.,
-       2.90000010e+00, 8000. ]
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 17., 48., 21., 200., 10., 5., 0., 1., 5., 50.,
-       2.59999990e+00, 15000. ]
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 11., 112., 15., 200., 10., 5., 0., 1., 5., 50.,
-       2.50000000e+00, 8000. ]
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 19., 64., 21., 200., 2., 5., 0., 1., 5., 50., 2., 9000. ]
-...
----
-# Disparity parameter
-# 0: sbm
-# 2: sgbm
-#  1: sbm + post filtering
-#  3: sgbm + post filtering
-DisparityParameter: !!opencv-matrix
-   rows: 13
-   cols: 1
-   dt: f
-   data: [ 1., 20., 64., 29., -1., 10., 5., 0., 7., 5., 50., 3., 10000. ]
+   data: [ 1, 22, 64, 25, -1, 62, 5, 0, 8, 5, 50, 2, 10000 ]
