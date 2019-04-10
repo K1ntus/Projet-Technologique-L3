@@ -149,6 +149,21 @@ Mat ImgCv::sbm(const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowS
 
     return dst;
 }
+
+/**
+ * @brief ImgCv::sbm Compute the disparity map using the SBM method
+ * @param IO_minDisparity
+ * @param IO_numberOfDisparities
+ * @param IO_SADWindowSize
+ * @param IO_disp12MaxDif
+ * @param IO_preFilterCap
+ * @param IO_uniquenessRatio
+ * @param IO_speckleWindowSize
+ * @param IO_speckleRange
+ * @param IO_textureTreshold
+ * @param IO_tresholdFilter
+ * @return the disparity map
+ */
 Mat ImgCv::sbm(const size_t &IO_minDisparity, const size_t &IO_numberOfDisparities, const size_t &IO_SADWindowSize,
                const int &IO_disp12MaxDif,const size_t &IO_preFilterCap, const size_t &IO_uniquenessRatio,
                const size_t &IO_speckleWindowSize,const size_t &IO_speckleRange, const size_t & IO_textureTreshold, const size_t &IO_tresholdFilter) const
@@ -198,7 +213,6 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
     matcher_left->setSpeckleRange(IO_speckleRange);
     matcher_left->setTextureThreshold(IO_textureTreshold);
     matcher_left-> setNumDisparities(IO_numberOfDisparities);
-
     Ptr<DisparityWLSFilter> filter = cv::ximgproc::createDisparityWLSFilter(matcher_left); // creation of the filter
     Ptr<StereoMatcher> matcher_right= createRightMatcher(matcher_left);// creation of the right matcher
 
@@ -270,10 +284,32 @@ Mat ImgCv::disparity_post_filtering(const size_t &IO_minDisparity, const size_t 
 
 }
 
+
 ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const IntrinsicParameters &paramL, const IntrinsicParameters &paramR, const Mat &R, const Mat &T)
 {
     return rectifiedImage(distortedImage, paramL.getDistCoeffs(), paramL.getCameraMatrix(),
                           paramR.getDistCoeffs(), paramR.getCameraMatrix(), R, T);
+}
+/**
+ * @brief ImgCv::rectifiedImage
+ * @param distortedImage
+ * @param dist_coeffsL
+ * @param camera_matrixL
+ * @param dist_coeffsR
+ * @param camera_matrixR
+ * @return
+ */
+ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
+                            cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR){
+    if(!distortedImage.isStereo())
+        std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
+
+    ImgCv rectifiedImg;
+    cv::Mat imgLrectified, imgRrectified;
+    undistort(distortedImage.getImgL(), imgLrectified, camera_matrixL, dist_coeffsL);
+    undistort(distortedImage.getImgR(), imgRrectified, camera_matrixR, dist_coeffsR);
+    rectifiedImg.setImg(imgLrectified, imgRrectified);
+    return rectifiedImg;
 }
 
 /**
@@ -295,6 +331,7 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, c
         std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
 
     ImgCv rectifiedImg;
+
     cv::Mat imgLrectified, imgRrectified;
     undistort(distortedImage.getImgL(), imgLrectified, camera_matrixL, dist_coeffsL);
     undistort(distortedImage.getImgR(), imgRrectified, camera_matrixR, dist_coeffsR);
@@ -348,10 +385,9 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile)
         std::cout << "Error: the image is not a stereo file. \nin: Imgcv::rectifiedImage" << std::endl;
     FileStorage fs(outFile, FileStorage::READ);
     if(fs.isOpened()){
-        cv::Mat imgLrectified, imgRrectified,
-                dist_coeffsL, camera_matrixL,
+        cv::Mat dist_coeffsL, camera_matrixL,
                 dist_coeffsR, camera_matrixR,
-                R, T, rotL, rotR, projL, projR, dispToDepthMat;
+                R, T;
 
         fs["cameraMatrixLeft"] >> camera_matrixL;
         fs["distCoefficientsMatrixLeft"] >> dist_coeffsL;
@@ -363,8 +399,7 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile)
         fs.release();
 
         rectifiedImg = rectifiedImage(distortedImage, dist_coeffsL, camera_matrixL,
-                                      dist_coeffsR, camera_matrixR,
-                                      R, T);
+                                      dist_coeffsR, camera_matrixR);
     }else
         std::cout << "Error: Couldn't open file. \nin: Imgcv::rectifiedImage" << std::endl;
 
@@ -372,6 +407,11 @@ ImgCv ImgCv::rectifiedImage(ImgCv &distortedImage, const std::string &outFile)
 
 }
 
+/**
+ * @brief ImgCv::getDispToDepthMat
+ * @param outFile
+ * @return
+ */
 Mat ImgCv::getDispToDepthMat(const std::string &outFile)
 {
     cv::Mat dispToDepthMat;
@@ -387,67 +427,11 @@ Mat ImgCv::getDispToDepthMat(const std::string &outFile)
     return dispToDepthMat;
 }
 
-void ImgCv::trackOrb(const ImgCv &image, ImgCv &displayer)
-{
-    std::vector<cv::Point2f> cornersL, cornersR;
-    Mat grayImage, dispL(displayer.getImgL()), dispR(displayer.getImgR());
-    cvtColor(image.getImgL(), grayImage, CV_BGR2GRAY);
-
-    double qualityLevel(0.01), minDist(10), k(0.04);
-    int blockSize(3), maxCorners(200);
-    bool useHarrisDetector(true);
-
-    goodFeaturesToTrack(grayImage, cornersL, maxCorners,
-                        qualityLevel, minDist, Mat(),
-                        blockSize, useHarrisDetector, k);
-
-    cvtColor(image.getImgR(), grayImage, CV_BGR2GRAY);
-    goodFeaturesToTrack(grayImage, cornersR, maxCorners,
-                        qualityLevel, minDist, Mat(),
-                        blockSize, useHarrisDetector, k);
-    std::cout << "Number of corners detected in trackSomething: " << cornersL.size() + cornersR.size() << std::endl;
-
-
-    int radius(4);
-    for(size_t i(0); i < cornersL.size(); i++)
-        circle(dispL, cornersL[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
-
-    for(size_t i(0); i < cornersR.size(); i++)
-        circle(dispR, cornersR[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
-
-    std::vector<cv::DMatch> matches;
-    std::vector<KeyPoint> descriptorL, descriptorR;
-    KeyPoint::convert(cornersL, descriptorL);
-    KeyPoint::convert(cornersR, descriptorR);
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-    matcher->match(descriptorL, descriptorR, matches);
-    drawMatches(dispL, descriptorL, dispR, descriptorR, matches, displayer);
-
-}
-
-void ImgCv::trackSomething(const Mat &image, Mat &displayer)
-{
-    std::vector<cv::Point2f> corners;
-    Mat grayImage;
-    cvtColor(image, grayImage, CV_BGR2GRAY);
-
-    double qualityLevel(0.01), minDist(10), k(0.04);
-    int blockSize(3), maxCorners(200);
-    bool useHarrisDetector(true);
-
-    goodFeaturesToTrack(grayImage, corners, maxCorners,
-                        qualityLevel, minDist, Mat(),
-                        blockSize, useHarrisDetector, k);
-
-    std::cout << "Number of corners detected in trackSomething: " << corners.size() << std::endl;
-
-
-    int radius(4);
-    for(size_t i(0); i < corners.size(); i++)
-        circle(displayer, corners[i], radius, Scalar(RNG(12345).uniform(0, 255),RNG(12345).uniform(0, 255), RNG(12345).uniform(0, 255)) );
-
-}
-
+/**
+ * @brief ImgCv::trackCamShift : Create a tracker  and try to detect and track the legs on the stereo Images
+ * @param image : The image to track
+ * @param trackWindow :
+ */
 void ImgCv::trackCamShift(const Mat &image,Rect &trackWindow)
 {
 
@@ -506,25 +490,13 @@ Mat ImgCv::depthMap(const Mat &disparityMap, Mat &dispToDepthMatrix)
 
 
     Mat depthMap(depthMapImage.rows, depthMapImage.cols,CV_32F);
-    float min = std::numeric_limits<float>::max(), max = std::numeric_limits<float>::lowest();
-    for(size_t i(0); i < depthMapImage.rows; i++){
-        for(size_t j(0); j < depthMapImage.cols; j++){
+    for(int i(0); i < depthMapImage.rows; i++){
+        for(int j(0); j < depthMapImage.cols; j++){
             floatPoint = depthMapImage.at<Vec3f>(i,j);
             depthMap.at<float>(i, j) = floatPoint[2];
 
-            if( floatPoint[2] < min) {
-                min = floatPoint[2];
-            }
-
-            if ( floatPoint[2] > max ) {
-                max = floatPoint[2];
-            }
         }
     }
-
-    std::cout << "--------------------------" << std::endl;
-    std::cout << "max " << max << std::endl;
-    std::cout << "min " << min << std::endl;
 
     return depthMap;
 
@@ -552,7 +524,7 @@ Mat ImgCv::depthMapInterpreter(Mat image, const Mat &disparityMap, Mat &depthMap
         return computedResult;
     for(size_t i(roi.x); i < disparityMap.rows - (size_t)(roi.x + roi.width); i++){
         for(size_t j(roi.y); j < disparityMap.cols - (size_t)(roi.y + roi.height); j++){
-            float d = depthMap.at<float>(i, j);
+            float d = depthMap.at<int>(i, j);
         }
     }
     return computedResult;
@@ -620,18 +592,22 @@ Mat ImgCv::getDisparityMap(const std::string &calibFile, Mat *param){
     }else
         return sbm(((this->size().width >> 3) + 15) & -16 , 15);
 }
-
+/**
+ * @brief ImgCv::getDisparityMap
+ * @param param
+ * @return
+ */
 Mat ImgCv::getDisparityMap(const Mat &param)
 {
     cv::Mat res;
-    switch((int)param.at<float>(0)){
+    switch((int)param.at<int>(0)){
     case 0:
         std::cout << "sbm entries" << std::endl;
 
         res = sbm(
-                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
-                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
-                    param.at<float>(7), param.at<float>(8), param.at<float>(9), param.at<float>(10)
+                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                    param.at<int>(7), param.at<int>(8), param.at<int>(9), param.at<int>(10)
                     );
 
         std::cout << "sbm done" << std::endl;
@@ -641,11 +617,11 @@ Mat ImgCv::getDisparityMap(const Mat &param)
         std::cout << "sbm + PS entries" << std::endl;
 
         res = disparity_post_filtering(
-                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
-                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
-                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
-                    param.at<float>(10), param.at<float>(11), param.at<double>(12),
-                    param.at<float>(13)
+                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                    param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                    param.at<int>(10), param.at<int>(11), param.at<double>(12),
+                    param.at<int>(13)
                     );
         std::cout << "sbm  +PS done" << std::endl;
         break;
@@ -653,10 +629,10 @@ Mat ImgCv::getDisparityMap(const Mat &param)
         std::cout << "SGBM entries" << std::endl;
 
         res = disparity_map_SGBM(
-                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
-                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
-                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
-                    param.at<float>(10),  param.at<float>(11)
+                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                    param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                    param.at<int>(10),  param.at<int>(11)
                     );
         std::cout << "SGBM done" << std::endl;
         break;
@@ -664,11 +640,11 @@ Mat ImgCv::getDisparityMap(const Mat &param)
         std::cout << "SGBM + PS entries" << std::endl;
 
         res = disparity_post_filtering(
-                    param.at<float>(1), param.at<float>(2), param.at<float>(3),
-                    param.at<float>(4), param.at<float>(5), param.at<float>(6),
-                    param.at<float>(7), param.at<float>(8), param.at<float>(9),
-                    param.at<float>(10),  param.at<float>(11), param.at<float>(12),
-                    param.at<float>(13)
+                    param.at<int>(1), param.at<int>(2), param.at<int>(3),
+                    param.at<int>(4), param.at<int>(5), param.at<int>(6),
+                    param.at<int>(7), param.at<int>(8), param.at<int>(9),
+                    param.at<int>(10),  param.at<int>(11), param.at<int>(12),
+                    param.at<int>(13)
                     );
         std::cout << "SGBM + PS done" << std::endl;
 
@@ -680,7 +656,12 @@ Mat ImgCv::getDisparityMap(const Mat &param)
     }
     return res;
 }
-
+/**
+ * @brief ImgCv::getDepthMap
+ * @param calibFile
+ * @param TProjectionMat
+ * @return
+ */
 Mat ImgCv::getDepthMap(const std::string &calibFile, Mat &TProjectionMat)
 {
     return depthMap(getDisparityMap(calibFile), TProjectionMat);
@@ -695,7 +676,6 @@ Mat ImgCv::getDepthMap(const std::string &calibFile, Mat &TProjectionMat)
 Mat ImgCv::getDepthMap(cv::Mat const&param, Mat &TProjectionMat){
     return depthMap(getDisparityMap(param), TProjectionMat);
 }
-
 Mat ImgCv::getDepthMap(const std::string &calibFile)
 {
     Mat Q = getDispToDepthMat(calibFile);
@@ -713,7 +693,6 @@ void ImgCv::setImg(const Mat &img, bool isStereo){
     img.copyTo(*this);
     stereo = isStereo;
 }
-
 void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
 {
     if(imgL.empty() || imgR.empty()){
@@ -721,17 +700,6 @@ void ImgCv::setImg(const Mat &imgL, const Mat &imgR)
         return;
     }
     hconcat(imgL, imgR, *this);
-    //    const int& leftWidth = imgL.cols;
-    //    const int& rightWidth = imgR.cols;
-    //    Mat res(imgL.rows, leftWidth + rightWidth,imgL.type());
-    //    res.adjustROI(0, 0, 0, -rightWidth);
-    //    imgL.copyTo(res);
-
-    //    res.adjustROI(0, 0, -leftWidth, rightWidth);
-    //    imgR.copyTo(res);
-
-    //    res.adjustROI(0, 0, leftWidth, 0);
-    //    res.copyTo(*this);
     stereo = true;
 }
 
@@ -755,51 +723,18 @@ void ImgCv::split(Mat &img, Mat &imgL, Mat &imgR){
 
     img.adjustROI(0,0, x_right, 0);
 }
-
-
-Mat ImgCv::orbDetection(const Mat &firstImage, const Mat &secondImage){
-    Mat descriptorL, descriptorR, dst;
-    Ptr<AKAZE> detector = AKAZE::create();
-    //Ptr<ORB> detector =ORB::create();
-    std::vector<KeyPoint> keypointL, keypointR;
-    std::vector<DMatch> matches, best_matches;
-    detector->detectAndCompute(firstImage,noArray(),keypointL,descriptorL);
-    detector->detectAndCompute(secondImage, noArray(),keypointR,descriptorR);
-    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-    matcher->match(descriptorL, descriptorR, matches);
-    float d_max = 0, d_min = 125;
-
-    for(int i = 0; i<(int)matches.size(); i++){  //Find d_max && d_min
-        if(matches[i].distance<d_min)
-            d_min = matches[i].distance;
-        if(matches[i].distance > d_max)
-            d_max= matches[i].distance;
-    }
-    for (int i = 0; i<(int) matches.size(); i++){       //select only keypoint with low distance
-        if(matches[i].distance <=4.0*d_min)
-            best_matches.push_back(matches[i]);
-
-    }
-    cv::drawMatches(firstImage, keypointL, secondImage, keypointR,best_matches,dst);
-
-    std::vector<Point2f> object, scene;
-    for(unsigned int i = 0; i<best_matches.size();i++){
-        object.push_back(keypointL[best_matches[i].queryIdx].pt);
-        scene.push_back(keypointR[best_matches[i].trainIdx].pt);
-
-    }
-    return dst;
-}
-
+/**
+ * @brief ImgCv::calculateDistanceDepthMap
+ * @param roiDepthMap
+ * @return
+ */
 float ImgCv::calculateDistanceDepthMap(const Mat &roiDepthMap){
     std::vector<float> values;
-    int count =0;
 
     for(int i = 0; i<roiDepthMap.rows;i++){
         for(int j = 0; j<roiDepthMap.cols; j++){
             if(roiDepthMap.at<float>(i,j)<200){
                values.push_back(roiDepthMap.at<float>(i,j));
-               count ++;
             }
         }
     }
@@ -807,10 +742,11 @@ float ImgCv::calculateDistanceDepthMap(const Mat &roiDepthMap){
     cv::minMaxLoc(values,&min, &max);
     cv::Scalar temp = mean(values);
     float average = temp(0);
-//    FileStorage fs("depthMap.yml", FileStorage::WRITE);
+    FileStorage fs("DepthMap.yml", FileStorage::WRITE);
+    fs<<"Dept_map"<<values;
+    fs.release();
     std::cout << "minimal value: "<< min
     << "\nmax value: "<< max
     << "\naverage: "<< average << std::endl;
-//    fs.release();
     return average;
 }

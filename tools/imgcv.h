@@ -50,6 +50,8 @@ public:
      */
     cv::Mat getDisparityMap(std::string const& calibFile = "", cv::Mat *param = nullptr);
 
+    ImgCv static rectifiedImage(ImgCv &distortedImage, cv::Mat const&dist_coeffsL, cv::Mat const&camera_matrixL,
+                                cv::Mat const&dist_coeffsR, cv::Mat const&camera_matrixR);
     /**
      * @brief ImgCv::getDisparityMap from a parameters cv::Mat
      * @param
@@ -181,13 +183,7 @@ public:
 
     cv::Mat static getDispToDepthMat(std::string const& outFile);
 
-    void static trackSomething(cv::Mat const& image, cv::Mat &displayer);
-
-    void trackOrb(const ImgCv &image, ImgCv &displayer);
-
     void static trackCamShift(cv::Mat const& image, cv::Rect &trackWindow);
-
-    cv::Mat static orbDetection(const cv::Mat &firstImage, const cv::Mat &secondImage);
 
     float static calculateDistanceDepthMap(const cv::Mat &roiDepthMap);
 private:
